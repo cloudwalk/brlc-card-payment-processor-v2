@@ -35,9 +35,6 @@ contract CardPaymentProcessor is
 
     // ------------------ Constants ------------------------------- //
 
-    /// @dev The role of this contract owner.
-    bytes32 public constant OWNER_ROLE = keccak256("OWNER_ROLE");
-
     /// @dev The role of executor that is allowed to execute the card payment operations.
     bytes32 public constant EXECUTOR_ROLE = keccak256("EXECUTOR_ROLE");
 
@@ -190,10 +187,10 @@ contract CardPaymentProcessor is
         __ERC165_init_unchained();
         __AccessControl_init_unchained();
         __AccessControlExt_init_unchained();
-        __Blocklistable_init_unchained(OWNER_ROLE);
+        __Blocklistable_init_unchained();
         __Pausable_init_unchained();
-        __PausableExt_init_unchained(OWNER_ROLE);
-        __Rescuable_init_unchained(OWNER_ROLE);
+        __PausableExt_init_unchained();
+        __Rescuable_init_unchained();
         __UUPSUpgradeable_init_unchained();
 
         __CardPaymentProcessor_init_unchained(token_);
@@ -211,9 +208,7 @@ contract CardPaymentProcessor is
 
         _token = token_;
 
-        _setRoleAdmin(OWNER_ROLE, OWNER_ROLE);
-        _setRoleAdmin(EXECUTOR_ROLE, OWNER_ROLE);
-
+        _setRoleAdmin(EXECUTOR_ROLE, GRANTOR_ROLE);
         _grantRole(OWNER_ROLE, _msgSender());
     }
 
@@ -641,7 +636,7 @@ contract CardPaymentProcessor is
     }
     // ------------------ Pure functions -------------------------- //
 
-     /// @inheritdoc ICardPaymentProcessor
+    /// @inheritdoc ICardPaymentProcessor
     function proveCardPaymentProcessor() external pure {}
 
     // ------------------ Internal functions ---------------------- //

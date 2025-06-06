@@ -1586,6 +1586,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
   const REVERT_ERROR_IF_TOKEN_ZERO_ADDRESS = "TokenZeroAddress";
 
   const ownerRole: string = ethers.id("OWNER_ROLE");
+  const grantorRole: string = ethers.id("GRANTOR_ROLE");
   const blocklisterRole: string = ethers.id("BLOCKLISTER_ROLE");
   const pauserRole: string = ethers.id("PAUSER_ROLE");
   const rescuerRole: string = ethers.id("RESCUER_ROLE");
@@ -1643,8 +1644,9 @@ describe("Contract 'CardPaymentProcessor'", async () => {
   async function deployAndConfigureAllContracts(): Promise<Fixture> {
     const { cardPaymentProcessor, tokenMock } = await deployTokenMockAndCardPaymentProcessor();
 
-    await proveTx(cardPaymentProcessor.grantRole(executorRole, executor.address));
+    await proveTx(cardPaymentProcessor.grantRole(grantorRole, deployer.address));
     await proveTx(cardPaymentProcessor.grantRole(pauserRole, deployer.address));
+    await proveTx(cardPaymentProcessor.grantRole(executorRole, executor.address));
     await proveTx(cardPaymentProcessor.setCashbackTreasury(cashbackTreasury.address));
     await proveTx(connect(tokenMock, cashbackTreasury).approve(getAddress(cardPaymentProcessor), MAX_UINT256));
     await proveTx(cardPaymentProcessor.setCashbackRate(CASHBACK_RATE_DEFAULT));
@@ -1666,6 +1668,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
 
   async function pauseContract(contract: Contract) {
     if (!(await contract.hasRole(pauserRole, deployer.address))) {
+      await proveTx(contract.grantRole(grantorRole, deployer.address));
       await proveTx(contract.grantRole(pauserRole, deployer.address));
     }
     await proveTx(contract.pause());
@@ -1714,15 +1717,25 @@ describe("Contract 'CardPaymentProcessor'", async () => {
       // The underlying contract address
       expect(await cardPaymentProcessor.token()).to.equal(getAddress(tokenMock));
 
+      // The role hashes
+      expect(await cardPaymentProcessor.OWNER_ROLE()).to.equal(ownerRole);
+      expect(await cardPaymentProcessor.GRANTOR_ROLE()).to.equal(grantorRole);
+      expect(await cardPaymentProcessor.BLOCKLISTER_ROLE()).to.equal(blocklisterRole);
+      expect(await cardPaymentProcessor.PAUSER_ROLE()).to.equal(pauserRole);
+      expect(await cardPaymentProcessor.RESCUER_ROLE()).to.equal(rescuerRole);
+      expect(await cardPaymentProcessor.EXECUTOR_ROLE()).to.equal(executorRole);
+
       // The admins of roles
       expect(await cardPaymentProcessor.getRoleAdmin(ownerRole)).to.equal(ownerRole);
-      expect(await cardPaymentProcessor.getRoleAdmin(blocklisterRole)).to.equal(ownerRole);
-      expect(await cardPaymentProcessor.getRoleAdmin(pauserRole)).to.equal(ownerRole);
-      expect(await cardPaymentProcessor.getRoleAdmin(rescuerRole)).to.equal(ownerRole);
-      expect(await cardPaymentProcessor.getRoleAdmin(executorRole)).to.equal(ownerRole);
+      expect(await cardPaymentProcessor.getRoleAdmin(grantorRole)).to.equal(ownerRole);
+      expect(await cardPaymentProcessor.getRoleAdmin(blocklisterRole)).to.equal(grantorRole);
+      expect(await cardPaymentProcessor.getRoleAdmin(pauserRole)).to.equal(grantorRole);
+      expect(await cardPaymentProcessor.getRoleAdmin(rescuerRole)).to.equal(grantorRole);
+      expect(await cardPaymentProcessor.getRoleAdmin(executorRole)).to.equal(grantorRole);
 
       // The deployer should have the owner role, but not the other roles
       expect(await cardPaymentProcessor.hasRole(ownerRole, deployer.address)).to.equal(true);
+      expect(await cardPaymentProcessor.hasRole(grantorRole, deployer.address)).to.equal(false);
       expect(await cardPaymentProcessor.hasRole(blocklisterRole, deployer.address)).to.equal(false);
       expect(await cardPaymentProcessor.hasRole(pauserRole, deployer.address)).to.equal(false);
       expect(await cardPaymentProcessor.hasRole(rescuerRole, deployer.address)).to.equal(false);

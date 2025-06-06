@@ -6,15 +6,19 @@ import { AccessControlExtUpgradeable } from "./AccessControlExtUpgradeable.sol";
 
 /**
  * @title BlocklistableUpgradeable base contract
- * @author CloudWalk Inc.
+ * @author CloudWalk Inc. (See https://www.cloudwalk.io)
  * @dev Allows to blocklist and unblocklist accounts using the {BLOCKLISTER_ROLE} role.
  *
  * This contract is used through inheritance. It makes available the modifier `notBlocklisted`,
  * which can be applied to functions to restrict their usage to not blocklisted accounts only.
  */
 abstract contract BlocklistableUpgradeable is AccessControlExtUpgradeable {
+    // ------------------ Constants ------------------------------- //
+
     /// @dev The role of the blocklister that is allowed to blocklist and unblocklist accounts.
     bytes32 public constant BLOCKLISTER_ROLE = keccak256("BLOCKLISTER_ROLE");
+
+    // ------------------ Storage layout -------------------------- //
 
     /**
      * @dev The first storage slot of the contract data.
@@ -65,29 +69,17 @@ abstract contract BlocklistableUpgradeable is AccessControlExtUpgradeable {
     // ------------------ Initializers ---------------------------- //
 
     /**
-     * @dev The internal initializer of the upgradable contract.
+     * @dev The unchained internal initializer of the upgradeable contract
      *
-     * See details https://docs.openzeppelin.com/upgrades-plugins/1.x/writing-upgradeable.
+     * See details: https://docs.openzeppelin.com/contracts/5.x/upgradeable#multiple-inheritance
+     *
+     * Note: The `..._init()` initializer has not been provided as redundant.
      */
-    function __Blocklistable_init(bytes32 blocklisterRoleAdmin) internal onlyInitializing {
-        __Context_init_unchained();
-        __ERC165_init_unchained();
-        __AccessControl_init_unchained();
-        __AccessControlExt_init_unchained();
-
-        __Blocklistable_init_unchained(blocklisterRoleAdmin);
+    function __Blocklistable_init_unchained() internal onlyInitializing {
+        _setRoleAdmin(BLOCKLISTER_ROLE, GRANTOR_ROLE);
     }
 
-    /**
-     * @dev The unchained internal initializer of the upgradable contract.
-     *
-     * See {BlocklistableUpgradeable-__Blocklistable_init}.
-     */
-    function __Blocklistable_init_unchained(bytes32 blocklisterRoleAdmin) internal onlyInitializing {
-        _setRoleAdmin(BLOCKLISTER_ROLE, blocklisterRoleAdmin);
-    }
-
-    // ------------------ Functions ------------------------------- //
+    // ------------------ Transactional functions ----------------- //
 
     /**
      * @dev Adds an account to the blocklist.
