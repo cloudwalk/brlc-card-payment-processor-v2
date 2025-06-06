@@ -124,14 +124,6 @@ contract CardPaymentProcessor is
     /// @dev Default version of the event addendum.
     uint8 internal constant EVENT_ADDENDUM_DEFAULT_VERSION = 1;
 
-    // ------------------ Events ---------------------------------- //
-
-    /// @dev Emitted when the cash-out account is changed.
-    event CashOutAccountChanged(
-        address oldCashOutAccount, // Tools: this comment prevents Prettier from formatting into a single line.
-        address newCashOutAccount
-    );
-
     // ------------------ Errors ---------------------------------- //
 
     /// @dev The zero payer address has been passed as a function argument.
@@ -246,12 +238,12 @@ contract CardPaymentProcessor is
     // ------------------ Transactional functions ----------------- //
 
     /**
-     * @dev Sets the cash-out account address that will receive tokens of confirmed payments.
+     * @inheritdoc ICardPaymentProcessor
      *
-     * Requirements:
+     * @dev Requirements:
      *
      * - The caller must have the {OWNER_ROLE} role.
-     * - The new cash-out account must differ from the previously set one.
+     * - The new cash-out account must not be the same as the previously set one.
      */
     function setCashOutAccount(address newCashOutAccount) external onlyRole(OWNER_ROLE) {
         address oldCashOutAccount = _cashOutAccount;

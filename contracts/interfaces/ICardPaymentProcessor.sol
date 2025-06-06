@@ -136,6 +136,12 @@ interface ICardPaymentProcessorTypes {
 interface ICardPaymentProcessor is ICardPaymentProcessorTypes {
     // ------------------ Events ---------------------------------- //
 
+    /// @dev Emitted when the cash-out account is changed.
+    event CashOutAccountChanged(
+        address oldCashOutAccount, // Tools: this comment prevents Prettier from formatting into a single line.
+        address newCashOutAccount
+    );
+
     /**
      * @dev Emitted when a payment is made.
      *
@@ -273,6 +279,17 @@ interface ICardPaymentProcessor is ICardPaymentProcessorTypes {
     event AccountRefunded(address indexed account, uint256 refundingAmount, bytes addendum);
 
     // -------------------- Transactional functions --------------- //
+
+    /**
+     * @dev Sets the cash-out account address that will receive tokens of confirmed payments.
+     *
+     * This function can be called by a limited number of accounts that are allowed to configure the contract.
+     *
+     * Emits a {CashOutAccountChanged} event.
+     *
+     * @param newCashOutAccount The new cash-out account address.
+     */
+    function setCashOutAccount(address newCashOutAccount) external;
 
     /**
      * @dev Makes a card payment for a given account initiated by a service account.
