@@ -1769,7 +1769,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
 
       await expect(
         anotherCardPaymentProcessor.initialize(ZERO_ADDRESS)
-      ).to.be.revertedWithCustomError(cardPaymentProcessorFactory, ERROR_NAME_TOKEN_ZERO_ADDRESS);
+      ).to.be.revertedWithCustomError(anotherCardPaymentProcessor, ERROR_NAME_TOKEN_ZERO_ADDRESS);
     });
 
     it("Is reverted for the contract implementation if it is called even for the first time", async () => {
