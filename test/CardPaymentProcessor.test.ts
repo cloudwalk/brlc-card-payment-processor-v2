@@ -3,7 +3,6 @@ import { expect } from "chai";
 import { Contract, ContractFactory, TransactionReceipt, TransactionResponse } from "ethers";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
-import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import {
   checkContractUupsUpgrading,
   connect,
@@ -19,6 +18,7 @@ import {
   checkEventParameterNotEqual,
   EventParameterCheckingOptions
 } from "../test-utils/checkers";
+import { setUpFixture } from "../test-utils/common";
 
 const MAX_UINT256 = ethers.MaxUint256;
 const MAX_INT256 = ethers.MaxInt256;
@@ -1531,14 +1531,6 @@ class TestContext {
       }
     });
     return result;
-  }
-}
-
-async function setUpFixture<T>(func: () => Promise<T>): Promise<T> {
-  if (network.name === "hardhat") {
-    return loadFixture(func);
-  } else {
-    return func();
   }
 }
 
