@@ -32,7 +32,59 @@ contract CardPaymentProcessor is
     ICardPaymentCashback,
     Versionable
 {
+    // ------------------ Types ----------------------------------- //
+
     using SafeERC20 for IERC20;
+
+    /**
+     * @dev Kind of a payment updating operation for internal use.
+     *
+     * The possible values:
+     *
+     * - Full = 0 -- The operation is executed fully regardless of the new values of the base amount and extra amount.
+     * - Lazy = 1 -- The operation is executed only if the new amounts differ from the current ones of the payment.
+     */
+    enum UpdatingOperationKind {
+        Full,
+        Lazy
+    }
+
+    /**
+     * @dev The kind of a payment recalculation operation for internal use.
+     *
+     * The possible values:
+     *
+     * - None = 0 -- The payment recalculation is not needed.
+     * - Full = 1 -- The payment recalculation is needed.
+     */
+    enum PaymentRecalculationKind {
+        None,
+        Full
+    }
+
+    /// @dev Contains parameters of a payment making operation for internal use.
+    struct MakingOperation {
+        bytes32 paymentId;
+        address payer;
+        address sponsor;
+        uint256 cashbackRate;
+        uint256 baseAmount;
+        uint256 extraAmount;
+        uint256 subsidyLimit;
+        uint256 cashbackAmount;
+        uint256 payerSumAmount;
+        uint256 sponsorSumAmount;
+    }
+
+    /// @dev Contains details of a payment for internal use.
+    struct PaymentDetails {
+        uint256 confirmedAmount;
+        uint256 cashbackAmount;
+        uint256 payerSumAmount;
+        uint256 sponsorSumAmount;
+        uint256 payerRemainder;
+        uint256 sponsorRemainder;
+    }
 
     // ------------------ Constants ------------------------------- //
 
@@ -193,18 +245,24 @@ contract CardPaymentProcessor is
 
     // ------------------ Transactional functions ----------------- //
 
-    /// @dev Contains parameters of a payment making operation for internal use.
-    struct MakingOperation {
-        bytes32 paymentId;
-        address payer;
-        address sponsor;
-        uint256 cashbackRate;
-        uint256 baseAmount;
-        uint256 extraAmount;
-        uint256 subsidyLimit;
-        uint256 cashbackAmount;
-        uint256 payerSumAmount;
-        uint256 sponsorSumAmount;
+    /**
+     * @dev Sets the cash-out account address.
+     *
+     * Requirements:
+     *
+     * - The caller must have the {OWNER_ROLE} role.
+     * - The new cash-out account must differ from the previously set one.
+     */
+    function setCashOutAccount(address newCashOutAccount) external onlyRole(OWNER_ROLE) {
+        address oldCashOutAccount = _cashOutAccount;
+
+        if (newCashOutAccount == oldCashOutAccount) {
+            revert CashOutAccountUnchanged();
+        }
+
+        _cashOutAccount = newCashOutAccount;
+
+        emit CashOutAccountChanged(oldCashOutAccount, newCashOutAccount);
     }
 
     /**
@@ -465,26 +523,6 @@ contract CardPaymentProcessor is
     }
 
     /**
-     * @dev Sets the cash-out account address.
-     *
-     * Requirements:
-     *
-     * - The caller must have the {OWNER_ROLE} role.
-     * - The new cash-out account must differ from the previously set one.
-     */
-    function setCashOutAccount(address newCashOutAccount) external onlyRole(OWNER_ROLE) {
-        address oldCashOutAccount = _cashOutAccount;
-
-        if (newCashOutAccount == oldCashOutAccount) {
-            revert CashOutAccountUnchanged();
-        }
-
-        _cashOutAccount = newCashOutAccount;
-
-        emit CashOutAccountChanged(oldCashOutAccount, newCashOutAccount);
-    }
-
-    /**
      * @inheritdoc ICardPaymentCashback
      *
      * @dev Requirements:
@@ -613,6 +651,7 @@ contract CardPaymentProcessor is
     function getAccountCashbackState(address account) external view returns (AccountCashbackState memory) {
         return _accountCashbackStates[account];
     }
+
     // ------------------ Pure functions -------------------------- //
 
     /// @inheritdoc ICardPaymentProcessor
@@ -658,19 +697,6 @@ contract CardPaymentProcessor is
             operation.payer,
             addendum
         );
-    }
-
-    /**
-     * @dev Kind of a payment updating operation for internal use.
-     *
-     * The possible values:
-     *
-     * - Full = 0 -- The operation is executed fully regardless of the new values of the base amount and extra amount.
-     * - Lazy = 1 -- The operation is executed only if the new amounts differ from the current ones of the payment.
-     */
-    enum UpdatingOperationKind {
-        Full,
-        Lazy
     }
 
     /// @dev Updates the base amount and extra amount of a payment internally.
@@ -1219,29 +1245,6 @@ contract CardPaymentProcessor is
     function _calculateCashback(uint256 amount, uint256 cashbackRate_) internal pure returns (uint256) {
         uint256 cashback = (amount * cashbackRate_) / CASHBACK_FACTOR;
         return ((cashback + CASHBACK_ROUNDING_COEF / 2) / CASHBACK_ROUNDING_COEF) * CASHBACK_ROUNDING_COEF;
-    }
-
-    /// @dev Contains details of a payment for internal use.
-    struct PaymentDetails {
-        uint256 confirmedAmount;
-        uint256 cashbackAmount;
-        uint256 payerSumAmount;
-        uint256 sponsorSumAmount;
-        uint256 payerRemainder;
-        uint256 sponsorRemainder;
-    }
-
-    /**
-     * @dev The kind of a payment recalculation operation for internal use.
-     *
-     * The possible values:
-     *
-     * - None = 0 -- The payment recalculation is not needed.
-     * - Full = 1 -- The payment recalculation is needed.
-     */
-    enum PaymentRecalculationKind {
-        None,
-        Full
     }
 
     /// @dev Defines details of a payment.
