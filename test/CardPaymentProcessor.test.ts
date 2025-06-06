@@ -1748,7 +1748,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
       await checkContractUupsUpgrading(cardPaymentProcessor, cardPaymentProcessorFactory);
     });
 
-    it("Is reverted if the caller is not the owner", async () => {
+    it("Is reverted if the caller does not have the owner role", async () => {
       const { cardPaymentProcessor } = await setUpFixture(deployTokenMockAndCardPaymentProcessor);
 
       await expect(connect(cardPaymentProcessor, user1).upgradeToAndCall(cardPaymentProcessor, "0x"))
@@ -1769,7 +1769,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
       await checkContractUupsUpgrading(cardPaymentProcessor, cardPaymentProcessorFactory, "upgradeTo(address)");
     });
 
-    it("Is reverted if the caller is not the owner", async () => {
+    it("Is reverted if the caller does not have the owner role", async () => {
       const { cardPaymentProcessor } = await setUpFixture(deployTokenMockAndCardPaymentProcessor);
 
       await expect(connect(cardPaymentProcessor, user1).upgradeTo(cardPaymentProcessor))
