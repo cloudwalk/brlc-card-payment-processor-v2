@@ -5,7 +5,10 @@ pragma solidity ^0.8.20;
 import { ICardPaymentProcessorTypes } from "./interfaces/ICardPaymentProcessor.sol";
 import { ICardPaymentCashbackTypes } from "./interfaces/ICardPaymentCashback.sol";
 
-/// @title CardPaymentProcessor storage version 1
+/**
+ * @title CardPaymentProcessor storage version 1
+ * @author CloudWalk Inc. (See https://www.cloudwalk.io)
+ */
 abstract contract CardPaymentProcessorStorageV1 is ICardPaymentProcessorTypes, ICardPaymentCashbackTypes {
     /// @dev The address of the underlying token.
     address internal _token;
@@ -33,7 +36,8 @@ abstract contract CardPaymentProcessorStorageV1 is ICardPaymentProcessorTypes, I
 }
 
 /**
- * @title CardPaymentProcessor storage
+ * @title CardPaymentProcessor cumulative storage
+ * @author CloudWalk Inc. (See https://www.cloudwalk.io)
  * @dev Contains storage variables of the {CardPaymentProcessor} contract.
  *
  * We are following Compound's approach of upgrading new contract implementations.

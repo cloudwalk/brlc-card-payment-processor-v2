@@ -18,7 +18,8 @@ import { ICardPaymentCashback } from "./interfaces/ICardPaymentCashback.sol";
 
 /**
  * @title CardPaymentProcessor contract
- * @dev A wrapper contract for the card payment operations.
+ * @author CloudWalk Inc. (See https://www.cloudwalk.io)
+ * @dev The wrapper contract for the card payment operations.
  */
 contract CardPaymentProcessor is
     CardPaymentProcessorStorage,
@@ -190,9 +191,9 @@ contract CardPaymentProcessor is
         _grantRole(OWNER_ROLE, _msgSender());
     }
 
-    // ------------------ Functions ------------------------------- //
+    // ------------------ Transactional functions ----------------- //
 
-    /// @dev Contains parameters of a payment making operation.
+    /// @dev Contains parameters of a payment making operation for internal use.
     struct MakingOperation {
         bytes32 paymentId;
         address payer;
@@ -659,10 +660,17 @@ contract CardPaymentProcessor is
         );
     }
 
-    /// @dev Kind of a payment updating operation.
+    /**
+     * @dev Kind of a payment updating operation for internal use.
+     *
+     * The possible values:
+     *
+     * - Full = 0 -- The operation is executed fully regardless of the new values of the base amount and extra amount.
+     * - Lazy = 1 -- The operation is executed only if the new amounts differ from the current ones of the payment.
+     */
     enum UpdatingOperationKind {
-        Full, // 0 The operation is executed fully regardless of the new values of the base amount and extra amount.
-        Lazy  // 1 The operation is executed only if the new amounts differ from the current ones of the payment.
+        Full,
+        Lazy
     }
 
     /// @dev Updates the base amount and extra amount of a payment internally.
@@ -1210,7 +1218,7 @@ contract CardPaymentProcessor is
         return ((cashback + CASHBACK_ROUNDING_COEF / 2) / CASHBACK_ROUNDING_COEF) * CASHBACK_ROUNDING_COEF;
     }
 
-    /// @dev Contains details of a payment.
+    /// @dev Contains details of a payment for internal use.
     struct PaymentDetails {
         uint256 confirmedAmount;
         uint256 cashbackAmount;
@@ -1220,7 +1228,14 @@ contract CardPaymentProcessor is
         uint256 sponsorRemainder;
     }
 
-    /// @dev Kind of a payment recalculation operation.
+    /**
+     * @dev The kind of a payment recalculation operation for internal use.
+     *
+     * The possible values:
+     *
+     * - None = 0 -- The payment recalculation is not needed.
+     * - Full = 1 -- The payment recalculation is needed.
+     */
     enum PaymentRecalculationKind {
         None,
         Full

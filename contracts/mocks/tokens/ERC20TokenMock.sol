@@ -9,6 +9,8 @@ import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
  * @dev An implementation of the {ERC20Upgradeable} contract for testing purposes
  */
 contract ERC20TokenMock is ERC20 {
+    // ------------------ Storage --------------------------------- //
+
     /// @dev A special amount when the transfer functions should return `false`.
     uint256 public specialAmountToReturnFalse;
 
@@ -27,7 +29,7 @@ contract ERC20TokenMock is ERC20 {
         specialAmountToRevert = type(uint256).max;
     }
 
-    // ------------------ Functions ------------------------------- //
+    // -------------------- Transactional functions --------------- //
 
     /**
      * @dev Calls the appropriate internal function to mint needed amount of tokens for an account.
