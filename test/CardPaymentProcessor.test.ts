@@ -11,7 +11,6 @@ import {
   increaseBlockTimestamp,
   proveTx
 } from "../test-utils/eth";
-import { createBytesString } from "../test-utils/misc";
 import {
   checkEquality,
   checkEventParameter,
@@ -29,7 +28,6 @@ const ZERO_PAYER_ADDRESS = ethers.ZeroAddress;
 const ZERO_REFUND_AMOUNT = 0;
 const ZERO_SPONSOR_ADDRESS = ethers.ZeroAddress;
 const ZERO_SUBSIDY_LIMIT = 0;
-const BYTES32_LENGTH: number = 32;
 const CASHBACK_RATE_AS_IN_CONTRACT = -1;
 const TOKE_DECIMALS = 6;
 const CASHBACK_ROUNDING_COEF = 10 ** (TOKE_DECIMALS - 2);
@@ -1535,7 +1533,8 @@ class TestContext {
 }
 
 describe("Contract 'CardPaymentProcessor'", async () => {
-  const ZERO_PAYMENT_ID: string = createBytesString("00", BYTES32_LENGTH);
+  const PAYMENT_ID_LENGTH_IN_BYTES = 32;
+  const ZERO_PAYMENT_ID: string = ethers.toBeHex(0, PAYMENT_ID_LENGTH_IN_BYTES);
   const CASHBACK_TREASURY_ADDRESS_STUB1 = "0x0000000000000000000000000000000000000001";
   const CASHBACK_TREASURY_ADDRESS_STUB2 = "0x0000000000000000000000000000000000000002";
   const CASHBACK_RATE_MAX = 500; // 50%
@@ -1670,7 +1669,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
     const testPayments: TestPayment[] = [];
     for (let i = 0; i < numberOfPayments; ++i) {
       const payment: TestPayment = {
-        id: createBytesString(i + 1, BYTES32_LENGTH),
+        id: ethers.toBeHex(i + 1, PAYMENT_ID_LENGTH_IN_BYTES),
         payer: (i % 2 > 0) ? user1 : user2,
         baseAmount: Math.floor(123.456789 * DIGITS_COEF + i * 123.456789 * DIGITS_COEF),
         extraAmount: Math.floor(132.456789 * DIGITS_COEF + i * 132.456789 * DIGITS_COEF)
