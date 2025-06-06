@@ -1157,28 +1157,22 @@ class TestContext {
     );
 
     if (operation.newConfirmationAmount != operation.oldConfirmationAmount) {
-      await expect(tx).to.emit(
-        this.cardPaymentProcessorShell.contract,
-        EVENT_NAME_PAYMENT_CONFIRMED_AMOUNT_CHANGED
-      ).withArgs(
-        checkEventParameter("paymentId", operation.paymentId),
-        checkEventParameter("payer", operation.payer.address),
-        checkEventParameter("addendum", expectedAddendum, eventAddendumCheckingOptions)
-      );
+      await expect(tx).to.emit(this.cardPaymentProcessorShell.contract, EVENT_NAME_PAYMENT_CONFIRMED_AMOUNT_CHANGED)
+        .withArgs(
+          checkEventParameter("paymentId", operation.paymentId),
+          checkEventParameter("payer", operation.payer.address),
+          checkEventParameter("addendum", expectedAddendum, eventAddendumCheckingOptions)
+        );
     } else if (operationConditions.confirmationAmountChangedInAnyOperation) {
-      await expect(tx).to.emit(
-        this.cardPaymentProcessorShell.contract,
-        EVENT_NAME_PAYMENT_CONFIRMED_AMOUNT_CHANGED
-      ).withArgs(
-        checkEventParameter("paymentId", operation.paymentId),
-        checkEventParameter("payer", operation.payer.address),
-        checkEventParameterNotEqual("addendum", expectedAddendum, eventAddendumCheckingOptions)
-      );
+      await expect(tx).to.emit(this.cardPaymentProcessorShell.contract, EVENT_NAME_PAYMENT_CONFIRMED_AMOUNT_CHANGED)
+        .withArgs(
+          checkEventParameter("paymentId", operation.paymentId),
+          checkEventParameter("payer", operation.payer.address),
+          checkEventParameterNotEqual("addendum", expectedAddendum, eventAddendumCheckingOptions)
+        );
     } else {
-      await expect(tx).not.to.emit(
-        this.cardPaymentProcessorShell.contract,
-        EVENT_NAME_PAYMENT_CONFIRMED_AMOUNT_CHANGED
-      );
+      await expect(tx)
+        .not.to.emit(this.cardPaymentProcessorShell.contract, EVENT_NAME_PAYMENT_CONFIRMED_AMOUNT_CHANGED);
     }
   }
 
@@ -1188,10 +1182,7 @@ class TestContext {
     operationConditions: OperationConditions
   ) {
     if (operation.cashbackOperationKind === CashbackOperationKind.Sending) {
-      await expect(tx).to.emit(
-        this.cardPaymentProcessorShell.contract,
-        EVENT_NAME_CASHBACK_SENT
-      ).withArgs(
+      await expect(tx).to.emit(this.cardPaymentProcessorShell.contract, EVENT_NAME_CASHBACK_SENT).withArgs(
         checkEventParameter("paymentId", operation.paymentId),
         checkEventParameter("recipient", operation.payer.address),
         checkEventParameter("status", operation.cashbackOperationStatus),
@@ -1200,10 +1191,7 @@ class TestContext {
     }
 
     if (operation.cashbackOperationKind === CashbackOperationKind.Revocation) {
-      await expect(tx).to.emit(
-        this.cardPaymentProcessorShell.contract,
-        EVENT_NAME_CASHBACK_REVOKED
-      ).withArgs(
+      await expect(tx).to.emit(this.cardPaymentProcessorShell.contract, EVENT_NAME_CASHBACK_REVOKED).withArgs(
         checkEventParameter("paymentId", operation.paymentId),
         checkEventParameter("recipient", operation.payer.address),
         checkEventParameter("status", operation.cashbackOperationStatus),
@@ -1213,10 +1201,7 @@ class TestContext {
     }
 
     if (operation.cashbackOperationKind === CashbackOperationKind.Increase) {
-      await expect(tx).to.emit(
-        this.cardPaymentProcessorShell.contract,
-        EVENT_NAME_CASHBACK_INCREASED
-      ).withArgs(
+      await expect(tx).to.emit(this.cardPaymentProcessorShell.contract, EVENT_NAME_CASHBACK_INCREASED).withArgs(
         checkEventParameter("paymentId", operation.paymentId),
         checkEventParameter("recipient", operation.payer.address),
         checkEventParameter("status", operation.cashbackOperationStatus),
@@ -1226,24 +1211,15 @@ class TestContext {
     }
 
     if (!operationConditions.cashbackSendingRequestedInAnyOperation) {
-      await expect(tx).not.to.emit(
-        this.cardPaymentProcessorShell.contract,
-        EVENT_NAME_CASHBACK_SENT
-      );
+      await expect(tx).not.to.emit(this.cardPaymentProcessorShell.contract, EVENT_NAME_CASHBACK_SENT);
     }
 
     if (!operationConditions.cashbackIncreaseRequestedInAnyOperation) {
-      await expect(tx).not.to.emit(
-        this.cardPaymentProcessorShell.contract,
-        EVENT_NAME_CASHBACK_INCREASED
-      );
+      await expect(tx).not.to.emit(this.cardPaymentProcessorShell.contract, EVENT_NAME_CASHBACK_INCREASED);
     }
 
     if (!operationConditions.cashbackRevocationRequestedInAnyOperation) {
-      await expect(tx).not.to.emit(
-        this.cardPaymentProcessorShell.contract,
-        EVENT_NAME_CASHBACK_REVOKED
-      );
+      await expect(tx).not.to.emit(this.cardPaymentProcessorShell.contract, EVENT_NAME_CASHBACK_REVOKED);
     }
   }
 
@@ -1294,10 +1270,7 @@ class TestContext {
       !operation.sponsor ? "" : encodeEventAddendumFieldForAmount(operation.newSponsorSumAmount)
     );
 
-    await expect(tx).to.emit(
-      this.cardPaymentProcessorShell.contract,
-      EVENT_NAME_PAYMENT_MADE
-    ).withArgs(
+    await expect(tx).to.emit(this.cardPaymentProcessorShell.contract, EVENT_NAME_PAYMENT_MADE).withArgs(
       checkEventParameter("paymentId", operation.paymentId),
       checkEventParameter("payer", operation.payer.address),
       checkEventParameter("addendum", expectedAddendum, eventAddendumCheckingOptions)
@@ -1324,19 +1297,13 @@ class TestContext {
         !operation.sponsor ? "" : encodeEventAddendumFieldForAmount(operation.newSponsorSumAmount)
       );
 
-      await expect(tx).to.emit(
-        this.cardPaymentProcessorShell.contract,
-        EVENT_NAME_PAYMENT_UPDATED
-      ).withArgs(
+      await expect(tx).to.emit(this.cardPaymentProcessorShell.contract, EVENT_NAME_PAYMENT_UPDATED).withArgs(
         checkEventParameter("paymentId", operation.paymentId),
         checkEventParameter("payer", operation.payer.address),
         checkEventParameter("addendum", expectedAddendum, eventAddendumCheckingOptions)
       );
     } else {
-      await expect(tx).not.to.emit(
-        this.cardPaymentProcessorShell.contract,
-        EVENT_NAME_PAYMENT_UPDATED
-      );
+      await expect(tx).not.to.emit(this.cardPaymentProcessorShell.contract, EVENT_NAME_PAYMENT_UPDATED);
     }
   }
 
@@ -1358,10 +1325,7 @@ class TestContext {
       !operation.sponsor ? "" : encodeEventAddendumFieldForAmount(operation.oldSponsorRemainder)
     );
 
-    await expect(tx).to.emit(
-      this.cardPaymentProcessorShell.contract,
-      mainEventName
-    ).withArgs(
+    await expect(tx).to.emit(this.cardPaymentProcessorShell.contract, mainEventName).withArgs(
       checkEventParameter("paymentId", operation.paymentId),
       checkEventParameter("payer", operation.payer.address),
       checkEventParameter("addendum", expectedAddendum, eventAddendumCheckingOptions)
@@ -1379,10 +1343,7 @@ class TestContext {
       !operation.sponsor ? "" : encodeEventAddendumFieldForAmount(operation.newSponsorRefundAmount)
     );
 
-    await expect(tx).to.emit(
-      this.cardPaymentProcessorShell.contract,
-      EVENT_NAME_PAYMENT_REFUNDED
-    ).withArgs(
+    await expect(tx).to.emit(this.cardPaymentProcessorShell.contract, EVENT_NAME_PAYMENT_REFUNDED).withArgs(
       checkEventParameter("paymentId", operation.paymentId),
       checkEventParameter("payer", operation.payer.address),
       checkEventParameter("addendum", expectedAddendum, eventAddendumCheckingOptions)
@@ -1431,9 +1392,8 @@ class TestContext {
       const actualAccountCashbackState: AccountCashbackState =
         await this.cardPaymentProcessorShell.contract.getAccountCashbackState(expectedPayment.payer.address);
       expect(actualAccountCashbackState.totalAmount).to.equal(expectedTotalCashback);
-      expect(actualAccountCashbackState.capPeriodStartAmount).to.equal(
-        this.cardPaymentProcessorShell.model.capPeriodStartAmount
-      );
+      expect(actualAccountCashbackState.capPeriodStartAmount)
+        .to.equal(this.cardPaymentProcessorShell.model.capPeriodStartAmount);
     }
   }
 
@@ -1493,23 +1453,17 @@ class TestContext {
   }
 
   async #checkTokenBalances() {
-    expect(
-      await this.tokenMock.balanceOf(getAddress(this.cardPaymentProcessorShell.contract))
-    ).to.equal(
+    expect(await this.tokenMock.balanceOf(getAddress(this.cardPaymentProcessorShell.contract))).to.equal(
       this.cardPaymentProcessorShell.model.totalBalance,
       `The card payment processor token balance is wrong`
     );
 
-    expect(
-      await this.tokenMock.balanceOf(this.cashOutAccount.address)
-    ).to.equal(
+    expect(await this.tokenMock.balanceOf(this.cashOutAccount.address)).to.equal(
       this.cardPaymentProcessorShell.model.totalConfirmedAmount,
       `The cash-out account token balance is wrong`
     );
 
-    expect(
-      (await this.cardPaymentProcessorShell.contract.getPaymentStatistics()).totalUnconfirmedRemainder
-    ).to.equal(
+    expect((await this.cardPaymentProcessorShell.contract.getPaymentStatistics()).totalUnconfirmedRemainder).to.equal(
       this.cardPaymentProcessorShell.model.totalUnconfirmedRemainder,
       `The total unconfirmed remainder is wrong`
     );
@@ -1758,18 +1712,16 @@ describe("Contract 'CardPaymentProcessor'", async () => {
 
     it("Is reverted if it is called a second time", async () => {
       const { cardPaymentProcessor, tokenMock } = await setUpFixture(deployTokenMockAndCardPaymentProcessor);
-      await expect(
-        cardPaymentProcessor.initialize(getAddress(tokenMock))
-      ).to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_INVALID_INITIALIZATION);
+      await expect(cardPaymentProcessor.initialize(getAddress(tokenMock)))
+        .to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_INVALID_INITIALIZATION);
     });
 
     it("Is reverted if the passed token address is zero", async () => {
       const anotherCardPaymentProcessor =
         await upgrades.deployProxy(cardPaymentProcessorFactory, [], { initializer: false }) as Contract;
 
-      await expect(
-        anotherCardPaymentProcessor.initialize(ZERO_ADDRESS)
-      ).to.be.revertedWithCustomError(anotherCardPaymentProcessor, ERROR_NAME_TOKEN_ZERO_ADDRESS);
+      await expect(anotherCardPaymentProcessor.initialize(ZERO_ADDRESS))
+        .to.be.revertedWithCustomError(anotherCardPaymentProcessor, ERROR_NAME_TOKEN_ZERO_ADDRESS);
     });
 
     it("Is reverted for the contract implementation if it is called even for the first time", async () => {
@@ -1836,112 +1788,76 @@ describe("Contract 'CardPaymentProcessor'", async () => {
     it("Executes as expected and emits the correct event", async () => {
       const { cardPaymentProcessor } = await setUpFixture(deployTokenMockAndCardPaymentProcessor);
 
-      await expect(
-        cardPaymentProcessor.setCashOutAccount(cashOutAccount.address)
-      ).to.emit(
-        cardPaymentProcessor,
-        EVENT_NAME_CASH_OUT_ACCOUNT_CHANGED
-      ).withArgs(
-        ZERO_ADDRESS,
-        cashOutAccount.address
-      );
+      await expect(cardPaymentProcessor.setCashOutAccount(cashOutAccount.address))
+        .to.emit(cardPaymentProcessor, EVENT_NAME_CASH_OUT_ACCOUNT_CHANGED)
+        .withArgs(ZERO_ADDRESS, cashOutAccount.address);
 
       expect(await cardPaymentProcessor.cashOutAccount()).to.equal(cashOutAccount.address);
 
       // Can be set to the zero address
-      await expect(
-        cardPaymentProcessor.setCashOutAccount(ZERO_ADDRESS)
-      ).to.emit(
-        cardPaymentProcessor,
-        EVENT_NAME_CASH_OUT_ACCOUNT_CHANGED
-      ).withArgs(
-        cashOutAccount.address,
-        ZERO_ADDRESS
-      );
+      await expect(cardPaymentProcessor.setCashOutAccount(ZERO_ADDRESS))
+        .to.emit(cardPaymentProcessor, EVENT_NAME_CASH_OUT_ACCOUNT_CHANGED)
+        .withArgs(cashOutAccount.address, ZERO_ADDRESS);
 
       expect(await cardPaymentProcessor.cashOutAccount()).to.equal(ZERO_ADDRESS);
     });
 
     it("Is reverted if the caller does not have the owner role", async () => {
       const { cardPaymentProcessor } = await setUpFixture(deployTokenMockAndCardPaymentProcessor);
-      await expect(
-        connect(cardPaymentProcessor, user1).setCashOutAccount(cashOutAccount.address)
-      ).to.be.revertedWithCustomError(
-        cardPaymentProcessor,
-        ERROR_NAME_ACCESS_CONTROL_UNAUTHORIZED_ACCOUNT
-      ).withArgs(user1.address, OWNER_ROLE);
+      await expect(connect(cardPaymentProcessor, user1).setCashOutAccount(cashOutAccount.address))
+        .to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_ACCESS_CONTROL_UNAUTHORIZED_ACCOUNT)
+        .withArgs(user1.address, OWNER_ROLE);
     });
 
     it("Is reverted if the new cash-out account is the same as the previous set one", async () => {
       const { cardPaymentProcessor } = await setUpFixture(deployTokenMockAndCardPaymentProcessor);
-      await expect(
-        cardPaymentProcessor.setCashOutAccount(ZERO_ADDRESS)
-      ).to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_CASH_OUT_ACCOUNT_UNCHANGED);
+      await expect(cardPaymentProcessor.setCashOutAccount(ZERO_ADDRESS))
+        .to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_CASH_OUT_ACCOUNT_UNCHANGED);
 
       await proveTx(cardPaymentProcessor.setCashOutAccount(cashOutAccount.address));
 
-      await expect(
-        cardPaymentProcessor.setCashOutAccount(cashOutAccount.address)
-      ).to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_CASH_OUT_ACCOUNT_UNCHANGED);
+      await expect(cardPaymentProcessor.setCashOutAccount(cashOutAccount.address))
+        .to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_CASH_OUT_ACCOUNT_UNCHANGED);
     });
   });
 
   describe("Function 'setCashbackTreasury()'", async () => {
     it("Executes as expected and emits the correct event", async () => {
       const { cardPaymentProcessor, tokenMock } = await setUpFixture(deployTokenMockAndCardPaymentProcessor);
-      expect(
-        await tokenMock.allowance(getAddress(cardPaymentProcessor), CASHBACK_TREASURY_ADDRESS_STUB1)
-      ).to.equal(0);
+      expect(await tokenMock.allowance(getAddress(cardPaymentProcessor), CASHBACK_TREASURY_ADDRESS_STUB1)).to.equal(0);
 
-      await expect(
-        cardPaymentProcessor.setCashbackTreasury(CASHBACK_TREASURY_ADDRESS_STUB1)
-      ).to.emit(
-        cardPaymentProcessor,
-        EVENT_NAME_CASHBACK_TREASURY_CHANGED
-      ).withArgs(
-        ZERO_ADDRESS,
-        CASHBACK_TREASURY_ADDRESS_STUB1
-      );
+      await expect(cardPaymentProcessor.setCashbackTreasury(CASHBACK_TREASURY_ADDRESS_STUB1))
+        .to.emit(cardPaymentProcessor, EVENT_NAME_CASHBACK_TREASURY_CHANGED)
+        .withArgs(ZERO_ADDRESS, CASHBACK_TREASURY_ADDRESS_STUB1);
 
       expect(await cardPaymentProcessor.cashbackTreasury()).to.equal(CASHBACK_TREASURY_ADDRESS_STUB1);
 
-      await expect(
-        cardPaymentProcessor.setCashbackTreasury(CASHBACK_TREASURY_ADDRESS_STUB2)
-      ).to.emit(
-        cardPaymentProcessor,
-        EVENT_NAME_CASHBACK_TREASURY_CHANGED
-      ).withArgs(
-        CASHBACK_TREASURY_ADDRESS_STUB1,
-        CASHBACK_TREASURY_ADDRESS_STUB2
-      );
+      await expect(cardPaymentProcessor.setCashbackTreasury(CASHBACK_TREASURY_ADDRESS_STUB2))
+        .to.emit(cardPaymentProcessor, EVENT_NAME_CASHBACK_TREASURY_CHANGED)
+        .withArgs(CASHBACK_TREASURY_ADDRESS_STUB1, CASHBACK_TREASURY_ADDRESS_STUB2);
 
       expect(await cardPaymentProcessor.cashbackTreasury()).to.equal(CASHBACK_TREASURY_ADDRESS_STUB2);
     });
 
     it("Is reverted if the caller does not have the owner role", async () => {
       const { cardPaymentProcessor } = await setUpFixture(deployTokenMockAndCardPaymentProcessor);
-      await expect(
-        connect(cardPaymentProcessor, user1).setCashbackTreasury(CASHBACK_TREASURY_ADDRESS_STUB1)
-      ).to.be.revertedWithCustomError(
-        cardPaymentProcessor,
-        ERROR_NAME_ACCESS_CONTROL_UNAUTHORIZED_ACCOUNT
-      ).withArgs(user1.address, OWNER_ROLE);
+      await expect(connect(cardPaymentProcessor, user1).setCashbackTreasury(CASHBACK_TREASURY_ADDRESS_STUB1))
+        .to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_ACCESS_CONTROL_UNAUTHORIZED_ACCOUNT)
+        .withArgs(user1.address, OWNER_ROLE);
     });
 
     it("Is reverted if the new cashback treasury address is zero", async () => {
       const { cardPaymentProcessor } = await setUpFixture(deployTokenMockAndCardPaymentProcessor);
-      await expect(
-        cardPaymentProcessor.setCashbackTreasury(ZERO_ADDRESS)
-      ).to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_CASHBACK_TREASURY_ZERO_ADDRESS);
+      await expect(cardPaymentProcessor.setCashbackTreasury(ZERO_ADDRESS))
+        .to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_CASHBACK_TREASURY_ZERO_ADDRESS);
     });
 
     it("Is reverted if the cashback treasury is not changed", async () => {
       const { cardPaymentProcessor } = await setUpFixture(deployTokenMockAndCardPaymentProcessor);
       await proveTx(cardPaymentProcessor.setCashbackTreasury(CASHBACK_TREASURY_ADDRESS_STUB1));
 
-      await expect(
-        cardPaymentProcessor.setCashbackTreasury(CASHBACK_TREASURY_ADDRESS_STUB1)
-      ).to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_CASHBACK_TREASURY_UNCHANGED);
+      await expect(cardPaymentProcessor.setCashbackTreasury(CASHBACK_TREASURY_ADDRESS_STUB1))
+        .to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_CASHBACK_TREASURY_UNCHANGED);
     });
   });
 
@@ -1949,55 +1865,38 @@ describe("Contract 'CardPaymentProcessor'", async () => {
     it("Executes as expected and emits the correct event", async () => {
       const { cardPaymentProcessor } = await setUpFixture(deployTokenMockAndCardPaymentProcessor);
 
-      await expect(
-        cardPaymentProcessor.setCashbackRate(CASHBACK_RATE_DEFAULT)
-      ).to.emit(
-        cardPaymentProcessor,
-        EVENT_NAME_CASHBACK_RATE_CHANGED
-      ).withArgs(
-        CASHBACK_RATE_ZERO,
-        CASHBACK_RATE_DEFAULT
-      );
+      await expect(cardPaymentProcessor.setCashbackRate(CASHBACK_RATE_DEFAULT))
+        .to.emit(cardPaymentProcessor, EVENT_NAME_CASHBACK_RATE_CHANGED)
+        .withArgs(CASHBACK_RATE_ZERO, CASHBACK_RATE_DEFAULT);
 
       expect(await cardPaymentProcessor.cashbackRate()).to.equal(CASHBACK_RATE_DEFAULT);
 
-      await expect(
-        cardPaymentProcessor.setCashbackRate(CASHBACK_RATE_ZERO)
-      ).to.emit(
-        cardPaymentProcessor,
-        EVENT_NAME_CASHBACK_RATE_CHANGED
-      ).withArgs(
-        CASHBACK_RATE_DEFAULT,
-        CASHBACK_RATE_ZERO
-      );
+      await expect(cardPaymentProcessor.setCashbackRate(CASHBACK_RATE_ZERO))
+        .to.emit(cardPaymentProcessor, EVENT_NAME_CASHBACK_RATE_CHANGED)
+        .withArgs(CASHBACK_RATE_DEFAULT, CASHBACK_RATE_ZERO);
 
       expect(await cardPaymentProcessor.cashbackRate()).to.equal(CASHBACK_RATE_ZERO);
     });
 
     it("Is reverted if the caller does not have the owner role", async () => {
       const { cardPaymentProcessor } = await setUpFixture(deployTokenMockAndCardPaymentProcessor);
-      await expect(
-        connect(cardPaymentProcessor, user1).setCashbackRate(CASHBACK_RATE_DEFAULT)
-      ).to.be.revertedWithCustomError(
-        cardPaymentProcessor,
-        ERROR_NAME_ACCESS_CONTROL_UNAUTHORIZED_ACCOUNT
-      ).withArgs(user1.address, OWNER_ROLE);
+      await expect(connect(cardPaymentProcessor, user1).setCashbackRate(CASHBACK_RATE_DEFAULT))
+        .to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_ACCESS_CONTROL_UNAUTHORIZED_ACCOUNT)
+        .withArgs(user1.address, OWNER_ROLE);
     });
 
     it("Is reverted if the new rate exceeds the allowable maximum", async () => {
       const { cardPaymentProcessor } = await setUpFixture(deployTokenMockAndCardPaymentProcessor);
-      await expect(
-        cardPaymentProcessor.setCashbackRate(CASHBACK_RATE_MAX + 1)
-      ).to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_CASHBACK_RATE_EXCESS);
+      await expect(cardPaymentProcessor.setCashbackRate(CASHBACK_RATE_MAX + 1))
+        .to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_CASHBACK_RATE_EXCESS);
     });
 
     it("Is reverted if called with the same argument twice", async () => {
       const { cardPaymentProcessor } = await setUpFixture(deployTokenMockAndCardPaymentProcessor);
       await proveTx(cardPaymentProcessor.setCashbackRate(CASHBACK_RATE_DEFAULT));
 
-      await expect(
-        cardPaymentProcessor.setCashbackRate(CASHBACK_RATE_DEFAULT)
-      ).to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_CASHBACK_RATE_UNCHANGED);
+      await expect(cardPaymentProcessor.setCashbackRate(CASHBACK_RATE_DEFAULT))
+        .to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_CASHBACK_RATE_UNCHANGED);
     });
   });
 
@@ -2006,31 +1905,22 @@ describe("Contract 'CardPaymentProcessor'", async () => {
       const { cardPaymentProcessor } = await setUpFixture(deployTokenMockAndCardPaymentProcessor);
       await proveTx(cardPaymentProcessor.setCashbackTreasury(CASHBACK_TREASURY_ADDRESS_STUB1));
 
-      await expect(
-        cardPaymentProcessor.enableCashback()
-      ).to.emit(
-        cardPaymentProcessor,
-        EVENT_NAME_CASHBACK_ENABLED
-      );
+      await expect(cardPaymentProcessor.enableCashback()).to.emit(cardPaymentProcessor, EVENT_NAME_CASHBACK_ENABLED);
 
       expect(await cardPaymentProcessor.cashbackEnabled()).to.equal(true);
     });
 
     it("Is reverted if the caller does not have the owner role", async () => {
       const { cardPaymentProcessor } = await setUpFixture(deployTokenMockAndCardPaymentProcessor);
-      await expect(
-        connect(cardPaymentProcessor, user1).enableCashback()
-      ).to.be.revertedWithCustomError(
-        cardPaymentProcessor,
-        ERROR_NAME_ACCESS_CONTROL_UNAUTHORIZED_ACCOUNT
-      ).withArgs(user1.address, OWNER_ROLE);
+      await expect(connect(cardPaymentProcessor, user1).enableCashback())
+        .to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_ACCESS_CONTROL_UNAUTHORIZED_ACCOUNT)
+        .withArgs(user1.address, OWNER_ROLE);
     });
 
     it("Is reverted if the cashback treasury was not configured", async () => {
       const { cardPaymentProcessor } = await setUpFixture(deployTokenMockAndCardPaymentProcessor);
-      await expect(
-        cardPaymentProcessor.enableCashback()
-      ).to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_CASHBACK_TREASURY_NOT_CONFIGURED);
+      await expect(cardPaymentProcessor.enableCashback())
+        .to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_CASHBACK_TREASURY_NOT_CONFIGURED);
     });
 
     it("Is reverted if the cashback operations are already enabled", async () => {
@@ -2038,9 +1928,8 @@ describe("Contract 'CardPaymentProcessor'", async () => {
       await proveTx(cardPaymentProcessor.setCashbackTreasury(CASHBACK_TREASURY_ADDRESS_STUB1));
       await proveTx(cardPaymentProcessor.enableCashback());
 
-      await expect(
-        cardPaymentProcessor.enableCashback()
-      ).to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_CASHBACK_ALREADY_ENABLED);
+      await expect(cardPaymentProcessor.enableCashback())
+        .to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_CASHBACK_ALREADY_ENABLED);
     });
   });
 
@@ -2051,31 +1940,23 @@ describe("Contract 'CardPaymentProcessor'", async () => {
       await proveTx(cardPaymentProcessor.enableCashback());
       expect(await cardPaymentProcessor.cashbackEnabled()).to.equal(true);
 
-      await expect(
-        cardPaymentProcessor.disableCashback()
-      ).to.emit(
-        cardPaymentProcessor,
-        EVENT_NAME_CASHBACK_DISABLED
-      );
+      await expect(cardPaymentProcessor.disableCashback())
+        .to.emit(cardPaymentProcessor, EVENT_NAME_CASHBACK_DISABLED);
 
       expect(await cardPaymentProcessor.cashbackEnabled()).to.equal(false);
     });
 
     it("Is reverted if the caller does not have the owner role", async () => {
       const { cardPaymentProcessor } = await setUpFixture(deployTokenMockAndCardPaymentProcessor);
-      await expect(
-        connect(cardPaymentProcessor, user1).disableCashback()
-      ).to.be.revertedWithCustomError(
-        cardPaymentProcessor,
-        ERROR_NAME_ACCESS_CONTROL_UNAUTHORIZED_ACCOUNT
-      ).withArgs(user1.address, OWNER_ROLE);
+      await expect(connect(cardPaymentProcessor, user1).disableCashback())
+        .to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_ACCESS_CONTROL_UNAUTHORIZED_ACCOUNT)
+        .withArgs(user1.address, OWNER_ROLE);
     });
 
     it("Is reverted if the cashback operations are already disabled", async () => {
       const { cardPaymentProcessor } = await setUpFixture(deployTokenMockAndCardPaymentProcessor);
-      await expect(
-        cardPaymentProcessor.disableCashback()
-      ).to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_CASHBACK_ALREADY_DISABLED);
+      await expect(cardPaymentProcessor.disableCashback())
+        .to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_CASHBACK_ALREADY_DISABLED);
     });
   });
 
@@ -2359,7 +2240,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         await pauseContract(cardPaymentProcessorShell.contract);
 
         await expect(
-          (cardPaymentProcessorShell.contract.connect(executor) as Contract).makePaymentFor(
+          connect(cardPaymentProcessorShell.contract, executor).makePaymentFor(
             payment.id,
             payment.payer.address,
             payment.baseAmount,
@@ -2377,7 +2258,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         const { cardPaymentProcessorShell, payments: [payment] } = context;
 
         await expect(
-          (cardPaymentProcessorShell.contract.connect(payment.payer) as Contract).makePaymentFor(
+          connect(cardPaymentProcessorShell.contract, payment.payer).makePaymentFor(
             payment.id,
             payment.payer.address,
             payment.baseAmount,
@@ -2398,7 +2279,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         const { cardPaymentProcessorShell, payments: [payment] } = context;
 
         await expect(
-          (cardPaymentProcessorShell.contract.connect(executor) as Contract).makePaymentFor(
+          connect(cardPaymentProcessorShell.contract, executor).makePaymentFor(
             payment.id,
             ZERO_PAYER_ADDRESS,
             payment.baseAmount,
@@ -2416,7 +2297,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         const { cardPaymentProcessorShell, payments: [payment] } = context;
 
         await expect(
-          (cardPaymentProcessorShell.contract.connect(executor) as Contract).makePaymentFor(
+          connect(cardPaymentProcessorShell.contract, executor).makePaymentFor(
             ZERO_PAYMENT_ID,
             payment.payer.address,
             payment.baseAmount,
@@ -2426,10 +2307,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
             CASHBACK_RATE_AS_IN_CONTRACT,
             ZERO_CONFIRMATION_AMOUNT
           )
-        ).to.be.revertedWithCustomError(
-          cardPaymentProcessorShell.contract,
-          ERROR_NAME_PAYMENT_ZERO_ID
-        );
+        ).to.be.revertedWithCustomError(cardPaymentProcessorShell.contract, ERROR_NAME_PAYMENT_ZERO_ID);
       });
 
       it("The account has not enough token balance", async () => {
@@ -2441,7 +2319,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         const subsidyLimitLocal = 0;
 
         await expect(
-          (cardPaymentProcessorShell.contract.connect(executor) as Contract).makePaymentFor(
+          connect(cardPaymentProcessorShell.contract, executor).makePaymentFor(
             payment.id,
             payment.payer.address,
             payment.baseAmount,
@@ -2466,7 +2344,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         payment.extraAmount = subsidyLimitLocal;
 
         await expect(
-          (cardPaymentProcessorShell.contract.connect(executor) as Contract).makePaymentFor(
+          connect(cardPaymentProcessorShell.contract, executor).makePaymentFor(
             payment.id,
             payment.payer.address,
             payment.baseAmount,
@@ -2489,7 +2367,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         await cardPaymentProcessorShell.makeCommonPayments([payment]);
 
         await expect(
-          (cardPaymentProcessorShell.contract.connect(executor) as Contract).makePaymentFor(
+          connect(cardPaymentProcessorShell.contract, executor).makePaymentFor(
             payment.id,
             payment.payer.address,
             payment.baseAmount,
@@ -2507,7 +2385,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         const { cardPaymentProcessorShell, payments: [payment] } = context;
 
         await expect(
-          (cardPaymentProcessorShell.contract.connect(executor) as Contract).makePaymentFor(
+          connect(cardPaymentProcessorShell.contract, executor).makePaymentFor(
             payment.id,
             payment.payer.address,
             payment.baseAmount,
@@ -2527,7 +2405,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         const paymentExtraAmount: bigint = 1n;
 
         await expect(
-          (cardPaymentProcessorShell.contract.connect(executor) as Contract).makePaymentFor(
+          connect(cardPaymentProcessorShell.contract, executor).makePaymentFor(
             payment.id,
             payment.payer.address,
             paymentBaseAmount,
@@ -2545,7 +2423,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         const { cardPaymentProcessorShell, payments: [payment] } = context;
 
         await expect(
-          (cardPaymentProcessorShell.contract.connect(executor) as Contract).makePaymentFor(
+          connect(cardPaymentProcessorShell.contract, executor).makePaymentFor(
             payment.id,
             payment.payer.address,
             payment.baseAmount,
@@ -2564,7 +2442,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         const subsidyLimitOverflowed = MAX_UINT64 + 1n;
 
         await expect(
-          (cardPaymentProcessorShell.contract.connect(executor) as Contract).makePaymentFor(
+          connect(cardPaymentProcessorShell.contract, executor).makePaymentFor(
             payment.id,
             payment.payer.address,
             payment.baseAmount,
@@ -2584,7 +2462,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         const excessConfirmationAmount = payment.baseAmount + payment.extraAmount + 1;
 
         await expect(
-          (cardPaymentProcessorShell.contract.connect(executor) as Contract).makePaymentFor(
+          connect(cardPaymentProcessorShell.contract, executor).makePaymentFor(
             payment.id,
             payment.payer.address,
             payment.baseAmount,
@@ -2632,7 +2510,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         await pauseContract(cardPaymentProcessorShell.contract);
 
         await expect(
-          (cardPaymentProcessorShell.contract.connect(executor) as Contract).makeCommonPaymentFor(
+          connect(cardPaymentProcessorShell.contract, executor).makeCommonPaymentFor(
             payment.id,
             payment.payer.address,
             payment.baseAmount,
@@ -2646,7 +2524,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         const { cardPaymentProcessorShell, payments: [payment] } = context;
 
         await expect(
-          (cardPaymentProcessorShell.contract.connect(payment.payer) as Contract).makeCommonPaymentFor(
+          connect(cardPaymentProcessorShell.contract, payment.payer).makeCommonPaymentFor(
             payment.id,
             payment.payer.address,
             payment.baseAmount,
@@ -2663,7 +2541,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         const { cardPaymentProcessorShell, payments: [payment] } = context;
 
         await expect(
-          (cardPaymentProcessorShell.contract.connect(executor) as Contract).makeCommonPaymentFor(
+          connect(cardPaymentProcessorShell.contract, executor).makeCommonPaymentFor(
             payment.id,
             ZERO_PAYER_ADDRESS,
             payment.baseAmount,
@@ -3210,7 +3088,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         await pauseContract(cardPaymentProcessorShell.contract);
 
         await expect(
-          (cardPaymentProcessorShell.contract.connect(executor) as Contract).updatePayment(
+          connect(cardPaymentProcessorShell.contract, executor).updatePayment(
             payment.id,
             payment.baseAmount,
             payment.extraAmount
@@ -3223,7 +3101,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         const { cardPaymentProcessorShell, payments: [payment] } = context;
 
         await expect(
-          (cardPaymentProcessorShell.contract.connect(deployer) as Contract).updatePayment(
+          connect(cardPaymentProcessorShell.contract, deployer).updatePayment(
             payment.id,
             payment.baseAmount,
             payment.extraAmount
@@ -3239,15 +3117,12 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         const { cardPaymentProcessorShell, payments: [payment] } = context;
 
         await expect(
-          (cardPaymentProcessorShell.contract.connect(executor) as Contract).updatePayment(
+          connect(cardPaymentProcessorShell.contract, executor).updatePayment(
             ZERO_PAYMENT_ID,
             payment.baseAmount,
             payment.extraAmount
           )
-        ).to.be.revertedWithCustomError(
-          cardPaymentProcessorShell.contract,
-          ERROR_NAME_PAYMENT_ZERO_ID
-        );
+        ).to.be.revertedWithCustomError(cardPaymentProcessorShell.contract, ERROR_NAME_PAYMENT_ZERO_ID);
       });
 
       it("The payment with the provided ID does not exist", async () => {
@@ -3255,7 +3130,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         const { cardPaymentProcessorShell, payments: [payment] } = context;
 
         await expect(
-          (cardPaymentProcessorShell.contract.connect(executor) as Contract).updatePayment(
+          connect(cardPaymentProcessorShell.contract, executor).updatePayment(
             payment.id,
             payment.baseAmount,
             payment.extraAmount
@@ -3277,15 +3152,12 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         await cardPaymentProcessorShell.refundPayment(payment, refundAmount);
 
         await expect(
-          (cardPaymentProcessorShell.contract.connect(executor) as Contract).updatePayment(
+          connect(cardPaymentProcessorShell.contract, executor).updatePayment(
             payment.id,
             newBaseAmount,
             newExtraAmount
           )
-        ).to.be.revertedWithCustomError(
-          cardPaymentProcessorShell.contract,
-          ERROR_NAME_INAPPROPRIATE_SUM_AMOUNT
-        );
+        ).to.be.revertedWithCustomError(cardPaymentProcessorShell.contract, ERROR_NAME_INAPPROPRIATE_SUM_AMOUNT);
       });
 
       it("The new payment sum amount is greater than 64-bit unsigned integer", async () => {
@@ -3297,7 +3169,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         const newExtraAmount = 1n;
 
         await expect(
-          (cardPaymentProcessorShell.contract.connect(executor) as Contract).updatePayment(
+          connect(cardPaymentProcessorShell.contract, executor).updatePayment(
             payment.id,
             newBaseAmount,
             newExtraAmount
@@ -3428,9 +3300,8 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         const { cardPaymentProcessorShell, payments: [payment] } = context;
         await pauseContract(cardPaymentProcessorShell.contract);
 
-        await expect(
-          (cardPaymentProcessorShell.contract.connect(executor) as Contract).revokePayment(payment.id)
-        ).to.be.revertedWithCustomError(cardPaymentProcessorShell.contract, ERROR_NAME_ENFORCED_PAUSE);
+        await expect(connect(cardPaymentProcessorShell.contract, executor).revokePayment(payment.id))
+          .to.be.revertedWithCustomError(cardPaymentProcessorShell.contract, ERROR_NAME_ENFORCED_PAUSE);
       });
 
       it("The caller does not have the executor role", async () => {
@@ -3438,7 +3309,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         const { cardPaymentProcessorShell, payments: [payment] } = context;
 
         await expect(
-          (cardPaymentProcessorShell.contract.connect(deployer) as Contract).revokePayment(payment.id)
+          connect(cardPaymentProcessorShell.contract, deployer).revokePayment(payment.id)
         ).to.be.revertedWithCustomError(
           cardPaymentProcessorShell.contract,
           ERROR_NAME_ACCESS_CONTROL_UNAUTHORIZED_ACCOUNT
@@ -3449,24 +3320,17 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         const context = await prepareForPayments();
         const { cardPaymentProcessorShell } = context;
 
-        await expect(
-          (cardPaymentProcessorShell.contract.connect(executor) as Contract).revokePayment(ZERO_PAYMENT_ID)
-        ).to.be.revertedWithCustomError(
-          cardPaymentProcessorShell.contract,
-          ERROR_NAME_PAYMENT_ZERO_ID
-        );
+        await expect(connect(cardPaymentProcessorShell.contract, executor).revokePayment(ZERO_PAYMENT_ID))
+          .to.be.revertedWithCustomError(cardPaymentProcessorShell.contract, ERROR_NAME_PAYMENT_ZERO_ID);
       });
 
       it("The payment with the provided ID does not exist", async () => {
         const context = await prepareForPayments();
         const { cardPaymentProcessorShell, payments: [payment] } = context;
 
-        await expect(
-          (cardPaymentProcessorShell.contract.connect(executor) as Contract).revokePayment(payment.id)
-        ).to.be.revertedWithCustomError(
-          cardPaymentProcessorShell.contract,
-          ERROR_NAME_PAYMENT_NON_EXISTENT
-        ).withArgs(payment.id);
+        await expect(connect(cardPaymentProcessorShell.contract, executor).revokePayment(payment.id))
+          .to.be.revertedWithCustomError(cardPaymentProcessorShell.contract, ERROR_NAME_PAYMENT_NON_EXISTENT)
+          .withArgs(payment.id);
       });
     });
   });
@@ -3505,9 +3369,8 @@ describe("Contract 'CardPaymentProcessor'", async () => {
       const { cardPaymentProcessorShell, payments: [payment] } = context;
       await pauseContract(cardPaymentProcessorShell.contract);
 
-      await expect(
-        (cardPaymentProcessorShell.contract.connect(executor) as Contract).reversePayment(payment.id)
-      ).to.be.revertedWithCustomError(cardPaymentProcessorShell.contract, ERROR_NAME_ENFORCED_PAUSE);
+      await expect(connect(cardPaymentProcessorShell.contract, executor).reversePayment(payment.id))
+        .to.be.revertedWithCustomError(cardPaymentProcessorShell.contract, ERROR_NAME_ENFORCED_PAUSE);
     });
 
     it("Is reverted if the caller does not have the executor role", async () => {
@@ -3515,7 +3378,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
       const { cardPaymentProcessorShell, payments: [payment] } = context;
 
       await expect(
-        (cardPaymentProcessorShell.contract.connect(deployer) as Contract).reversePayment(payment.id)
+        connect(cardPaymentProcessorShell.contract, deployer).reversePayment(payment.id)
       ).to.be.revertedWithCustomError(
         cardPaymentProcessorShell.contract,
         ERROR_NAME_ACCESS_CONTROL_UNAUTHORIZED_ACCOUNT
@@ -3589,9 +3452,8 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         const { cardPaymentProcessorShell, payments: [payment] } = context;
         await pauseContract(cardPaymentProcessorShell.contract);
 
-        const contractConnected = cardPaymentProcessorShell.contract.connect(executor) as Contract;
         await expect(
-          contractConnected.confirmPayment(payment.id, ZERO_CONFIRMATION_AMOUNT)
+          connect(cardPaymentProcessorShell.contract, executor).confirmPayment(payment.id, ZERO_CONFIRMATION_AMOUNT)
         ).to.be.revertedWithCustomError(cardPaymentProcessorShell.contract, ERROR_NAME_ENFORCED_PAUSE);
       });
 
@@ -3599,9 +3461,8 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         const context = await prepareForPayments();
         const { cardPaymentProcessorShell, payments: [payment] } = context;
 
-        const contractConnected = cardPaymentProcessorShell.contract.connect(deployer) as Contract;
         await expect(
-          contractConnected.confirmPayment(payment.id, ZERO_CONFIRMATION_AMOUNT)
+          connect(cardPaymentProcessorShell.contract, deployer).confirmPayment(payment.id, ZERO_CONFIRMATION_AMOUNT)
         ).to.be.revertedWithCustomError(
           cardPaymentProcessorShell.contract,
           ERROR_NAME_ACCESS_CONTROL_UNAUTHORIZED_ACCOUNT
@@ -3612,22 +3473,20 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         const context = await prepareForPayments();
         const { cardPaymentProcessorShell } = context;
 
-        const contractConnected = cardPaymentProcessorShell.contract.connect(executor) as Contract;
         await expect(
-          contractConnected.confirmPayment(ZERO_PAYMENT_ID, ZERO_CONFIRMATION_AMOUNT)
-        ).to.be.revertedWithCustomError(
-          cardPaymentProcessorShell.contract,
-          ERROR_NAME_PAYMENT_ZERO_ID
-        );
+          connect(cardPaymentProcessorShell.contract, executor).confirmPayment(
+            ZERO_PAYMENT_ID,
+            ZERO_CONFIRMATION_AMOUNT
+          )
+        ).to.be.revertedWithCustomError(cardPaymentProcessorShell.contract, ERROR_NAME_PAYMENT_ZERO_ID);
       });
 
       it("The payment with the provided ID does not exist", async () => {
         const context = await prepareForPayments();
         const { cardPaymentProcessorShell, payments: [payment] } = context;
 
-        const contractConnected = cardPaymentProcessorShell.contract.connect(executor) as Contract;
         await expect(
-          contractConnected.confirmPayment(payment.id, ZERO_CONFIRMATION_AMOUNT)
+          connect(cardPaymentProcessorShell.contract, executor).confirmPayment(payment.id, ZERO_CONFIRMATION_AMOUNT)
         ).to.be.revertedWithCustomError(
           cardPaymentProcessorShell.contract,
           ERROR_NAME_PAYMENT_NON_EXISTENT
@@ -3643,9 +3502,8 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         await cardPaymentProcessorShell.refundPayment(payment, refundAmount);
         const confirmationAmount = Math.floor(payment.baseAmount + payment.extraAmount - refundAmount) + 1;
 
-        const contractConnected = cardPaymentProcessorShell.contract.connect(executor) as Contract;
         await expect(
-          contractConnected.confirmPayment(payment.id, confirmationAmount)
+          connect(cardPaymentProcessorShell.contract, executor).confirmPayment(payment.id, confirmationAmount)
         ).to.be.revertedWithCustomError(
           cardPaymentProcessorShell.contract,
           ERROR_NAME_INAPPROPRIATE_CONFIRMATION_AMOUNT
@@ -3659,13 +3517,9 @@ describe("Contract 'CardPaymentProcessor'", async () => {
 
         await proveTx(cardPaymentProcessorShell.contract.setCashOutAccount(ZERO_ADDRESS));
 
-        const contractConnected = cardPaymentProcessorShell.contract.connect(executor) as Contract;
         await expect(
-          contractConnected.confirmPayment(payment.id, ZERO_CONFIRMATION_AMOUNT)
-        ).to.be.revertedWithCustomError(
-          cardPaymentProcessorShell.contract,
-          ERROR_NAME_CASH_OUT_ACCOUNT_NOT_CONFIGURED
-        );
+          connect(cardPaymentProcessorShell.contract, executor).confirmPayment(payment.id, ZERO_CONFIRMATION_AMOUNT)
+        ).to.be.revertedWithCustomError(cardPaymentProcessorShell.contract, ERROR_NAME_CASH_OUT_ACCOUNT_NOT_CONFIGURED);
       });
     });
   });
@@ -3710,9 +3564,8 @@ describe("Contract 'CardPaymentProcessor'", async () => {
       const { cardPaymentProcessorShell, payments: [payment] } = context;
       await pauseContract(cardPaymentProcessorShell.contract);
 
-      const contractConnected = cardPaymentProcessorShell.contract.connect(executor) as Contract;
       await expect(
-        contractConnected.confirmPayments([{ paymentId: payment.id, amount: 0 }])
+        connect(cardPaymentProcessorShell.contract, executor).confirmPayments([{ paymentId: payment.id, amount: 0 }])
       ).to.be.revertedWithCustomError(cardPaymentProcessorShell.contract, ERROR_NAME_ENFORCED_PAUSE);
     });
 
@@ -3720,9 +3573,8 @@ describe("Contract 'CardPaymentProcessor'", async () => {
       const context = await prepareForPayments();
       const { cardPaymentProcessorShell, payments: [payment] } = context;
 
-      const contractConnected = cardPaymentProcessorShell.contract.connect(deployer) as Contract;
       await expect(
-        contractConnected.confirmPayments([{ paymentId: payment.id, amount: 0 }])
+        connect(cardPaymentProcessorShell.contract, deployer).confirmPayments([{ paymentId: payment.id, amount: 0 }])
       ).to.be.revertedWithCustomError(
         cardPaymentProcessorShell.contract,
         ERROR_NAME_ACCESS_CONTROL_UNAUTHORIZED_ACCOUNT
@@ -3733,13 +3585,8 @@ describe("Contract 'CardPaymentProcessor'", async () => {
       const context = await prepareForPayments();
       const { cardPaymentProcessorShell } = context;
 
-      const contractConnected = cardPaymentProcessorShell.contract.connect(executor) as Contract;
-      await expect(
-        contractConnected.confirmPayments([])
-      ).to.be.revertedWithCustomError(
-        cardPaymentProcessorShell.contract,
-        ERROR_NAME_PAYMENT_CONFIRMATION_ARRAY_EMPTY
-      );
+      await expect(connect(cardPaymentProcessorShell.contract, executor).confirmPayments([]))
+        .to.be.revertedWithCustomError(cardPaymentProcessorShell.contract, ERROR_NAME_PAYMENT_CONFIRMATION_ARRAY_EMPTY);
     });
   });
 
@@ -3837,7 +3684,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         await pauseContract(cardPaymentProcessorShell.contract);
 
         await expect(
-          (cardPaymentProcessorShell.contract.connect(executor) as Contract).updateLazyAndConfirmPayment(
+          connect(cardPaymentProcessorShell.contract, executor).updateLazyAndConfirmPayment(
             payment.id,
             payment.baseAmount,
             payment.extraAmount,
@@ -3851,7 +3698,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         const { cardPaymentProcessorShell, payments: [payment] } = context;
 
         await expect(
-          (cardPaymentProcessorShell.contract.connect(deployer) as Contract).updateLazyAndConfirmPayment(
+          connect(cardPaymentProcessorShell.contract, deployer).updateLazyAndConfirmPayment(
             payment.id,
             payment.baseAmount,
             payment.extraAmount,
@@ -4059,9 +3906,8 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         const { cardPaymentProcessorShell, payments: [payment] } = context;
         await pauseContract(cardPaymentProcessorShell.contract);
 
-        const contractConnected = cardPaymentProcessorShell.contract.connect(executor) as Contract;
         await expect(
-          contractConnected.refundPayment(payment.id, ZERO_REFUND_AMOUNT)
+          connect(cardPaymentProcessorShell.contract, executor).refundPayment(payment.id, ZERO_REFUND_AMOUNT)
         ).to.be.revertedWithCustomError(cardPaymentProcessorShell.contract, ERROR_NAME_ENFORCED_PAUSE);
       });
 
@@ -4069,9 +3915,8 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         const context = await prepareForPayments();
         const { cardPaymentProcessorShell, payments: [payment] } = context;
 
-        const contractConnected = cardPaymentProcessorShell.contract.connect(deployer) as Contract;
         await expect(
-          contractConnected.refundPayment(payment.id, ZERO_REFUND_AMOUNT)
+          connect(cardPaymentProcessorShell.contract, deployer).refundPayment(payment.id, ZERO_REFUND_AMOUNT)
         ).to.be.revertedWithCustomError(
           cardPaymentProcessorShell.contract,
           ERROR_NAME_ACCESS_CONTROL_UNAUTHORIZED_ACCOUNT
@@ -4082,9 +3927,8 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         const context = await prepareForPayments();
         const { cardPaymentProcessorShell } = context;
 
-        const contractConnected = cardPaymentProcessorShell.contract.connect(executor) as Contract;
         await expect(
-          contractConnected.refundPayment(ZERO_PAYMENT_ID, ZERO_REFUND_AMOUNT)
+          connect(cardPaymentProcessorShell.contract, executor).refundPayment(ZERO_PAYMENT_ID, ZERO_REFUND_AMOUNT)
         ).to.be.revertedWithCustomError(cardPaymentProcessorShell.contract, ERROR_NAME_PAYMENT_ZERO_ID);
       });
 
@@ -4092,9 +3936,8 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         const context = await prepareForPayments();
         const { cardPaymentProcessorShell, payments: [payment] } = context;
 
-        const contractConnected = cardPaymentProcessorShell.contract.connect(executor) as Contract;
         await expect(
-          contractConnected.refundPayment(payment.id, ZERO_REFUND_AMOUNT)
+          connect(cardPaymentProcessorShell.contract, executor).refundPayment(payment.id, ZERO_REFUND_AMOUNT)
         ).to.be.revertedWithCustomError(
           cardPaymentProcessorShell.contract,
           ERROR_NAME_PAYMENT_NON_EXISTENT
@@ -4109,13 +3952,8 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         await cardPaymentProcessorShell.makePaymentFor(payment, { sponsor, subsidyLimit, confirmationAmount });
         const refundAmount = payment.baseAmount + payment.extraAmount + 1;
 
-        const contractConnected = cardPaymentProcessorShell.contract.connect(executor) as Contract;
-        await expect(
-          contractConnected.refundPayment(payment.id, refundAmount)
-        ).to.be.revertedWithCustomError(
-          cardPaymentProcessorShell.contract,
-          ERROR_NAME_INAPPROPRIATE_REFUNDING_AMOUNT
-        );
+        await expect(connect(cardPaymentProcessorShell.contract, executor).refundPayment(payment.id, refundAmount))
+          .to.be.revertedWithCustomError(cardPaymentProcessorShell.contract, ERROR_NAME_INAPPROPRIATE_REFUNDING_AMOUNT);
       });
     });
   });
@@ -4131,10 +3969,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
       const contractConnected = cardPaymentProcessorShell.contract.connect(executor) as Contract;
       const tx = await contractConnected.refundAccount(user1.address, tokenAmount);
 
-      await expect(tx).to.emit(
-        cardPaymentProcessorShell.contract,
-        EVENT_NAME_ACCOUNT_REFUNDED
-      ).withArgs(
+      await expect(tx).to.emit(cardPaymentProcessorShell.contract, EVENT_NAME_ACCOUNT_REFUNDED).withArgs(
         user1.address,
         tokenAmount,
         "0x"
@@ -4162,18 +3997,16 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         const { cardPaymentProcessorShell } = await prepareForPayments();
         await pauseContract(cardPaymentProcessorShell.contract);
 
-        const contractConnected = cardPaymentProcessorShell.contract.connect(executor) as Contract;
         await expect(
-          contractConnected.refundAccount(user1.address, nonZeroTokenAmount)
+          connect(cardPaymentProcessorShell.contract, executor).refundAccount(user1.address, nonZeroTokenAmount)
         ).to.be.revertedWithCustomError(cardPaymentProcessorShell.contract, ERROR_NAME_ENFORCED_PAUSE);
       });
 
       it("The caller does not have the executor role", async () => {
         const { cardPaymentProcessorShell } = await prepareForPayments();
 
-        const contractConnected = cardPaymentProcessorShell.contract.connect(deployer) as Contract;
         await expect(
-          contractConnected.refundAccount(user1.address, nonZeroTokenAmount)
+          connect(cardPaymentProcessorShell.contract, deployer).refundAccount(user1.address, nonZeroTokenAmount)
         ).to.be.revertedWithCustomError(
           cardPaymentProcessorShell.contract,
           ERROR_NAME_ACCESS_CONTROL_UNAUTHORIZED_ACCOUNT
@@ -4183,9 +4016,8 @@ describe("Contract 'CardPaymentProcessor'", async () => {
       it("The account address is zero", async () => {
         const { cardPaymentProcessorShell } = await prepareForPayments();
 
-        const contractConnected = cardPaymentProcessorShell.contract.connect(executor) as Contract;
         await expect(
-          contractConnected.refundAccount(ZERO_ADDRESS, nonZeroTokenAmount)
+          connect(cardPaymentProcessorShell.contract, executor).refundAccount(ZERO_ADDRESS, nonZeroTokenAmount)
         ).to.be.revertedWithCustomError(cardPaymentProcessorShell.contract, ERROR_NAME_ACCOUNT_ZERO_ADDRESS);
       });
 
@@ -4194,13 +4026,9 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         const tokenAmount = nonZeroTokenAmount;
         await proveTx(cardPaymentProcessorShell.contract.setCashOutAccount(ZERO_ADDRESS));
 
-        const contractConnected = cardPaymentProcessorShell.contract.connect(executor) as Contract;
         await expect(
-          contractConnected.refundAccount(user1.address, tokenAmount)
-        ).to.be.revertedWithCustomError(
-          cardPaymentProcessorShell.contract,
-          ERROR_NAME_CASH_OUT_ACCOUNT_NOT_CONFIGURED
-        );
+          connect(cardPaymentProcessorShell.contract, executor).refundAccount(user1.address, tokenAmount)
+        ).to.be.revertedWithCustomError(cardPaymentProcessorShell.contract, ERROR_NAME_CASH_OUT_ACCOUNT_NOT_CONFIGURED);
       });
 
       it("The cash-out account does not have enough token balance", async () => {
@@ -4208,9 +4036,8 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         const tokenAmount = nonZeroTokenAmount;
         await proveTx(tokenMock.mint(cashOutAccount.address, tokenAmount - 1));
 
-        const contractConnected = cardPaymentProcessorShell.contract.connect(executor) as Contract;
         await expect(
-          contractConnected.refundAccount(user1.address, tokenAmount)
+          connect(cardPaymentProcessorShell.contract, executor).refundAccount(user1.address, tokenAmount)
         ).to.be.revertedWithCustomError(
           tokenMock,
           ERROR_NAME_ERC20_INSUFFICIENT_BALANCE
@@ -4227,35 +4054,17 @@ describe("Contract 'CardPaymentProcessor'", async () => {
     ) {
       const paymentIds = payments.map(payment => payment.id);
 
-      await expect(
-        connect(cardPaymentProcessor, executor).revokePayment(paymentIds[0])
-      ).to.be.revertedWithCustomError(
-        cardPaymentProcessor,
-        ERROR_NAME_INAPPROPRIATE_PAYMENT_STATUS
-      ).withArgs(
-        paymentIds[0],
-        status
-      );
+      await expect(connect(cardPaymentProcessor, executor).revokePayment(paymentIds[0]))
+        .to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_INAPPROPRIATE_PAYMENT_STATUS)
+        .withArgs(paymentIds[0], status);
 
-      await expect(
-        connect(cardPaymentProcessor, executor).reversePayment(paymentIds[0])
-      ).to.be.revertedWithCustomError(
-        cardPaymentProcessor,
-        ERROR_NAME_INAPPROPRIATE_PAYMENT_STATUS
-      ).withArgs(
-        paymentIds[0],
-        status
-      );
+      await expect(connect(cardPaymentProcessor, executor).reversePayment(paymentIds[0]))
+        .to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_INAPPROPRIATE_PAYMENT_STATUS)
+        .withArgs(paymentIds[0], status);
 
-      await expect(
-        connect(cardPaymentProcessor, executor).confirmPayment(paymentIds[0], ZERO_CONFIRMATION_AMOUNT)
-      ).to.be.revertedWithCustomError(
-        cardPaymentProcessor,
-        ERROR_NAME_INAPPROPRIATE_PAYMENT_STATUS
-      ).withArgs(
-        paymentIds[0],
-        status
-      );
+      await expect(connect(cardPaymentProcessor, executor).confirmPayment(paymentIds[0], ZERO_CONFIRMATION_AMOUNT))
+        .to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_INAPPROPRIATE_PAYMENT_STATUS)
+        .withArgs(paymentIds[0], status);
 
       const paymentConfirmations: PaymentConfirmation[] = paymentIds.map(id => {
         return {
@@ -4264,15 +4073,9 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         };
       });
 
-      await expect(
-        connect(cardPaymentProcessor, executor).confirmPayments(paymentConfirmations)
-      ).to.be.revertedWithCustomError(
-        cardPaymentProcessor,
-        ERROR_NAME_INAPPROPRIATE_PAYMENT_STATUS
-      ).withArgs(
-        paymentIds[0],
-        status
-      );
+      await expect(connect(cardPaymentProcessor, executor).confirmPayments(paymentConfirmations))
+        .to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_INAPPROPRIATE_PAYMENT_STATUS)
+        .withArgs(paymentIds[0], status);
 
       await expect(
         connect(cardPaymentProcessor, executor).updatePayment(
@@ -4355,7 +4158,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
       await cardPaymentProcessorShell.reversePayment(payments[0]);
 
       await expect(
-        (cardPaymentProcessorShell.contract.connect(executor) as Contract).makePaymentFor(
+        connect(cardPaymentProcessorShell.contract, executor).makePaymentFor(
           payments[0].id,
           payments[0].payer.address,
           payments[0].baseAmount,
