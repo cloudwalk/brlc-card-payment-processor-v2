@@ -1777,6 +1777,15 @@ describe("Contract 'CardPaymentProcessor'", async () => {
         anotherCardPaymentProcessor.initialize(ZERO_ADDRESS)
       ).to.be.revertedWithCustomError(cardPaymentProcessorFactory, REVERT_ERROR_IF_TOKEN_ZERO_ADDRESS);
     });
+
+    it("Is reverted for the contract implementation if it is called even for the first time", async () => {
+      const tokenAddress = user1.address;
+      const cashierImplementation = await cardPaymentProcessorFactory.deploy() as Contract;
+      await cashierImplementation.waitForDeployment();
+
+      await expect(cashierImplementation.initialize(tokenAddress))
+        .to.be.revertedWithCustomError(cashierImplementation, REVERT_ERROR_IF_CONTRACT_INITIALIZATION_IS_INVALID);
+    });
   });
 
   describe("Function '$__VERSION()'", async () => {
