@@ -246,7 +246,7 @@ contract CardPaymentProcessor is
     // ------------------ Transactional functions ----------------- //
 
     /**
-     * @dev Sets the cash-out account address.
+     * @dev Sets the cash-out account address that will receive tokens of confirmed payments.
      *
      * Requirements:
      *

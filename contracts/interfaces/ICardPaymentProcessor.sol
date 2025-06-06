@@ -443,7 +443,7 @@ interface ICardPaymentProcessor is ICardPaymentProcessorTypes {
     /// @dev Returns the address of the underlying token.
     function token() external view returns (address);
 
-    /// @dev Returns the address of the cash-out account.
+    /// @dev Returns the address of the cash-out account that will receive tokens of confirmed payments.
     function cashOutAccount() external view returns (address);
 
     /**
