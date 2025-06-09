@@ -63,9 +63,9 @@ interface ICardPaymentCashback is ICardPaymentCashbackTypes {
     /**
      * @dev Emitted when the cashback treasury address is changed.
      * @param oldTreasury The address of the old cashback treasury.
-     * @param newTreasure The address of the new cashback treasury.
+     * @param newTreasury The address of the new cashback treasury.
      */
-    event CashbackTreasuryChanged(address oldTreasury, address newTreasure);
+    event CashbackTreasuryChanged(address oldTreasury, address newTreasury);
 
     /**
      * @dev Emitted when a cashback sending request executed, successfully or not.
