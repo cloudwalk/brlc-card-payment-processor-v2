@@ -88,7 +88,7 @@ contract CardPaymentProcessor is
 
     // ------------------ Constants ------------------------------- //
 
-    /// @dev The role of executor that is allowed to execute the card payment operations.
+    /// @dev The role of an executor that is allowed to execute the card payment operations.
     bytes32 public constant EXECUTOR_ROLE = keccak256("EXECUTOR_ROLE");
 
     /// @dev The number of decimals that is used in the underlying token contract.
@@ -210,7 +210,7 @@ contract CardPaymentProcessor is
     /**
      * @dev Constructor that prohibits the initialization of the implementation of the upgradeable contract.
      *
-     * See details
+     * See details:
      * https://docs.openzeppelin.com/upgrades-plugins/writing-upgradeable#initializing_the_implementation_contract
      *
      * @custom:oz-upgrades-unsafe-allow constructor
@@ -372,7 +372,7 @@ contract CardPaymentProcessor is
      * - The contract must not be paused.
      * - The caller must have the {EXECUTOR_ROLE} role.
      * - The input payment ID must not be zero.
-     * - The the new base amount plus the new extra amount must not be less than the the existing refund amount.
+     * - The new base amount plus the new extra amount must not be less than the existing refund amount.
      */
     function updatePayment(
         bytes32 paymentId,
@@ -468,7 +468,7 @@ contract CardPaymentProcessor is
      * - The contract must not be paused.
      * - The caller must have the {EXECUTOR_ROLE} role.
      * - The input payment ID must not be zero.
-     * - The the new base amount plus the new extra amount must not be less than the the existing refund amount.
+     * - The new base amount plus the new extra amount must not be less than the existing refund amount.
      */
     function updateLazyAndConfirmPayment(
         bytes32 paymentId,
@@ -984,7 +984,7 @@ contract CardPaymentProcessor is
             );
         }
 
-        // Increase cashback ahead of payer token transfers to avoid conner cases with lack of payer balance
+        // Increase cashback ahead of payer token transfers to avoid corner cases with lack of payer balance
         if (newPaymentDetails.cashbackAmount > oldPaymentDetails.cashbackAmount) {
             uint256 amount = newPaymentDetails.cashbackAmount - oldPaymentDetails.cashbackAmount;
             CashbackOperationStatus status;
@@ -1148,9 +1148,9 @@ contract CardPaymentProcessor is
         uint256 capPeriodCollectedCashback = 0;
 
         unchecked {
-            uint256 blockTimeStamp = uint32(block.timestamp); // take only last 32 bits of the block timestamp
-            if (uint32(blockTimeStamp - capPeriodStartTime) > CASHBACK_CAP_RESET_PERIOD) {
-                capPeriodStartTime = blockTimeStamp;
+            uint256 blockTimestamp = uint32(block.timestamp); // take only last 32 bits of the block timestamp
+            if (uint32(blockTimestamp - capPeriodStartTime) > CASHBACK_CAP_RESET_PERIOD) {
+                capPeriodStartTime = blockTimestamp;
             } else {
                 capPeriodCollectedCashback = totalAmount - capPeriodStartAmount;
             }
@@ -1321,7 +1321,7 @@ contract CardPaymentProcessor is
         return refundAmount;
     }
 
-    /// @dev Defines the new confirmed amount of a payment according to the new old confirmed amount and the remainder.
+    /// @dev Defines the new confirmed amount of a payment according to the old confirmed amount and the remainder.
     function _defineNewConfirmedAmount(
         uint256 oldConfirmedAmount,
         uint256 commonRemainder

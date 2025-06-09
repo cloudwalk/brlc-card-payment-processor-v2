@@ -25,7 +25,7 @@ abstract contract CardPaymentProcessorStorageV1 is ICardPaymentProcessorTypes, I
     /// @dev The address of the cashback treasury.
     address internal _cashbackTreasury;
 
-    /// @dev The enable flag of the cashback operations for new payments. Does not affect the existing payments.
+    /// @dev The enabled flag for the cashback operations for new payments. Does not affect the existing payments.
     bool internal _cashbackEnabled;
 
     /// @dev The default cashback rate for new payments in units of `CASHBACK_FACTOR`.
@@ -40,7 +40,7 @@ abstract contract CardPaymentProcessorStorageV1 is ICardPaymentProcessorTypes, I
  * @author CloudWalk Inc. (See https://www.cloudwalk.io)
  * @dev Contains storage variables of the {CardPaymentProcessor} contract.
  *
- * We are following Compound's approach of upgrading new contract implementations.
+ * We are following Compound's approach for upgrading new contract implementations.
  * See https://github.com/compound-finance/compound-protocol.
  * When we need to add new storage variables, we create a new version of CardPaymentProcessorStorage
  * e.g. CardPaymentProcessorStorage<versionNumber>, so finally it would look like

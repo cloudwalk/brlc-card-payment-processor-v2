@@ -20,22 +20,22 @@ contract BlocklistableUpgradeableMock is BlocklistableUpgradeable, UUPSUpgradeab
     // ------------------ Initializers ---------------------------- //
 
     /**
-     * @dev The initialize function of the upgradable contract.
+     * @dev The initialize function of the upgradeable contract.
      *
-     * See details https://docs.openzeppelin.com/upgrades-plugins/1.x/writing-upgradeable.
+     * See details: https://docs.openzeppelin.com/upgrades-plugins/writing-upgradeable
      */
     function initialize() public initializer {
         __AccessControlExt_init_unchained();
         __Blocklistable_init_unchained();
         _grantRole(OWNER_ROLE, _msgSender());
 
-        // Only to provide the 100 % test coverage
+        // Only to provide 100% test coverage
         _authorizeUpgrade(address(0));
     }
 
     // ------------------ Transactional functions ----------------- //
 
-    /// @dev Calls the parent internal unchained initializing function to verify the 'onlyInitializing' modifier.
+    /// @dev Calls the parent internal unchained initialization function to verify the 'onlyInitializing' modifier.
     function callParentInitializerUnchained() external {
         __Blocklistable_init_unchained();
     }
@@ -43,7 +43,7 @@ contract BlocklistableUpgradeableMock is BlocklistableUpgradeable, UUPSUpgradeab
     /**
      * @dev Checks the execution of the {notBlocklisted} modifier.
      *
-     * If that modifier executed without reverting emits an event {TestNotBlocklistedModifierSucceeded}.
+     * If that modifier executes without reverting, emits an event {TestNotBlocklistedModifierSucceeded}.
      */
     function testNotBlocklistedModifier() external notBlocklisted(_msgSender()) {
         emit TestNotBlocklistedModifierSucceeded();
@@ -51,7 +51,10 @@ contract BlocklistableUpgradeableMock is BlocklistableUpgradeable, UUPSUpgradeab
 
     // ------------------ Internal functions ---------------------- //
 
-    /// @dev The upgrade authorization function for UUPSProxy.
+    /**
+     * @dev The implementation of the upgrade authorization function of the parent UUPSUpgradeable contract.
+     * @param newImplementation The address of the new implementation.
+     */
     function _authorizeUpgrade(address newImplementation) internal pure override {
         newImplementation; // Suppresses a compiler warning about the unused variable
     }

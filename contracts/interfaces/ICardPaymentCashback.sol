@@ -68,7 +68,7 @@ interface ICardPaymentCashback is ICardPaymentCashbackTypes {
     event CashbackTreasuryChanged(address oldTreasury, address newTreasury);
 
     /**
-     * @dev Emitted when a cashback sending request executed, successfully or not.
+     * @dev Emitted when a cashback sending request is executed, successfully or not.
      * @param paymentId The associated card transaction payment ID from the off-chain card processing backend.
      * @param recipient The address of the cashback recipient.
      * @param status The status of the cashback operation.
@@ -82,7 +82,7 @@ interface ICardPaymentCashback is ICardPaymentCashbackTypes {
     );
 
     /**
-     * @dev Emitted when a cashback revocation request executed, successfully or not.
+     * @dev Emitted when a cashback revocation request is executed, successfully or not.
      * @param paymentId The associated card transaction payment ID from the off-chain card processing backend.
      * @param recipient The address of the cashback recipient.
      * @param status The status of the cashback operation.
@@ -99,7 +99,7 @@ interface ICardPaymentCashback is ICardPaymentCashbackTypes {
     );
 
     /**
-     * @dev Emitted when a cashback increase request executed, successfully or not.
+     * @dev Emitted when a cashback increase request is executed, successfully or not.
      * @param paymentId The associated card transaction payment ID from the off-chain card processing backend.
      * @param recipient The address of the cashback recipient.
      * @param status The status of the cashback operation.
@@ -120,7 +120,7 @@ interface ICardPaymentCashback is ICardPaymentCashbackTypes {
     /// @dev Emitted when cashback operations for new payments are disabled. Does not affect the existing payments.
     event CashbackDisabled();
 
-    // -------------------- Transactional functions --------------- //
+    // ------------------ Transactional functions ----------------- //
 
     /**
      * @dev Sets a new address of the cashback treasury.

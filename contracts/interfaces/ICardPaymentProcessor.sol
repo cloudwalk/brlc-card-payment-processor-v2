@@ -37,7 +37,7 @@ interface ICardPaymentProcessorTypes {
      *
      * - status ----------- The current status of the payment.
      * - reserve1 --------- The reserved field for future changes.
-     * - payer ------------ The account who made the payment.
+     * - payer ------------ The account that made the payment.
      * - cashbackRate ----- The cashback rate in units of `CASHBACK_FACTOR`.
      * - confirmedAmount -- The confirmed amount that was transferred to the cash-out account.
      * - sponsor ---------- The sponsor of the payment if it is subsidized. Otherwise the zero address.
@@ -45,7 +45,7 @@ interface ICardPaymentProcessorTypes {
      * - reserve2 --------- The reserved field for future changes.
      * - baseAmount ------- The base amount of tokens in the payment.
      * - extraAmount ------ The extra amount of tokens in the payment, without a cashback.
-     * - cashbackAmount --- The cumulative cashback amount that was granted to payer related to the payment.
+     * - cashbackAmount --- The cumulative cashback amount that was granted to the payer related to the payment.
      * - refundAmount ----- The total amount of all refunds related to the payment.
      *
      *  The following additional payment parameters can be derived from the structure fields:
@@ -158,7 +158,7 @@ interface ICardPaymentProcessor is ICardPaymentProcessorTypes {
      * - uint64(sponsorSumAmount) -- the sponsor sum amount part or skipped if the payment is not subsidized.
      *
      * @param paymentId The card transaction payment ID from the off-chain card processing backend.
-     * @param payer The account on that behalf the payment is made.
+     * @param payer The account on whose behalf the payment is made.
      * @param addendum The data of the event as described above.
      */
     event PaymentMade(bytes32 indexed paymentId, address indexed payer, bytes addendum);
@@ -183,7 +183,7 @@ interface ICardPaymentProcessor is ICardPaymentProcessorTypes {
      * - uint64(newSponsorSumAmount) -- the new sponsor sum amount part or skipped if the payment is not subsidized.
      *
      * @param paymentId The card transaction payment ID from the off-chain card processing backend.
-     * @param payer The account on that behalf the payment is made.
+     * @param payer The account on whose behalf the payment is made.
      * @param addendum The data of the event as described above.
      */
     event PaymentUpdated(bytes32 indexed paymentId, address indexed payer, bytes addendum);
@@ -204,7 +204,7 @@ interface ICardPaymentProcessor is ICardPaymentProcessorTypes {
      * - uint64(sponsorRemainder) -- the sponsor remainder part or skipped if the payment is not subsidized.
      *
      * @param paymentId The card transaction payment ID from the off-chain card processing backend.
-     * @param payer The account on that behalf the payment is made.
+     * @param payer The account on whose behalf the payment is made.
      * @param addendum The data of the event as described above.
      */
     event PaymentRevoked(bytes32 indexed paymentId, address indexed payer, bytes addendum);
@@ -225,7 +225,7 @@ interface ICardPaymentProcessor is ICardPaymentProcessorTypes {
      * - uint64(sponsorRemainder) -- the sponsor remainder part or skipped if the payment is not subsidized.
      *
      * @param paymentId The card transaction payment ID from the off-chain card processing backend.
-     * @param payer The account on that behalf the payment is made.
+     * @param payer The account on whose behalf the payment is made.
      * @param addendum The data of the event as described above.
      */
     event PaymentReversed(bytes32 indexed paymentId, address indexed payer, bytes addendum);
@@ -244,7 +244,7 @@ interface ICardPaymentProcessor is ICardPaymentProcessorTypes {
      * - address(sponsor) -- the address of the sponsor or skipped if the payment is not subsidized.
      *
      * @param paymentId The card transaction payment ID from the off-chain card processing backend.
-     * @param payer The account on that behalf the payment is made.
+     * @param payer The account on whose behalf the payment is made.
      * @param addendum The data of the event as described above.
      */
     event PaymentConfirmedAmountChanged(bytes32 indexed paymentId, address indexed payer, bytes addendum);
@@ -265,7 +265,7 @@ interface ICardPaymentProcessor is ICardPaymentProcessorTypes {
      * - uint64(newSponsorRefundAmount) -- the new sponsor refund amount or skipped if the payment is not subsidized.
      *
      * @param paymentId The card transaction payment ID from the off-chain card processing backend.
-     * @param payer The account on that behalf the payment is made.
+     * @param payer The account on whose behalf the payment is made.
      * @param addendum The data of the event as described above.
      */
     event PaymentRefunded(bytes32 indexed paymentId, address indexed payer, bytes addendum);
@@ -278,7 +278,7 @@ interface ICardPaymentProcessor is ICardPaymentProcessorTypes {
      */
     event AccountRefunded(address indexed account, uint256 refundingAmount, bytes addendum);
 
-    // -------------------- Transactional functions --------------- //
+    // ------------------ Transactional functions ----------------- //
 
     /**
      * @dev Sets the cash-out account address that will receive tokens of confirmed payments.
@@ -304,7 +304,7 @@ interface ICardPaymentProcessor is ICardPaymentProcessorTypes {
      * Emits a {PaymentConfirmedAmountChanged} event if the payment is confirmed immediately after making.
      *
      * @param paymentId The card transaction payment ID from the off-chain card processing backend.
-     * @param payer The account on that behalf the payment is made.
+     * @param payer The account on whose behalf the payment is made.
      * @param baseAmount The base amount of tokens to transfer because of the payment.
      * @param extraAmount The extra amount of tokens to transfer because of the payment. No cashback is applied.
      * @param sponsor The address of a sponsor if the payment is subsidized, otherwise zero.
@@ -329,11 +329,11 @@ interface ICardPaymentProcessor is ICardPaymentProcessorTypes {
     /**
      * @dev Makes a common card payment for a given account initiated by a service account.
      *
-     * It is the same as the `makePaymentFor()` function but with less parameters.
+     * It is the same as the `makePaymentFor()` function but with fewer parameters.
      * The payment is not subsidized, with the cashback defined by the contract settings, and without a confirmation.
      *
      * @param paymentId The card transaction payment ID from the off-chain card processing backend.
-     * @param payer The account on that behalf the payment is made.
+     * @param payer The account on whose behalf the payment is made.
      * @param baseAmount The base amount of tokens to transfer because of the payment.
      * @param extraAmount The extra amount of tokens to transfer because of the payment. No cashback is applied.
      */
@@ -342,7 +342,7 @@ interface ICardPaymentProcessor is ICardPaymentProcessorTypes {
     /**
      * @dev Updates a previously made payment.
      *
-     * Transfers the underlying tokens from the payer and/or sponsor to this contract or vise versa.
+     * Transfers the underlying tokens from the payer and/or sponsor to this contract or vice versa.
      * This function can be called by a limited number of accounts that are allowed to execute processing operations.
      *
      * Emits a {PaymentUpdated} event.
@@ -385,7 +385,7 @@ interface ICardPaymentProcessor is ICardPaymentProcessorTypes {
     /**
      * @dev Confirms a single previously made card payment.
      *
-     * Does mot finalizes the payment: any other operations can be done for the payment after this one.
+     * Does not finalize the payment: any other operations can be done for the payment after this one.
      * Transfers tokens gotten from a payer and a sponsor to a dedicated cash-out account for further operations.
      * This function can be called by a limited number of accounts that are allowed to execute processing operations.
      *
@@ -397,9 +397,9 @@ interface ICardPaymentProcessor is ICardPaymentProcessorTypes {
     function confirmPayment(bytes32 paymentId, uint256 confirmationAmount) external;
 
     /**
-     * @dev Confirms multiple previously made card payment.
+     * @dev Confirms multiple previously made card payments.
      *
-     * Does mot finalizes the payments: any other operations can be done for the payments after this one.
+     * Does not finalize the payments: any other operations can be done for the payments after this one.
      * Transfers tokens gotten from payers and sponsors to a dedicated cash-out account for further operations.
      * This function can be called by a limited number of accounts that are allowed to execute processing operations.
      *
@@ -413,7 +413,7 @@ interface ICardPaymentProcessor is ICardPaymentProcessorTypes {
      * @dev Executes updating and confirmation operations for a single previously made card payment.
      *
      * Updating of the base amount and extra amount executes lazy, i.e. only if any of the provided new amounts differ
-     * from the current once of the payment. Otherwise the update operation is skipped.
+     * from the current ones of the payment. Otherwise the update operation is skipped.
      *
      * This function can be called by a limited number of accounts that are allowed to execute processing operations.
      *

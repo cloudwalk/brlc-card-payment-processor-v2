@@ -7,7 +7,7 @@ import { AccessControlExtUpgradeable } from "./AccessControlExtUpgradeable.sol";
 /**
  * @title BlocklistableUpgradeable base contract
  * @author CloudWalk Inc. (See https://www.cloudwalk.io)
- * @dev Allows to blocklist and unblocklist accounts using the {BLOCKLISTER_ROLE} role.
+ * @dev Allows blocklisting and unblocklisting accounts using the {BLOCKLISTER_ROLE} role.
  *
  * This contract is used through inheritance. It makes available the modifier `notBlocklisted`,
  * which can be applied to functions to restrict their usage to not blocklisted accounts only.
@@ -15,7 +15,7 @@ import { AccessControlExtUpgradeable } from "./AccessControlExtUpgradeable.sol";
 abstract contract BlocklistableUpgradeable is AccessControlExtUpgradeable {
     // ------------------ Constants ------------------------------- //
 
-    /// @dev The role of the blocklister that is allowed to blocklist and unblocklist accounts.
+    /// @dev The role of a blocklister that is allowed to blocklist and unblocklist accounts.
     bytes32 public constant BLOCKLISTER_ROLE = keccak256("BLOCKLISTER_ROLE");
 
     // ------------------ Storage layout -------------------------- //
