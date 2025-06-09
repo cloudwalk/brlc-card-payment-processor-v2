@@ -36,13 +36,13 @@ interface ICardPaymentProcessorTypes {
      * The fields:
      *
      * - status ----------- The current status of the payment.
-     * - reserve1 --------- The reserved filed for future changes.
+     * - reserve1 --------- The reserved field for future changes.
      * - payer ------------ The account who made the payment.
      * - cashbackRate ----- The cashback rate in units of `CASHBACK_FACTOR`.
      * - confirmedAmount -- The confirmed amount that was transferred to the cash-out account.
      * - sponsor ---------- The sponsor of the payment if it is subsidized. Otherwise the zero address.
      * - subsidyLimit ----- The subsidy limit of the payment if it is subsidized. Otherwise zero.
-     * - reserve2 --------- The reserved filed for future changes.
+     * - reserve2 --------- The reserved field for future changes.
      * - baseAmount ------- The base amount of tokens in the payment.
      * - extraAmount ------ The extra amount of tokens in the payment, without a cashback.
      * - cashbackAmount --- The cumulative cashback amount that was granted to payer related to the payment.
@@ -113,8 +113,8 @@ interface ICardPaymentProcessorTypes {
      * The fields:
      *
      * - totalUnconfirmedRemainder -- The total remainder of all payments that are not confirmed yet.
-     * - reserve1 ------------------- The reserved filed for future changes.
-     * - reserve2 ------------------- The reserved filed for future changes.
+     * - reserve1 ------------------- The reserved field for future changes.
+     * - reserve2 ------------------- The reserved field for future changes.
      */
     struct PaymentStatistics {
         // Slot 1
