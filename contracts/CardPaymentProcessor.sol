@@ -1228,21 +1228,21 @@ contract CardPaymentProcessor is
         PaymentDetails memory newPaymentDetails
     ) internal {
         // prettier-ignore
-        int256 paymentReminderChange =
+        int256 paymentRemainderChange =
             (int256(newPaymentDetails.payerRemainder) + int256(newPaymentDetails.sponsorRemainder)) -
             (int256(oldPaymentDetails.payerRemainder) + int256(oldPaymentDetails.sponsorRemainder));
         // prettier-ignore
         int256 paymentConfirmedAmountChange =
             int256(newPaymentDetails.confirmedAmount) - int256(oldPaymentDetails.confirmedAmount);
 
-        int256 unconfirmedReminderChange = paymentReminderChange - paymentConfirmedAmountChange;
+        int256 unconfirmedRemainderChange = paymentRemainderChange - paymentConfirmedAmountChange;
 
         // This is done to protect against possible overflow/underflow of the `totalUnconfirmedRemainder` variable
-        if (unconfirmedReminderChange >= 0) {
-            _paymentStatistics.totalUnconfirmedRemainder += uint128(uint256(unconfirmedReminderChange));
+        if (unconfirmedRemainderChange >= 0) {
+            _paymentStatistics.totalUnconfirmedRemainder += uint128(uint256(unconfirmedRemainderChange));
         } else {
             _paymentStatistics.totalUnconfirmedRemainder = uint128(
-                uint256(_paymentStatistics.totalUnconfirmedRemainder) - uint256(-unconfirmedReminderChange)
+                uint256(_paymentStatistics.totalUnconfirmedRemainder) - uint256(- unconfirmedRemainderChange)
             );
         }
     }

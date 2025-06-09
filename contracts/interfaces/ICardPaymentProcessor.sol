@@ -69,7 +69,7 @@ interface ICardPaymentProcessorTypes {
      *
      *  The following restrictions are applied to a payment:
      *  - `refundAmount <= sumAmount`.
-     *  - `commonReminder >= confirmedAmount`.
+     *  - `commonRemainder >= confirmedAmount`.
      */
     struct Payment {
         // Slot1
