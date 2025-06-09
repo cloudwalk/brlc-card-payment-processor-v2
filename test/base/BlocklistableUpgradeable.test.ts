@@ -12,7 +12,7 @@ describe("Contract 'BlocklistableUpgradeable'", async () => {
   const EVENT_NAME_TEST_NOT_BLOCKLISTED_MODIFIER_SUCCEEDED = "TestNotBlocklistedModifierSucceeded";
   const EVENT_NAME_UNBLOCKLISTED = "UnBlocklisted";
 
-  // Errors of the lib contracts
+  // Errors of the library contracts
   const ERROR_NAME_ACCESS_CONTROL_UNAUTHORIZED_ACCOUNT = "AccessControlUnauthorizedAccount";
   const ERROR_NAME_INVALID_INITIALIZATION = "InvalidInitialization";
   const ERROR_NAME_NOT_INITIALIZING = "NotInitializing";
@@ -96,16 +96,16 @@ describe("Contract 'BlocklistableUpgradeable'", async () => {
       await expect(connect(blocklistableMock, blocklister).blocklist(user.address))
         .not.to.emit(blocklistableMock, EVENT_NAME_BLOCKLISTED);
     });
-  });
 
-  it("Is reverted if the caller does not have the blocklister role", async () => {
-    const { blocklistableMock } = await setUpFixture(deployAndConfigureBlocklistableMock);
-    await expect(
-      blocklistableMock.blocklist(user.address)
-    ).to.be.revertedWithCustomError(
-      blocklistableMock,
-      ERROR_NAME_ACCESS_CONTROL_UNAUTHORIZED_ACCOUNT
-    ).withArgs(deployer.address, BLOCKLISTER_ROLE);
+    it("Is reverted if the caller does not have the blocklister role", async () => {
+      const { blocklistableMock } = await setUpFixture(deployAndConfigureBlocklistableMock);
+      await expect(
+        blocklistableMock.blocklist(user.address)
+      ).to.be.revertedWithCustomError(
+        blocklistableMock,
+        ERROR_NAME_ACCESS_CONTROL_UNAUTHORIZED_ACCOUNT
+      ).withArgs(deployer.address, BLOCKLISTER_ROLE);
+    });
   });
 
   describe("Function 'unBlocklist()'", async () => {

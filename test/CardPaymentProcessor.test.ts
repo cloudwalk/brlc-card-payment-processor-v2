@@ -617,7 +617,7 @@ class CardPaymentProcessorModel {
       }
     }
 
-    // Check the periodical cap
+    // Check the periodic cap
     if (
       operation.cashbackOperationStatus === CashbackOperationStatus.Success ||
       operation.cashbackOperationStatus === CashbackOperationStatus.Partial
@@ -1501,7 +1501,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
     patch: 0
   };
 
-  // Errors of the lib contracts
+  // Errors of the library contracts
   const ERROR_NAME_INVALID_INITIALIZATION = "InvalidInitialization";
   const ERROR_NAME_ENFORCED_PAUSE = "EnforcedPause";
   const ERROR_NAME_ERC20_INSUFFICIENT_BALANCE = "ERC20InsufficientBalance";
@@ -4652,7 +4652,7 @@ describe("Contract 'CardPaymentProcessor'", async () => {
     });
   });
 
-  describe("Scenario with cashback periodical cap", async () => {
+  describe("Scenario with cashback periodic cap", async () => {
     async function checkAccountCashbackState(
       context: TestContext,
       expectedCapPeriodStartTime: number
