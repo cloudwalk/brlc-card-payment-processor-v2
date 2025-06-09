@@ -92,7 +92,7 @@ contract CardPaymentProcessor is
     bytes32 public constant EXECUTOR_ROLE = keccak256("EXECUTOR_ROLE");
 
     /// @dev The number of decimals that is used in the underlying token contract.
-    uint256 public constant TOKE_DECIMALS = 6;
+    uint256 public constant TOKEN_DECIMALS = 6;
 
     /**
      * @dev The factor to represent the cashback rates in the contract, e.g. number 15 means 1.5% cashback rate.
@@ -110,13 +110,13 @@ contract CardPaymentProcessor is
      *
      * Currently, it can only be changed by deploying a new implementation of the contract.
      */
-    uint256 public constant CASHBACK_ROUNDING_COEF = 10 ** (TOKE_DECIMALS - 2);
+    uint256 public constant CASHBACK_ROUNDING_COEF = 10 ** (TOKEN_DECIMALS - 2);
 
     /// @dev The cashback cap reset period.
     uint256 public constant CASHBACK_CAP_RESET_PERIOD = 30 days;
 
     /// @dev The maximum cashback for a cap period.
-    uint256 public constant MAX_CASHBACK_FOR_CAP_PERIOD = 300 * 10 ** TOKE_DECIMALS;
+    uint256 public constant MAX_CASHBACK_FOR_CAP_PERIOD = 300 * 10 ** TOKEN_DECIMALS;
 
     /// @dev Event addendum flag mask defining whether the payment is sponsored.
     uint256 internal constant EVENT_ADDENDUM_FLAG_MASK_SPONSORED = 1;
