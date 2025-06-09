@@ -36,7 +36,7 @@ contract BlocklistableUpgradeableMock is BlocklistableUpgradeable, UUPSUpgradeab
     // ------------------ Transactional functions ----------------- //
 
     /// @dev Calls the parent internal unchained initializing function to verify the 'onlyInitializing' modifier.
-    function callParentInitializeUnchained() public {
+    function callParentInitializerUnchained() public {
         __Blocklistable_init_unchained();
     }
 

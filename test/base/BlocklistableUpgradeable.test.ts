@@ -77,7 +77,7 @@ describe("Contract 'BlocklistableUpgradeable'", async () => {
 
     it("The internal unchained initializer is reverted if it is called outside the init process", async () => {
       const { blocklistableMock } = await setUpFixture(deployBlocklistableMock);
-      await expect(blocklistableMock.callParentInitializeUnchained())
+      await expect(blocklistableMock.callParentInitializerUnchained())
         .to.be.revertedWithCustomError(blocklistableMock, ERROR_NAME_NOT_INITIALIZING);
     });
   });
