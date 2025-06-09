@@ -6,7 +6,8 @@ import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 /**
  * @title ERC20TokenMock contract
- * @dev An implementation of the {ERC20} contract for testing purposes
+ * @author CloudWalk Inc. (See https://www.cloudwalk.io)
+ * @dev An implementation of the {ERC20} contract for testing purposes.
  */
 contract ERC20TokenMock is ERC20 {
     // ------------------ Storage --------------------------------- //
