@@ -1242,7 +1242,7 @@ contract CardPaymentProcessor is
             _paymentStatistics.totalUnconfirmedRemainder += uint128(uint256(unconfirmedRemainderChange));
         } else {
             _paymentStatistics.totalUnconfirmedRemainder = uint128(
-                uint256(_paymentStatistics.totalUnconfirmedRemainder) - uint256(- unconfirmedRemainderChange)
+                uint256(_paymentStatistics.totalUnconfirmedRemainder) - uint256(-unconfirmedRemainderChange)
             );
         }
     }
