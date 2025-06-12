@@ -1502,10 +1502,10 @@ describe("Contract 'CardPaymentProcessor'", async () => {
   };
 
   // Errors of the library contracts
-  const ERROR_NAME_INVALID_INITIALIZATION = "InvalidInitialization";
+  const ERROR_NAME_ACCESS_CONTROL_UNAUTHORIZED_ACCOUNT = "AccessControlUnauthorizedAccount";
   const ERROR_NAME_ENFORCED_PAUSE = "EnforcedPause";
   const ERROR_NAME_ERC20_INSUFFICIENT_BALANCE = "ERC20InsufficientBalance";
-  const ERROR_NAME_ACCESS_CONTROL_UNAUTHORIZED_ACCOUNT = "AccessControlUnauthorizedAccount";
+  const ERROR_NAME_INVALID_INITIALIZATION = "InvalidInitialization";
 
   // Errors of the contract under test
   const ERROR_NAME_ACCOUNT_ZERO_ADDRESS = "AccountZeroAddress";
