@@ -18,7 +18,8 @@ import { ICardPaymentCashback } from "./interfaces/ICardPaymentCashback.sol";
 
 /**
  * @title CardPaymentProcessor contract
- * @dev A wrapper contract for the card payment operations.
+ * @author CloudWalk Inc. (See https://www.cloudwalk.io)
+ * @dev The wrapper contract for the card payment operations.
  */
 contract CardPaymentProcessor is
     CardPaymentProcessorStorage,
@@ -31,18 +32,67 @@ contract CardPaymentProcessor is
     ICardPaymentCashback,
     Versionable
 {
+    // ------------------ Types ----------------------------------- //
+
     using SafeERC20 for IERC20;
+
+    /**
+     * @dev Kind of a payment updating operation for internal use.
+     *
+     * The possible values:
+     *
+     * - Full = 0 -- The operation is executed fully regardless of the new values of the base amount and extra amount.
+     * - Lazy = 1 -- The operation is executed only if the new amounts differ from the current ones of the payment.
+     */
+    enum UpdatingOperationKind {
+        Full,
+        Lazy
+    }
+
+    /**
+     * @dev The kind of a payment recalculation operation for internal use.
+     *
+     * The possible values:
+     *
+     * - None = 0 -- The payment recalculation is not needed.
+     * - Full = 1 -- The payment recalculation is needed.
+     */
+    enum PaymentRecalculationKind {
+        None,
+        Full
+    }
+
+    /// @dev Contains parameters of a payment making operation for internal use.
+    struct MakingOperation {
+        bytes32 paymentId;
+        address payer;
+        address sponsor;
+        uint256 cashbackRate;
+        uint256 baseAmount;
+        uint256 extraAmount;
+        uint256 subsidyLimit;
+        uint256 cashbackAmount;
+        uint256 payerSumAmount;
+        uint256 sponsorSumAmount;
+    }
+
+    /// @dev Contains details of a payment for internal use.
+    struct PaymentDetails {
+        uint256 confirmedAmount;
+        uint256 cashbackAmount;
+        uint256 payerSumAmount;
+        uint256 sponsorSumAmount;
+        uint256 payerRemainder;
+        uint256 sponsorRemainder;
+    }
 
     // ------------------ Constants ------------------------------- //
 
-    /// @dev The role of this contract owner.
-    bytes32 public constant OWNER_ROLE = keccak256("OWNER_ROLE");
-
-    /// @dev The role of executor that is allowed to execute the card payment operations.
+    /// @dev The role of an executor that is allowed to execute the card payment operations.
     bytes32 public constant EXECUTOR_ROLE = keccak256("EXECUTOR_ROLE");
 
     /// @dev The number of decimals that is used in the underlying token contract.
-    uint256 public constant TOKE_DECIMALS = 6;
+    uint256 public constant TOKEN_DECIMALS = 6;
 
     /**
      * @dev The factor to represent the cashback rates in the contract, e.g. number 15 means 1.5% cashback rate.
@@ -60,27 +110,19 @@ contract CardPaymentProcessor is
      *
      * Currently, it can only be changed by deploying a new implementation of the contract.
      */
-    uint256 public constant CASHBACK_ROUNDING_COEF = 10 ** (TOKE_DECIMALS - 2);
+    uint256 public constant CASHBACK_ROUNDING_COEF = 10 ** (TOKEN_DECIMALS - 2);
 
     /// @dev The cashback cap reset period.
     uint256 public constant CASHBACK_CAP_RESET_PERIOD = 30 days;
 
     /// @dev The maximum cashback for a cap period.
-    uint256 public constant MAX_CASHBACK_FOR_CAP_PERIOD = 300 * 10 ** TOKE_DECIMALS;
+    uint256 public constant MAX_CASHBACK_FOR_CAP_PERIOD = 300 * 10 ** TOKEN_DECIMALS;
 
     /// @dev Event addendum flag mask defining whether the payment is sponsored.
     uint256 internal constant EVENT_ADDENDUM_FLAG_MASK_SPONSORED = 1;
 
     /// @dev Default version of the event addendum.
     uint8 internal constant EVENT_ADDENDUM_DEFAULT_VERSION = 1;
-
-    // ------------------ Events ---------------------------------- //
-
-    /// @dev Emitted when the cash-out account is changed.
-    event CashOutAccountChanged(
-        address oldCashOutAccount,
-        address newCashOutAccount
-    );
 
     // ------------------ Errors ---------------------------------- //
 
@@ -163,12 +205,26 @@ contract CardPaymentProcessor is
     /// @dev The zero token address has been passed as a function argument.
     error TokenZeroAddress();
 
+    // ------------------ Constructor ----------------------------- //
+
+    /**
+     * @dev Constructor that prohibits the initialization of the implementation of the upgradeable contract.
+     *
+     * See details:
+     * https://docs.openzeppelin.com/upgrades-plugins/writing-upgradeable#initializing_the_implementation_contract
+     *
+     * @custom:oz-upgrades-unsafe-allow constructor
+     */
+    constructor() {
+        _disableInitializers();
+    }
+
     // ------------------ Initializers ---------------------------- //
 
     /**
-     * @dev The initializer of the upgradable contract.
+     * @dev The initialize function of the upgradeable contract.
      *
-     * See details https://docs.openzeppelin.com/upgrades-plugins/1.x/writing-upgradeable .
+     * See details: https://docs.openzeppelin.com/upgrades-plugins/writing-upgradeable
      *
      * Requirements:
      *
@@ -177,60 +233,42 @@ contract CardPaymentProcessor is
      * @param token_ The address of a token to set as the underlying one.
      */
     function initialize(address token_) external initializer {
-        __CardPaymentProcessor_init(token_);
-    }
-
-    /**
-     * @dev The internal initializer of the upgradable contract.
-     *
-     * See {CardPaymentProcessor-initialize}.
-     */
-    function __CardPaymentProcessor_init(address token_) internal onlyInitializing {
-        __Context_init_unchained();
-        __ERC165_init_unchained();
-        __AccessControl_init_unchained();
-        __AccessControlExt_init_unchained();
-        __Blocklistable_init_unchained(OWNER_ROLE);
-        __Pausable_init_unchained();
-        __PausableExt_init_unchained(OWNER_ROLE);
-        __Rescuable_init_unchained(OWNER_ROLE);
-        __UUPSUpgradeable_init_unchained();
-
-        __CardPaymentProcessor_init_unchained(token_);
-    }
-
-    /**
-     * @dev The internal unchained initializer of the upgradable contract.
-     *
-     * See {CardPaymentProcessor-initialize}.
-     */
-    function __CardPaymentProcessor_init_unchained(address token_) internal onlyInitializing {
         if (token_ == address(0)) {
             revert TokenZeroAddress();
         }
 
+        __AccessControlExt_init_unchained();
+        __Blocklistable_init_unchained();
+        __PausableExt_init_unchained();
+        __Rescuable_init_unchained();
+        __UUPSExt_init_unchained(); // This is needed only to avoid errors during coverage assessment
+
         _token = token_;
 
-        _setRoleAdmin(OWNER_ROLE, OWNER_ROLE);
-        _setRoleAdmin(EXECUTOR_ROLE, OWNER_ROLE);
-
+        _setRoleAdmin(EXECUTOR_ROLE, GRANTOR_ROLE);
         _grantRole(OWNER_ROLE, _msgSender());
     }
 
-    // ------------------ Functions ------------------------------- //
+    // ------------------ Transactional functions ----------------- //
 
-    /// @dev Contains parameters of a payment making operation.
-    struct MakingOperation {
-        bytes32 paymentId;
-        address payer;
-        address sponsor;
-        uint256 cashbackRate;
-        uint256 baseAmount;
-        uint256 extraAmount;
-        uint256 subsidyLimit;
-        uint256 cashbackAmount;
-        uint256 payerSumAmount;
-        uint256 sponsorSumAmount;
+    /**
+     * @inheritdoc ICardPaymentProcessor
+     *
+     * @dev Requirements:
+     *
+     * - The caller must have the {OWNER_ROLE} role.
+     * - The new cash-out account must not be the same as the previously set one.
+     */
+    function setCashOutAccount(address newCashOutAccount) external onlyRole(OWNER_ROLE) {
+        address oldCashOutAccount = _cashOutAccount;
+
+        if (newCashOutAccount == oldCashOutAccount) {
+            revert CashOutAccountUnchanged();
+        }
+
+        _cashOutAccount = newCashOutAccount;
+
+        emit CashOutAccountChanged(oldCashOutAccount, newCashOutAccount);
     }
 
     /**
@@ -334,7 +372,7 @@ contract CardPaymentProcessor is
      * - The contract must not be paused.
      * - The caller must have the {EXECUTOR_ROLE} role.
      * - The input payment ID must not be zero.
-     * - The the new base amount plus the new extra amount must not be less than the the existing refund amount.
+     * - The new base amount plus the new extra amount must not be less than the existing refund amount.
      */
     function updatePayment(
         bytes32 paymentId,
@@ -342,7 +380,7 @@ contract CardPaymentProcessor is
         uint256 newExtraAmount
     ) external whenNotPaused onlyRole(EXECUTOR_ROLE) {
         _updatePayment(
-            paymentId,
+            paymentId, // Tools: this comment prevents Prettier from formatting into a single line.
             newBaseAmount,
             newExtraAmount,
             UpdatingOperationKind.Full
@@ -411,7 +449,7 @@ contract CardPaymentProcessor is
         uint256 totalConfirmedAmount = 0;
         for (uint256 i = 0; i < paymentConfirmations.length; i++) {
             totalConfirmedAmount += _confirmPayment(
-                paymentConfirmations[i].paymentId,
+                paymentConfirmations[i].paymentId, // Tools: prevent Prettier one-liner
                 paymentConfirmations[i].amount
             );
         }
@@ -430,7 +468,7 @@ contract CardPaymentProcessor is
      * - The contract must not be paused.
      * - The caller must have the {EXECUTOR_ROLE} role.
      * - The input payment ID must not be zero.
-     * - The the new base amount plus the new extra amount must not be less than the the existing refund amount.
+     * - The new base amount plus the new extra amount must not be less than the existing refund amount.
      */
     function updateLazyAndConfirmPayment(
         bytes32 paymentId,
@@ -439,7 +477,7 @@ contract CardPaymentProcessor is
         uint256 confirmationAmount
     ) external whenNotPaused onlyRole(EXECUTOR_ROLE) {
         _updatePayment(
-            paymentId,
+            paymentId, // Tools: this comment prevents Prettier from formatting into a single line.
             newBaseAmount,
             newExtraAmount,
             UpdatingOperationKind.Lazy
@@ -458,7 +496,7 @@ contract CardPaymentProcessor is
      * - The result refund amount of the payment must not be higher than the new extra amount plus the base amount.
      */
     function refundPayment(
-        bytes32 paymentId,
+        bytes32 paymentId, // Tools: this comment prevents Prettier from formatting into a single line.
         uint256 refundingAmount
     ) external whenNotPaused onlyRole(EXECUTOR_ROLE) {
         _refundPayment(paymentId, refundingAmount);
@@ -474,7 +512,7 @@ contract CardPaymentProcessor is
      * - The account address must not be zero.
      */
     function refundAccount(
-        address account,
+        address account, // Tools: this comment prevents Prettier from formatting into a single line.
         uint256 refundingAmount
     ) external whenNotPaused onlyRole(EXECUTOR_ROLE) {
         if (account == address(0)) {
@@ -482,32 +520,12 @@ contract CardPaymentProcessor is
         }
 
         emit AccountRefunded(
-            account,
+            account, // Tools: this comment prevents Prettier from formatting into a single line.
             refundingAmount,
             bytes("")
         );
 
         IERC20(_token).safeTransferFrom(_requireCashOutAccount(), account, refundingAmount);
-    }
-
-    /**
-     * @dev Sets the cash-out account address.
-     *
-     * Requirements:
-     *
-     * - The caller must have the {OWNER_ROLE} role.
-     * - The new cash-out account must differ from the previously set one.
-     */
-    function setCashOutAccount(address newCashOutAccount) external onlyRole(OWNER_ROLE) {
-        address oldCashOutAccount = _cashOutAccount;
-
-        if (newCashOutAccount == oldCashOutAccount) {
-            revert CashOutAccountUnchanged();
-        }
-
-        _cashOutAccount = newCashOutAccount;
-
-        emit CashOutAccountChanged(oldCashOutAccount, newCashOutAccount);
     }
 
     /**
@@ -639,9 +657,10 @@ contract CardPaymentProcessor is
     function getAccountCashbackState(address account) external view returns (AccountCashbackState memory) {
         return _accountCashbackStates[account];
     }
+
     // ------------------ Pure functions -------------------------- //
 
-     /// @inheritdoc ICardPaymentProcessor
+    /// @inheritdoc ICardPaymentProcessor
     function proveCardPaymentProcessor() external pure {}
 
     // ------------------ Internal functions ---------------------- //
@@ -674,22 +693,16 @@ contract CardPaymentProcessor is
         );
         if (eventFlags & EVENT_ADDENDUM_FLAG_MASK_SPONSORED != 0) {
             addendum = abi.encodePacked(
-                addendum,
+                addendum, // Tools: this comment prevents Prettier from formatting into a single line.
                 sponsor,
                 uint64(operation.sponsorSumAmount)
             );
         }
         emit PaymentMade(
-            operation.paymentId,
+            operation.paymentId, // Tools: this comment prevents Prettier from formatting into a single line.
             operation.payer,
             addendum
         );
-    }
-
-    /// @dev Kind of a payment updating operation.
-    enum UpdatingOperationKind {
-        Full, // 0 The operation is executed fully regardless of the new values of the base amount and extra amount.
-        Lazy  // 1 The operation is executed only if the new amounts differ from the current ones of the payment.
     }
 
     /// @dev Updates the base amount and extra amount of a payment internally.
@@ -749,7 +762,7 @@ contract CardPaymentProcessor is
             );
         }
         emit PaymentUpdated(
-            paymentId,
+            paymentId, // Tools: this comment prevents Prettier from formatting into a single line.
             payment.payer,
             addendum
         );
@@ -757,7 +770,7 @@ contract CardPaymentProcessor is
 
     /// @dev Cancels a payment internally.
     function _cancelPayment(
-        bytes32 paymentId,
+        bytes32 paymentId, // Tools: this comment prevents Prettier from formatting into a single line.
         PaymentStatus targetStatus
     ) internal {
         if (paymentId == 0) {
@@ -788,7 +801,7 @@ contract CardPaymentProcessor is
         );
         if (eventFlags & EVENT_ADDENDUM_FLAG_MASK_SPONSORED != 0) {
             addendum = abi.encodePacked(
-                addendum,
+                addendum, // Tools: this comment prevents Prettier from formatting into a single line.
                 sponsor,
                 uint64(oldPaymentDetails.sponsorRemainder)
             );
@@ -796,13 +809,13 @@ contract CardPaymentProcessor is
 
         if (targetStatus == PaymentStatus.Revoked) {
             emit PaymentRevoked(
-                paymentId,
+                paymentId, // Tools: this comment prevents Prettier from formatting into a single line.
                 payment.payer,
                 addendum
             );
         } else {
             emit PaymentReversed(
-                paymentId,
+                paymentId, // Tools: this comment prevents Prettier from formatting into a single line.
                 payment.payer,
                 addendum
             );
@@ -811,7 +824,7 @@ contract CardPaymentProcessor is
 
     /// @dev Confirms a payment internally.
     function _confirmPayment(
-        bytes32 paymentId,
+        bytes32 paymentId, // Tools: this comment prevents Prettier from formatting into a single line.
         uint256 confirmationAmount
     ) internal returns (uint256) {
         if (paymentId == 0) {
@@ -845,7 +858,7 @@ contract CardPaymentProcessor is
 
     /// @dev Confirms a payment internally with the token transfer to the cash-out account.
     function _confirmPaymentWithTransfer(
-        bytes32 paymentId,
+        bytes32 paymentId, // Tools: this comment prevents Prettier from formatting into a single line.
         uint256 confirmationAmount
     ) internal {
         confirmationAmount = _confirmPayment(paymentId, confirmationAmount);
@@ -857,7 +870,7 @@ contract CardPaymentProcessor is
 
     /// @dev Makes a refund for a payment internally.
     function _refundPayment(
-        bytes32 paymentId,
+        bytes32 paymentId, // Tools: this comment prevents Prettier from formatting into a single line.
         uint256 refundingAmount
     ) internal {
         if (paymentId == 0) {
@@ -887,19 +900,20 @@ contract CardPaymentProcessor is
             EVENT_ADDENDUM_DEFAULT_VERSION,
             uint8(eventFlags),
             uint64(oldPaymentDetails.payerSumAmount - oldPaymentDetails.payerRemainder), // oldPayerRefundAmount
-            uint64(newPaymentDetails.payerSumAmount - newPaymentDetails.payerRemainder)  // newPayerRefundAmount
+            uint64(newPaymentDetails.payerSumAmount - newPaymentDetails.payerRemainder) // newPayerRefundAmount
         );
         if (eventFlags & EVENT_ADDENDUM_FLAG_MASK_SPONSORED != 0) {
+            // Add sponsor, oldSponsorRefundAmount, newSponsorRefundAmount
             addendum = abi.encodePacked(
                 addendum,
                 sponsor,
-                uint64(oldPaymentDetails.sponsorSumAmount - oldPaymentDetails.sponsorRemainder),//oldSponsorRefundAmount
-                uint64(newPaymentDetails.sponsorSumAmount - newPaymentDetails.sponsorRemainder) //newSponsorRefundAmount
+                uint64(oldPaymentDetails.sponsorSumAmount - oldPaymentDetails.sponsorRemainder),
+                uint64(newPaymentDetails.sponsorSumAmount - newPaymentDetails.sponsorRemainder)
             );
         }
 
         emit PaymentRefunded(
-            paymentId,
+            paymentId, // Tools: this comment prevents Prettier from formatting into a single line.
             payment.payer,
             addendum
         );
@@ -970,7 +984,7 @@ contract CardPaymentProcessor is
             );
         }
 
-        // Increase cashback ahead of payer token transfers to avoid conner cases with lack of payer balance
+        // Increase cashback ahead of payer token transfers to avoid corner cases with lack of payer balance
         if (newPaymentDetails.cashbackAmount > oldPaymentDetails.cashbackAmount) {
             uint256 amount = newPaymentDetails.cashbackAmount - oldPaymentDetails.cashbackAmount;
             CashbackOperationStatus status;
@@ -1044,13 +1058,13 @@ contract CardPaymentProcessor is
         );
         if (eventFlags & EVENT_ADDENDUM_FLAG_MASK_SPONSORED != 0) {
             addendum = abi.encodePacked(
-                addendum,
+                addendum, // Tools: this comment prevents Prettier from formatting into a single line.
                 sponsor
             );
         }
 
         emit PaymentConfirmedAmountChanged(
-            paymentId,
+            paymentId, // Tools: this comment prevents Prettier from formatting into a single line.
             payer,
             addendum
         );
@@ -1068,7 +1082,7 @@ contract CardPaymentProcessor is
             CashbackOperationStatus status;
             (status, amount) = _increaseCashback(operation.payer, amount);
             emit CashbackSent(
-                operation.paymentId,
+                operation.paymentId, // Tools: this comment prevents Prettier from formatting into a single line.
                 operation.payer,
                 status,
                 amount
@@ -1134,9 +1148,9 @@ contract CardPaymentProcessor is
         uint256 capPeriodCollectedCashback = 0;
 
         unchecked {
-            uint256 blockTimeStamp = uint32(block.timestamp); // take only last 32 bits of the block timestamp
-            if (uint32(blockTimeStamp - capPeriodStartTime) > CASHBACK_CAP_RESET_PERIOD) {
-                capPeriodStartTime = blockTimeStamp;
+            uint256 blockTimestamp = uint32(block.timestamp); // take only last 32 bits of the block timestamp
+            if (uint32(blockTimestamp - capPeriodStartTime) > CASHBACK_CAP_RESET_PERIOD) {
+                capPeriodStartTime = blockTimestamp;
             } else {
                 capPeriodCollectedCashback = totalAmount - capPeriodStartAmount;
             }
@@ -1172,7 +1186,7 @@ contract CardPaymentProcessor is
 
     /// @dev Stores the data of a newly created payment.
     function _storeNewPayment(
-        Payment storage storedPayment,
+        Payment storage storedPayment, // Tools: this comment prevents Prettier from formatting into a single line.
         MakingOperation memory operation
     ) internal {
         PaymentStatus oldStatus = storedPayment.status;
@@ -1213,20 +1227,22 @@ contract CardPaymentProcessor is
         PaymentDetails memory oldPaymentDetails,
         PaymentDetails memory newPaymentDetails
     ) internal {
-        int256 paymentReminderChange =
+        // prettier-ignore
+        int256 paymentRemainderChange =
             (int256(newPaymentDetails.payerRemainder) + int256(newPaymentDetails.sponsorRemainder)) -
             (int256(oldPaymentDetails.payerRemainder) + int256(oldPaymentDetails.sponsorRemainder));
+        // prettier-ignore
         int256 paymentConfirmedAmountChange =
             int256(newPaymentDetails.confirmedAmount) - int256(oldPaymentDetails.confirmedAmount);
 
-        int256 unconfirmedReminderChange = paymentReminderChange - paymentConfirmedAmountChange;
+        int256 unconfirmedRemainderChange = paymentRemainderChange - paymentConfirmedAmountChange;
 
         // This is done to protect against possible overflow/underflow of the `totalUnconfirmedRemainder` variable
-        if (unconfirmedReminderChange >= 0) {
-            _paymentStatistics.totalUnconfirmedRemainder += uint128(uint256(unconfirmedReminderChange));
+        if (unconfirmedRemainderChange >= 0) {
+            _paymentStatistics.totalUnconfirmedRemainder += uint128(uint256(unconfirmedRemainderChange));
         } else {
             _paymentStatistics.totalUnconfirmedRemainder = uint128(
-                uint256(_paymentStatistics.totalUnconfirmedRemainder) - uint256(-unconfirmedReminderChange)
+                uint256(_paymentStatistics.totalUnconfirmedRemainder) - uint256(-unconfirmedRemainderChange)
             );
         }
     }
@@ -1235,22 +1251,6 @@ contract CardPaymentProcessor is
     function _calculateCashback(uint256 amount, uint256 cashbackRate_) internal pure returns (uint256) {
         uint256 cashback = (amount * cashbackRate_) / CASHBACK_FACTOR;
         return ((cashback + CASHBACK_ROUNDING_COEF / 2) / CASHBACK_ROUNDING_COEF) * CASHBACK_ROUNDING_COEF;
-    }
-
-    /// @dev Contains details of a payment.
-    struct PaymentDetails {
-        uint256 confirmedAmount;
-        uint256 cashbackAmount;
-        uint256 payerSumAmount;
-        uint256 sponsorSumAmount;
-        uint256 payerRemainder;
-        uint256 sponsorRemainder;
-    }
-
-    /// @dev Kind of a payment recalculation operation.
-    enum PaymentRecalculationKind {
-        None,
-        Full
     }
 
     /// @dev Defines details of a payment.
@@ -1321,7 +1321,7 @@ contract CardPaymentProcessor is
         return refundAmount;
     }
 
-    /// @dev Defines the new confirmed amount of a payment according to the new old confirmed amount and the remainder.
+    /// @dev Defines the new confirmed amount of a payment according to the old confirmed amount and the remainder.
     function _defineNewConfirmedAmount(
         uint256 oldConfirmedAmount,
         uint256 commonRemainder

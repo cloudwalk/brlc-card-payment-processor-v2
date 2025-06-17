@@ -2,38 +2,53 @@
 
 pragma solidity ^0.8.0;
 
-/// @title CardPaymentCashback types interface
+/**
+ * @title CardPaymentCashback types interface
+ * @author CloudWalk Inc. (See https://www.cloudwalk.io)
+ * @dev Defines the types used in the wrapper contract for the card payment cashback operations.
+ */
 interface ICardPaymentCashbackTypes {
     /**
      * @dev Statuses of a cashback operation as an enum.
      *
      * The possible values:
      *
-     * - Undefined - The operation does not exist (the default value).
-     * - Success --- The operation has been successfully executed with a full amount transfer.
-     * - Partial --- The operation has been successfully executed but with a partial amount transfer.
-     * - Capped ---- The operation has been refused because the cap for the period has been reached.
-     * - Failed ---- The operation has been refused because the token transfer has failed.
+     * - Undefined = 0 -- The operation does not exist (the default value).
+     * - Success = 1 ---- The operation has been successfully executed with a full amount transfer.
+     * - Partial = 2 ---- The operation has been successfully executed but with a partial amount transfer.
+     * - Capped = 3 ----- The operation has been refused because the cap for the period has been reached.
+     * - Failed = 4 ----- The operation has been refused because the token transfer has failed.
      */
     enum CashbackOperationStatus {
-        Undefined, // 0
-        Success,   // 1
-        Partial,   // 2
-        Capped,    // 3
-        Failed     // 4
+        Undefined,
+        Success,
+        Partial,
+        Capped,
+        Failed
     }
 
-    /// @dev Structure with cashback-related data for a single account.
+    /**
+     * @dev The cashback-related data of a single account.
+     *
+     * The fields:
+     *
+     * - totalAmount ----------- The total amount of cashback that has been sent to the account.
+     * - capPeriodStartAmount -- The amount of cashback that has been sent to the account during the current cap period.
+     * - capPeriodStartTime ---- The timestamp of the start of the current cap period.
+     */
     struct AccountCashbackState {
+        // Slot 1
         uint72 totalAmount;
         uint72 capPeriodStartAmount;
         uint32 capPeriodStartTime;
+        // uint80 __reserved; // Reserved for future use until the end of the storage slot
     }
 }
 
 /**
- * @title CardPaymentCashback interface
- * @dev The interface of the wrapper contract for the card payment cashback operations.
+ * @title ICardPaymentCashback interface
+ * @author CloudWalk Inc. (See https://www.cloudwalk.io)
+ * @dev Defines the interface of the wrapper contract for the card payment cashback operations.
  */
 interface ICardPaymentCashback is ICardPaymentCashbackTypes {
     // ------------------ Events ---------------------------------- //
@@ -48,12 +63,12 @@ interface ICardPaymentCashback is ICardPaymentCashbackTypes {
     /**
      * @dev Emitted when the cashback treasury address is changed.
      * @param oldTreasury The address of the old cashback treasury.
-     * @param newTreasure The address of the new cashback treasury.
+     * @param newTreasury The address of the new cashback treasury.
      */
-    event CashbackTreasuryChanged(address oldTreasury, address newTreasure);
+    event CashbackTreasuryChanged(address oldTreasury, address newTreasury);
 
     /**
-     * @dev Emitted when a cashback sending request executed, successfully or not.
+     * @dev Emitted when a cashback sending request is executed, successfully or not.
      * @param paymentId The associated card transaction payment ID from the off-chain card processing backend.
      * @param recipient The address of the cashback recipient.
      * @param status The status of the cashback operation.
@@ -67,7 +82,7 @@ interface ICardPaymentCashback is ICardPaymentCashbackTypes {
     );
 
     /**
-     * @dev Emitted when a cashback revocation request executed, successfully or not.
+     * @dev Emitted when a cashback revocation request is executed, successfully or not.
      * @param paymentId The associated card transaction payment ID from the off-chain card processing backend.
      * @param recipient The address of the cashback recipient.
      * @param status The status of the cashback operation.
@@ -84,7 +99,7 @@ interface ICardPaymentCashback is ICardPaymentCashbackTypes {
     );
 
     /**
-     * @dev Emitted when a cashback increase request executed, successfully or not.
+     * @dev Emitted when a cashback increase request is executed, successfully or not.
      * @param paymentId The associated card transaction payment ID from the off-chain card processing backend.
      * @param recipient The address of the cashback recipient.
      * @param status The status of the cashback operation.
@@ -105,7 +120,7 @@ interface ICardPaymentCashback is ICardPaymentCashbackTypes {
     /// @dev Emitted when cashback operations for new payments are disabled. Does not affect the existing payments.
     event CashbackDisabled();
 
-    // ------------------ Functions ------------------------------- //
+    // ------------------ Transactional functions ----------------- //
 
     /**
      * @dev Sets a new address of the cashback treasury.

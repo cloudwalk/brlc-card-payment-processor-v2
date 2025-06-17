@@ -6,9 +6,12 @@ import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 /**
  * @title ERC20TokenMock contract
- * @dev An implementation of the {ERC20Upgradeable} contract for testing purposes
+ * @author CloudWalk Inc. (See https://www.cloudwalk.io)
+ * @dev An implementation of the {ERC20} contract for testing purposes.
  */
 contract ERC20TokenMock is ERC20 {
+    // ------------------ Storage --------------------------------- //
+
     /// @dev A special amount when the transfer functions should return `false`.
     uint256 public specialAmountToReturnFalse;
 
@@ -18,16 +21,16 @@ contract ERC20TokenMock is ERC20 {
     // ------------------ Constructor ----------------------------- //
 
     /**
-     * @dev The initialize function of the upgradable contract.
-     * @param name_ The name of the token to set for this ERC20-comparable contract.
-     * @param symbol_ The symbol of the token to set for this ERC20-comparable contract.
+     * @dev The constructor of the contract.
+     * @param name_ The name of the token to set for this ERC20-compatible contract.
+     * @param symbol_ The symbol of the token to set for this ERC20-compatible contract.
      */
     constructor(string memory name_, string memory symbol_) ERC20(name_, symbol_) {
         specialAmountToReturnFalse = type(uint256).max;
         specialAmountToRevert = type(uint256).max;
     }
 
-    // ------------------ Functions ------------------------------- //
+    // ------------------ Transactional functions ----------------- //
 
     /**
      * @dev Calls the appropriate internal function to mint needed amount of tokens for an account.
