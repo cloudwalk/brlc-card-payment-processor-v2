@@ -138,7 +138,7 @@ interface ICardPaymentProcessor is ICardPaymentProcessorTypes {
 
     /// @dev Emitted when the cash-out account is changed.
     event CashOutAccountChanged(
-        address oldCashOutAccount, // Tools: this comment prevents Prettier from formatting into a single line.
+        address oldCashOutAccount, // Tools: prevent Prettier one-liner
         address newCashOutAccount
     );
 

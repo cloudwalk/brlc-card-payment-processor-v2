@@ -380,7 +380,7 @@ contract CardPaymentProcessor is
         uint256 newExtraAmount
     ) external whenNotPaused onlyRole(EXECUTOR_ROLE) {
         _updatePayment(
-            paymentId, // Tools: this comment prevents Prettier from formatting into a single line.
+            paymentId, // Tools: prevent Prettier one-liner
             newBaseAmount,
             newExtraAmount,
             UpdatingOperationKind.Full
@@ -477,7 +477,7 @@ contract CardPaymentProcessor is
         uint256 confirmationAmount
     ) external whenNotPaused onlyRole(EXECUTOR_ROLE) {
         _updatePayment(
-            paymentId, // Tools: this comment prevents Prettier from formatting into a single line.
+            paymentId, // Tools: prevent Prettier one-liner
             newBaseAmount,
             newExtraAmount,
             UpdatingOperationKind.Lazy
@@ -496,7 +496,7 @@ contract CardPaymentProcessor is
      * - The result refund amount of the payment must not be higher than the new extra amount plus the base amount.
      */
     function refundPayment(
-        bytes32 paymentId, // Tools: this comment prevents Prettier from formatting into a single line.
+        bytes32 paymentId, // Tools: prevent Prettier one-liner
         uint256 refundingAmount
     ) external whenNotPaused onlyRole(EXECUTOR_ROLE) {
         _refundPayment(paymentId, refundingAmount);
@@ -512,7 +512,7 @@ contract CardPaymentProcessor is
      * - The account address must not be zero.
      */
     function refundAccount(
-        address account, // Tools: this comment prevents Prettier from formatting into a single line.
+        address account, // Tools: prevent Prettier one-liner
         uint256 refundingAmount
     ) external whenNotPaused onlyRole(EXECUTOR_ROLE) {
         if (account == address(0)) {
@@ -520,7 +520,7 @@ contract CardPaymentProcessor is
         }
 
         emit AccountRefunded(
-            account, // Tools: this comment prevents Prettier from formatting into a single line.
+            account, // Tools: prevent Prettier one-liner
             refundingAmount,
             bytes("")
         );
@@ -693,13 +693,13 @@ contract CardPaymentProcessor is
         );
         if (eventFlags & EVENT_ADDENDUM_FLAG_MASK_SPONSORED != 0) {
             addendum = abi.encodePacked(
-                addendum, // Tools: this comment prevents Prettier from formatting into a single line.
+                addendum, // Tools: prevent Prettier one-liner
                 sponsor,
                 uint64(operation.sponsorSumAmount)
             );
         }
         emit PaymentMade(
-            operation.paymentId, // Tools: this comment prevents Prettier from formatting into a single line.
+            operation.paymentId, // Tools: prevent Prettier one-liner
             operation.payer,
             addendum
         );
@@ -762,7 +762,7 @@ contract CardPaymentProcessor is
             );
         }
         emit PaymentUpdated(
-            paymentId, // Tools: this comment prevents Prettier from formatting into a single line.
+            paymentId, // Tools: prevent Prettier one-liner
             payment.payer,
             addendum
         );
@@ -770,7 +770,7 @@ contract CardPaymentProcessor is
 
     /// @dev Cancels a payment internally.
     function _cancelPayment(
-        bytes32 paymentId, // Tools: this comment prevents Prettier from formatting into a single line.
+        bytes32 paymentId, // Tools: prevent Prettier one-liner
         PaymentStatus targetStatus
     ) internal {
         if (paymentId == 0) {
@@ -801,7 +801,7 @@ contract CardPaymentProcessor is
         );
         if (eventFlags & EVENT_ADDENDUM_FLAG_MASK_SPONSORED != 0) {
             addendum = abi.encodePacked(
-                addendum, // Tools: this comment prevents Prettier from formatting into a single line.
+                addendum, // Tools: prevent Prettier one-liner
                 sponsor,
                 uint64(oldPaymentDetails.sponsorRemainder)
             );
@@ -809,13 +809,13 @@ contract CardPaymentProcessor is
 
         if (targetStatus == PaymentStatus.Revoked) {
             emit PaymentRevoked(
-                paymentId, // Tools: this comment prevents Prettier from formatting into a single line.
+                paymentId, // Tools: prevent Prettier one-liner
                 payment.payer,
                 addendum
             );
         } else {
             emit PaymentReversed(
-                paymentId, // Tools: this comment prevents Prettier from formatting into a single line.
+                paymentId, // Tools: prevent Prettier one-liner
                 payment.payer,
                 addendum
             );
@@ -824,7 +824,7 @@ contract CardPaymentProcessor is
 
     /// @dev Confirms a payment internally.
     function _confirmPayment(
-        bytes32 paymentId, // Tools: this comment prevents Prettier from formatting into a single line.
+        bytes32 paymentId, // Tools: prevent Prettier one-liner
         uint256 confirmationAmount
     ) internal returns (uint256) {
         if (paymentId == 0) {
@@ -858,7 +858,7 @@ contract CardPaymentProcessor is
 
     /// @dev Confirms a payment internally with the token transfer to the cash-out account.
     function _confirmPaymentWithTransfer(
-        bytes32 paymentId, // Tools: this comment prevents Prettier from formatting into a single line.
+        bytes32 paymentId, // Tools: prevent Prettier one-liner
         uint256 confirmationAmount
     ) internal {
         confirmationAmount = _confirmPayment(paymentId, confirmationAmount);
@@ -870,7 +870,7 @@ contract CardPaymentProcessor is
 
     /// @dev Makes a refund for a payment internally.
     function _refundPayment(
-        bytes32 paymentId, // Tools: this comment prevents Prettier from formatting into a single line.
+        bytes32 paymentId, // Tools: prevent Prettier one-liner
         uint256 refundingAmount
     ) internal {
         if (paymentId == 0) {
@@ -913,7 +913,7 @@ contract CardPaymentProcessor is
         }
 
         emit PaymentRefunded(
-            paymentId, // Tools: this comment prevents Prettier from formatting into a single line.
+            paymentId, // Tools: prevent Prettier one-liner
             payment.payer,
             addendum
         );
@@ -1058,13 +1058,13 @@ contract CardPaymentProcessor is
         );
         if (eventFlags & EVENT_ADDENDUM_FLAG_MASK_SPONSORED != 0) {
             addendum = abi.encodePacked(
-                addendum, // Tools: this comment prevents Prettier from formatting into a single line.
+                addendum, // Tools: prevent Prettier one-liner
                 sponsor
             );
         }
 
         emit PaymentConfirmedAmountChanged(
-            paymentId, // Tools: this comment prevents Prettier from formatting into a single line.
+            paymentId, // Tools: prevent Prettier one-liner
             payer,
             addendum
         );
@@ -1082,7 +1082,7 @@ contract CardPaymentProcessor is
             CashbackOperationStatus status;
             (status, amount) = _increaseCashback(operation.payer, amount);
             emit CashbackSent(
-                operation.paymentId, // Tools: this comment prevents Prettier from formatting into a single line.
+                operation.paymentId, // Tools: prevent Prettier one-liner
                 operation.payer,
                 status,
                 amount
@@ -1186,7 +1186,7 @@ contract CardPaymentProcessor is
 
     /// @dev Stores the data of a newly created payment.
     function _storeNewPayment(
-        Payment storage storedPayment, // Tools: this comment prevents Prettier from formatting into a single line.
+        Payment storage storedPayment, // Tools: prevent Prettier one-liner
         MakingOperation memory operation
     ) internal {
         PaymentStatus oldStatus = storedPayment.status;
