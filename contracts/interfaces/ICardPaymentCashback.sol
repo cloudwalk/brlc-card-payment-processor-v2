@@ -41,7 +41,7 @@ interface ICardPaymentCashbackTypes {
         uint72 totalAmount;
         uint72 capPeriodStartAmount;
         uint32 capPeriodStartTime;
-        // uint80 __reserved; // Reserved for future use until the end of the storage slot
+        // uint80 __reserved; // Reserved until the end of the storage slot
     }
 }
 
