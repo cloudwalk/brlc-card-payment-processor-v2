@@ -30,7 +30,7 @@ interface ICardPaymentCashbackTypes {
     /**
      * @dev The cashback-related data of a single account.
      *
-     * The fields:
+     * Fields:
      *
      * - totalAmount ----------- The total amount of cashback that has been sent to the account.
      * - capPeriodStartAmount -- The amount of cashback that has been sent to the account during the current cap period.
