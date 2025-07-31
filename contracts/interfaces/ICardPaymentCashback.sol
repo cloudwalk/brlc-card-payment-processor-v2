@@ -30,7 +30,7 @@ interface ICardPaymentCashbackTypes {
     /**
      * @dev The cashback-related data of a single account.
      *
-     * The fields:
+     * Fields:
      *
      * - totalAmount ----------- The total amount of cashback that has been sent to the account.
      * - capPeriodStartAmount -- The amount of cashback that has been sent to the account during the current cap period.
@@ -41,7 +41,7 @@ interface ICardPaymentCashbackTypes {
         uint72 totalAmount;
         uint72 capPeriodStartAmount;
         uint32 capPeriodStartTime;
-        // uint80 __reserved; // Reserved for future use until the end of the storage slot
+        // uint80 __reserved; // Reserved until the end of the storage slot
     }
 }
 

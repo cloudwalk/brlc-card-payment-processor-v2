@@ -33,7 +33,7 @@ interface ICardPaymentProcessorTypes {
 
     /** @dev The data of a single payment for retention in the contract storage.
      *
-     * The fields:
+     * Fields:
      *
      * - status ----------- The current status of the payment.
      * - reserve1 --------- The reserved field for future changes.
@@ -97,7 +97,7 @@ interface ICardPaymentProcessorTypes {
     /**
      * @dev The data of a single confirmation operation to use in the appropriate function as an input parameter.
      *
-     * The fields:
+     * Fields:
      *
      * - paymentId -- The card transaction payment ID from the off-chain card processing backend.
      * - amount ----- The amount to confirm for the payment.
@@ -110,7 +110,7 @@ interface ICardPaymentProcessorTypes {
     /**
      * @dev The statistics of all payments for retention in the contract storage.
      *
-     * The fields:
+     * Fields:
      *
      * - totalUnconfirmedRemainder -- The total remainder of all payments that are not confirmed yet.
      * - reserve1 ------------------- The reserved field for future changes.
@@ -138,7 +138,7 @@ interface ICardPaymentProcessor is ICardPaymentProcessorTypes {
 
     /// @dev Emitted when the cash-out account is changed.
     event CashOutAccountChanged(
-        address oldCashOutAccount, // Tools: this comment prevents Prettier from formatting into a single line.
+        address oldCashOutAccount, // Tools: prevent Prettier one-liner
         address newCashOutAccount
     );
 
