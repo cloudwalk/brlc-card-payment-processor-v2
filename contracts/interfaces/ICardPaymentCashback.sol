@@ -52,21 +52,6 @@ interface ICardPaymentCashbackTypes {
  */
 interface ICardPaymentCashbackPrimary is ICardPaymentCashbackTypes {
     // ------------------ Events ---------------------------------- //
-
-    /**
-     * @dev Emitted when the cashback rate is changed.
-     * @param oldRate The value of the old cashback rate.
-     * @param newRate The value of the new cashback rate.
-     */
-    event CashbackRateChanged(uint256 oldRate, uint256 newRate);
-
-    /**
-     * @dev Emitted when the cashback treasury address is changed.
-     * @param oldTreasury The address of the old cashback treasury.
-     * @param newTreasury The address of the new cashback treasury.
-     */
-    event CashbackTreasuryChanged(address oldTreasury, address newTreasury);
-
     /**
      * @dev Emitted when a cashback sending request is executed, successfully or not.
      * @param paymentId The associated card transaction payment ID from the off-chain card processing backend.
@@ -114,12 +99,6 @@ interface ICardPaymentCashbackPrimary is ICardPaymentCashbackTypes {
         uint256 newCashbackAmount
     );
 
-    /// @dev Emitted when cashback operations for new payments are enabled. Does not affect the existing payments.
-    event CashbackEnabled();
-
-    /// @dev Emitted when cashback operations for new payments are disabled. Does not affect the existing payments.
-    event CashbackDisabled();
-
     // ------------------ View functions -------------------------- //
 
     /// @dev Returns the current cashback treasury address.
@@ -144,6 +123,28 @@ interface ICardPaymentCashbackPrimary is ICardPaymentCashbackTypes {
  * @dev The configuration interface of the wrapper contract for the card payment cashback operations.
  */
 interface ICardPaymentCashbackConfiguration {
+    // ------------------ Events ---------------------------------- //
+
+    /**
+     * @dev Emitted when the cashback rate is changed.
+     * @param oldRate The value of the old cashback rate.
+     * @param newRate The value of the new cashback rate.
+     */
+    event CashbackRateChanged(uint256 oldRate, uint256 newRate);
+
+    /**
+     * @dev Emitted when the cashback treasury address is changed.
+     * @param oldTreasury The address of the old cashback treasury.
+     * @param newTreasury The address of the new cashback treasury.
+     */
+    event CashbackTreasuryChanged(address oldTreasury, address newTreasury);
+
+    /// @dev Emitted when cashback operations for new payments are enabled. Does not affect the existing payments.
+    event CashbackEnabled();
+
+    /// @dev Emitted when cashback operations for new payments are disabled. Does not affect the existing payments.
+    event CashbackDisabled();
+
     // ------------------ Transactional functions ----------------- //
 
     /**
@@ -185,7 +186,26 @@ interface ICardPaymentCashbackConfiguration {
  * @dev The custom errors used in the wrapper contract for the card payment cashback operations.
  */
 interface ICardPaymentCashbackErrors {
+    /// @dev The cashback operations are already enabled.
+    error CashbackAlreadyEnabled();
 
+    /// @dev The cashback operations are already disabled.
+    error CashbackAlreadyDisabled();
+
+    /// @dev The cashback treasury address is the same as previously set one.
+    error CashbackTreasuryUnchanged();
+
+    /// @dev The cashback treasury address is not configured.
+    error CashbackTreasuryNotConfigured();
+
+    /// @dev The zero cashback treasury address has been passed as a function argument.
+    error CashbackTreasuryZeroAddress();
+
+    /// @dev The provided cashback rate exceeds the allowed maximum.
+    error CashbackRateExcess();
+
+    /// @dev A new cashback rate is the same as previously set one.
+    error CashbackRateUnchanged();
 }
 
 /**

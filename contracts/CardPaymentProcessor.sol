@@ -131,27 +131,6 @@ contract CardPaymentProcessor is
     /// @dev The zero payer address has been passed as a function argument.
     error AccountZeroAddress();
 
-    /// @dev The cashback operations are already enabled.
-    error CashbackAlreadyEnabled();
-
-    /// @dev The cashback operations are already disabled.
-    error CashbackAlreadyDisabled();
-
-    /// @dev The cashback treasury address is the same as previously set one.
-    error CashbackTreasuryUnchanged();
-
-    /// @dev The cashback treasury address is not configured.
-    error CashbackTreasuryNotConfigured();
-
-    /// @dev The zero cashback treasury address has been passed as a function argument.
-    error CashbackTreasuryZeroAddress();
-
-    /// @dev The provided cashback rate exceeds the allowed maximum.
-    error CashbackRateExcess();
-
-    /// @dev A new cashback rate is the same as previously set one.
-    error CashbackRateUnchanged();
-
     /// @dev The cash-out account is not configured.
     error CashOutAccountNotConfigured();
 
