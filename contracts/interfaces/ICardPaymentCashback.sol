@@ -46,11 +46,11 @@ interface ICardPaymentCashbackTypes {
 }
 
 /**
- * @title ICardPaymentCashback interface
+ * @title ICardPaymentCashbackPrimary interface
  * @author CloudWalk Inc. (See https://www.cloudwalk.io)
- * @dev Defines the interface of the wrapper contract for the card payment cashback operations.
+ * @dev Defines the primary interface of the wrapper contract for the card payment cashback operations.
  */
-interface ICardPaymentCashback is ICardPaymentCashbackTypes {
+interface ICardPaymentCashbackPrimary is ICardPaymentCashbackTypes {
     // ------------------ Events ---------------------------------- //
 
     /**
@@ -120,6 +120,30 @@ interface ICardPaymentCashback is ICardPaymentCashbackTypes {
     /// @dev Emitted when cashback operations for new payments are disabled. Does not affect the existing payments.
     event CashbackDisabled();
 
+    // ------------------ View functions -------------------------- //
+
+    /// @dev Returns the current cashback treasury address.
+    function cashbackTreasury() external view returns (address);
+
+    /// @dev Checks if the cashback operations are enabled.
+    function cashbackEnabled() external view returns (bool);
+
+    /// @dev Returns the current cashback rate.
+    function cashbackRate() external view returns (uint256);
+
+    /**
+     * @dev Returns a structure with cashback-related data for a single account.
+     * @param account The account address to get the cashback state for.
+     */
+    function getAccountCashbackState(address account) external view returns (AccountCashbackState memory);
+}
+
+/**
+ * @title ICardPaymentCashbackConfiguration interface
+ * @author CloudWalk Inc. (See https://www.cloudwalk.io)
+ * @dev The configuration interface of the wrapper contract for the card payment cashback operations.
+ */
+interface ICardPaymentCashbackConfiguration {
     // ------------------ Transactional functions ----------------- //
 
     /**
@@ -153,21 +177,26 @@ interface ICardPaymentCashback is ICardPaymentCashbackTypes {
      * Emits a {CashbackDisabled} event.
      */
     function disableCashback() external;
+}
 
-    // ------------------ View functions -------------------------- //
+/**
+ * @title ICardPaymentCashbackErrors interface
+ * @author CloudWalk Inc. (See https://www.cloudwalk.io)
+ * @dev The custom errors used in the wrapper contract for the card payment cashback operations.
+ */
+interface ICardPaymentCashbackErrors {
 
-    /// @dev Returns the current cashback treasury address.
-    function cashbackTreasury() external view returns (address);
+}
 
-    /// @dev Checks if the cashback operations are enabled.
-    function cashbackEnabled() external view returns (bool);
+/**
+ * @title ICardPaymentCashback interface
+ * @author CloudWalk Inc. (See https://www.cloudwalk.io)
+ * @dev The full interface of the wrapper contract for the card payment cashback operations.
+ */
+interface ICardPaymentCashback is
+    ICardPaymentCashbackPrimary,
+    ICardPaymentCashbackConfiguration,
+    ICardPaymentCashbackErrors
+{
 
-    /// @dev Returns the current cashback rate.
-    function cashbackRate() external view returns (uint256);
-
-    /**
-     * @dev Returns a structure with cashback-related data for a single account.
-     * @param account The account address to get the cashback state for.
-     */
-    function getAccountCashbackState(address account) external view returns (AccountCashbackState memory);
 }

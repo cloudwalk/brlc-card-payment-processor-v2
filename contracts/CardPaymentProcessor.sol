@@ -15,6 +15,8 @@ import { Versionable } from "./base/Versionable.sol";
 import { CardPaymentProcessorStorage } from "./CardPaymentProcessorStorage.sol";
 import { ICardPaymentProcessor } from "./interfaces/ICardPaymentProcessor.sol";
 import { ICardPaymentCashback } from "./interfaces/ICardPaymentCashback.sol";
+import { ICardPaymentCashbackPrimary } from "./interfaces/ICardPaymentCashback.sol";
+import { ICardPaymentCashbackConfiguration } from "./interfaces/ICardPaymentCashback.sol";
 
 /**
  * @title CardPaymentProcessor contract
@@ -529,7 +531,7 @@ contract CardPaymentProcessor is
     }
 
     /**
-     * @inheritdoc ICardPaymentCashback
+     * @inheritdoc ICardPaymentCashbackConfiguration
      *
      * @dev Requirements:
      *
@@ -554,7 +556,7 @@ contract CardPaymentProcessor is
     }
 
     /**
-     * @inheritdoc ICardPaymentCashback
+     * @inheritdoc ICardPaymentCashbackConfiguration
      *
      * @dev Requirements:
      *
@@ -577,7 +579,7 @@ contract CardPaymentProcessor is
     }
 
     /**
-     * @inheritdoc ICardPaymentCashback
+     * @inheritdoc ICardPaymentCashbackConfiguration
      *
      * @dev Requirements:
      *
@@ -599,7 +601,7 @@ contract CardPaymentProcessor is
     }
 
     /**
-     * @inheritdoc ICardPaymentCashback
+     * @inheritdoc ICardPaymentCashbackConfiguration
      *
      * @dev Requirements:
      *
@@ -638,22 +640,22 @@ contract CardPaymentProcessor is
         return _paymentStatistics;
     }
 
-    /// @inheritdoc ICardPaymentCashback
+    /// @inheritdoc ICardPaymentCashbackPrimary
     function cashbackTreasury() external view returns (address) {
         return _cashbackTreasury;
     }
 
-    /// @inheritdoc ICardPaymentCashback
+    /// @inheritdoc ICardPaymentCashbackPrimary
     function cashbackEnabled() external view returns (bool) {
         return _cashbackEnabled;
     }
 
-    /// @inheritdoc ICardPaymentCashback
+    /// @inheritdoc ICardPaymentCashbackPrimary
     function cashbackRate() external view returns (uint256) {
         return _cashbackRate;
     }
 
-    /// @inheritdoc ICardPaymentCashback
+    /// @inheritdoc ICardPaymentCashbackPrimary
     function getAccountCashbackState(address account) external view returns (AccountCashbackState memory) {
         return _accountCashbackStates[account];
     }
