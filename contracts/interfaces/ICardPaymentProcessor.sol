@@ -129,18 +129,12 @@ interface ICardPaymentProcessorTypes {
 }
 
 /**
- * @title ICardPaymentProcessor interface
+ * @title ICardPaymentProcessorPrimary interface
  * @author CloudWalk Inc. (See https://www.cloudwalk.io)
- * @dev Defines the interface of the wrapper contract for the card payment operations.
+ * @dev Defines the primary interface of the wrapper contract for the card payment operations.
  */
-interface ICardPaymentProcessor is ICardPaymentProcessorTypes {
+interface ICardPaymentProcessorPrimary is ICardPaymentProcessorTypes {
     // ------------------ Events ---------------------------------- //
-
-    /// @dev Emitted when the cash-out account is changed.
-    event CashOutAccountChanged(
-        address oldCashOutAccount, // Tools: prevent Prettier one-liner
-        address newCashOutAccount
-    );
 
     /**
      * @dev Emitted when a payment is made.
@@ -279,17 +273,6 @@ interface ICardPaymentProcessor is ICardPaymentProcessorTypes {
     event AccountRefunded(address indexed account, uint256 refundingAmount, bytes addendum);
 
     // ------------------ Transactional functions ----------------- //
-
-    /**
-     * @dev Sets the cash-out account address that will receive tokens of confirmed payments.
-     *
-     * This function can be called by a limited number of accounts that are allowed to configure the contract.
-     *
-     * Emits a {CashOutAccountChanged} event.
-     *
-     * @param newCashOutAccount The new cash-out account address.
-     */
-    function setCashOutAccount(address newCashOutAccount) external;
 
     /**
      * @dev Makes a card payment for a given account initiated by a service account.
@@ -476,4 +459,108 @@ interface ICardPaymentProcessor is ICardPaymentProcessorTypes {
 
     /// @dev Proves the contract is the card payment processor one. A marker function.
     function proveCardPaymentProcessor() external pure;
+}
+
+/**
+ * @title ICardPaymentProcessorConfiguration interface
+ * @author CloudWalk Inc. (See https://www.cloudwalk.io)
+ * @dev The configuration interface of the wrapper contract for the card payment operations.
+ */
+interface ICardPaymentProcessorConfiguration {
+    // ------------------ Events ---------------------------------- //
+
+    /// @dev Emitted when the cash-out account is changed.
+    event CashOutAccountChanged(
+        address oldCashOutAccount, // Tools: prevent Prettier one-liner
+        address newCashOutAccount
+    );
+
+    /**
+     * @dev Sets the cash-out account address that will receive tokens of confirmed payments.
+     *
+     * This function can be called by a limited number of accounts that are allowed to configure the contract.
+     *
+     * Emits a {CashOutAccountChanged} event.
+     *
+     * @param newCashOutAccount The new cash-out account address.
+     */
+    function setCashOutAccount(address newCashOutAccount) external;
+}
+
+/**
+ * @title ICardPaymentProcessorErrors interface
+ * @author CloudWalk Inc. (See https://www.cloudwalk.io)
+ * @dev The custom errors used in the wrapper contract for the card payment operations.
+ */
+interface ICardPaymentProcessorErrors is ICardPaymentProcessorTypes {
+    /// @dev The zero payer address has been passed as a function argument.
+    error AccountZeroAddress();
+
+    /// @dev The cash-out account is not configured.
+    error CashOutAccountNotConfigured();
+
+    /// @dev A new cash-out account is the same as the previously set one.
+    error CashOutAccountUnchanged();
+
+    /// @dev Thrown if the provided new implementation address is not of a card payment processor contract.
+    error ImplementationAddressInvalid();
+
+    /// @dev The requested confirmation amount does not meet the requirements.
+    error InappropriateConfirmationAmount();
+
+    /**
+     * @dev The payment with the provided ID has an inappropriate status.
+     * @param paymentId The ID of the payment that does not exist.
+     * @param currentStatus The current status of the payment.
+     */
+    error InappropriatePaymentStatus(bytes32 paymentId, PaymentStatus currentStatus);
+
+    /// @dev The requested refunding amount does not meet the requirements.
+    error InappropriateRefundingAmount();
+
+    /// @dev The requested or result or updated sum amount (base + extra) does not meet the requirements.
+    error InappropriateSumAmount();
+
+    /// @dev The requested subsidy limit is greater than the allowed maximum to store.
+    error OverflowOfSubsidyLimit();
+
+    /// @dev The requested or result or updated sum amount (base + extra) is greater than the allowed maximum to store.
+    error OverflowOfSumAmount();
+
+    /// @dev The zero payer address has been passed as a function argument.
+    error PayerZeroAddress();
+
+    /// @dev The payment with the provided ID already exists and is not revoked.
+    error PaymentAlreadyExistent();
+
+    /// @dev The array of payment confirmations is empty.
+    error PaymentConfirmationArrayEmpty();
+
+    /**
+     * @dev The payment with the provided ID does not exist.
+     * @param paymentId The ID of the payment that does not exist.
+     */
+    error PaymentNonExistent(bytes32 paymentId);
+
+    /// @dev Zero payment ID has been passed as a function argument.
+    error PaymentZeroId();
+
+    /// @dev The sponsor address is zero while the subsidy limit is non-zero.
+    error SponsorZeroAddress();
+
+    /// @dev The zero token address has been passed as a function argument.
+    error TokenZeroAddress();
+}
+
+/**
+ * @title ICardPaymentProcessor interface
+ * @author CloudWalk Inc. (See https://www.cloudwalk.io)
+ * @dev The full interface of the wrapper contract for the card payment operations.
+ */
+interface ICardPaymentProcessor is
+    ICardPaymentProcessorPrimary,
+    ICardPaymentProcessorConfiguration,
+    ICardPaymentProcessorErrors
+{
+
 }
