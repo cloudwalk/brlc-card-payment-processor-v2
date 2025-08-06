@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
 /**
  * @title ICardPaymentProcessorTypes interface
  * @author CloudWalk Inc. (See https://www.cloudwalk.io)
- * @dev Defines the types used in the wrapper contract for the card payment operations.
+ * @dev The custom types used in the wrapper contract for the card payment operations.
  */
 interface ICardPaymentProcessorTypes {
     /**
@@ -131,7 +131,7 @@ interface ICardPaymentProcessorTypes {
 /**
  * @title ICardPaymentProcessorPrimary interface
  * @author CloudWalk Inc. (See https://www.cloudwalk.io)
- * @dev Defines the primary interface of the wrapper contract for the card payment operations.
+ * @dev The primary interface of the wrapper contract for the card payment operations.
  */
 interface ICardPaymentProcessorPrimary is ICardPaymentProcessorTypes {
     // ------------------ Events ---------------------------------- //
