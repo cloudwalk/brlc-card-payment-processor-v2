@@ -128,7 +128,6 @@ contract CardPaymentProcessor is
     /// @dev Default version of the event addendum.
     uint8 internal constant EVENT_ADDENDUM_DEFAULT_VERSION = 1;
 
-
     // ------------------ Constructor ----------------------------- //
 
     /**
