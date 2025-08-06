@@ -454,11 +454,6 @@ interface ICardPaymentProcessorPrimary is ICardPaymentProcessorTypes {
 
     /// @dev Returns statistics of all payments.
     function getPaymentStatistics() external view returns (PaymentStatistics memory);
-
-    // ------------------ Pure functions -------------------------- //
-
-    /// @dev Proves the contract is the card payment processor one. A marker function.
-    function proveCardPaymentProcessor() external pure;
 }
 
 /**
@@ -564,5 +559,6 @@ interface ICardPaymentProcessor is
     ICardPaymentProcessorConfiguration,
     ICardPaymentProcessorErrors
 {
-
+    /// @dev Proves the contract is the card payment processor one. A marker function.
+    function proveCardPaymentProcessor() external pure;
 }

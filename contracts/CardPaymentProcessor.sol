@@ -584,7 +584,7 @@ contract CardPaymentProcessor is
 
     // ------------------ Pure functions -------------------------- //
 
-    /// @inheritdoc ICardPaymentProcessorPrimary
+    /// @inheritdoc ICardPaymentProcessor
     function proveCardPaymentProcessor() external pure {}
 
     // ------------------ Internal functions ---------------------- //
