@@ -475,6 +475,8 @@ interface ICardPaymentProcessorConfiguration {
         address newCashOutAccount
     );
 
+    // ------------------ Transactional functions ----------------- //
+
     /**
      * @dev Sets the cash-out account address that will receive tokens of confirmed payments.
      *
