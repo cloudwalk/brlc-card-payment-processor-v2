@@ -26,8 +26,8 @@ export async function checkContractUupsUpgrading(
   expect(actualNewImplementationAddress).not.to.eq(oldImplementationAddress);
 }
 
-export function connect(contract: BaseContract, signer: HardhatEthersSigner): Contract {
-  return contract.connect(signer) as Contract;
+export function connect<T extends BaseContract = BaseContract>(contract: T, signer: HardhatEthersSigner): T {
+  return contract.connect(signer) as T;
 }
 
 export function getAddress(contract: Contract): string {

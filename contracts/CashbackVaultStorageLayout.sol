@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.18;
 
-import { ICashbackVaultTypes } from "./interfaces/ICashbackVault.sol";
+import { ICashbackVaultTypes } from "./interfaces/ICashbackVaultTypes.sol";
 
 /**
  * @title CashbackVaultStorageLayout contract
@@ -37,7 +37,14 @@ abstract contract CashbackVaultStorageLayout is ICashbackVaultTypes {
         // uint96 __reserved1; // Reserved until the end of the storage slot
 
         // Slot 2
+        uint256 maxCashbackPerUser;
+
+        // Slot 3
+        uint256 totalCashback;
+
+        // Slot 4
         mapping(address user => UserCashbackState state) userCashbackStates;
+        // No reserve until the end of the storage slot
     }
 
     // --- Internal functions ---- //
