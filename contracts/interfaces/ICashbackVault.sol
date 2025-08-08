@@ -2,25 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-/**
- * @title ICashbackVaultTypes interface
- * @author CloudWalk Inc. (See https://www.cloudwalk.io)
- * @dev Defines the types used in the cashback vault smart contract.
- */
-interface ICashbackVaultTypes {
-    /**
-     * @dev The cashback state of a single user within the cashback vault contract.
-     *
-     * Fields:
-     *
-     * - balance --- The cashback balance of the user.
-     */
-    struct UserCashbackState {
-        // Slot 1
-        uint64 balance;
-        // uint96 __reserved1; // Reserved until the end of the storage slot
-    }
-}
+import { ICashbackVaultTypes } from "./ICashbackVaultTypes.sol";
 
 /**
  * @title ICashbackVaultPrimary interface
@@ -35,13 +17,12 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
      *
      * @param user The user whose cashback balance was increased.
      * @param amount The amount by which the balance was increased.
-     * @param newCashbackBalance The new cashback balance of the user.
+     * @param newBalance The new cashback balance of the user.
      */
     event CashbackIncreased(
-        address indexed token,
         address indexed user,
         uint256 amount,
-        uint256 newCashbackBalance
+        uint256 newBalance
     );
 
     /**
@@ -49,13 +30,12 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
      *
      * @param user The user whose cashback balance was decreased.
      * @param amount The amount by which the balance was decreased.
-     * @param newCashbackBalance The new cashback balance of the user.
+     * @param newBalance The new cashback balance of the user.
      */
     event CashbackDecreased(
-        address indexed token,
         address indexed user,
         uint256 amount,
-        uint256 newCashbackBalance
+        uint256 newBalance
     );
 
     /**
@@ -64,14 +44,13 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
      * @param user The user for whom cashback was claimed.
      * @param executor The executor who performed the claim.
      * @param amount The amount of cashback claimed.
-     * @param newCashbackBalance The new cashback balance of the user.
+     * @param newBalance The new cashback balance of the user.
      */
     event CashbackClaimed(
-        address indexed token,
         address indexed user,
         address indexed executor,
         uint256 amount,
-        uint256 newCashbackBalance
+        uint256 newBalance
     );
 
     // --- Transactional functions ----- //
@@ -106,7 +85,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
      * @dev Claims a specific amount of cashback for a user.
      *
      * Transfers the specified amount of tokens from the vault to the user.
-     * This function can be called only by an account with the MANAGER_ROLE.
+     * This function can be called only by an account with the EXECUTOR_ROLE.
      *
      * Emits a {CashbackClaimed} event.
      *
@@ -119,7 +98,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
      * @dev Claims all available cashback for a user.
      *
      * Transfers all available cashback tokens from the vault to the user.
-     * This function can be called only by an account with the MANAGER_ROLE.
+     * This function can be called only by an account with the EXECUTOR_ROLE.
      *
      * Emits a {CashbackClaimed} event.
      *
@@ -128,6 +107,12 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
     function claimAll(address user) external;
 
     // --- View functions ----- //
+
+    /**
+     * @dev Returns the cashback balance of the caller.
+     * @return The current cashback balance of the caller.
+     */
+    function getMyCashback() external view returns (uint256);
 
     /**
      * @dev Returns the cashback balance of a specific user.
@@ -143,14 +128,14 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
      */
     function getUserCashbackState(address user) external view returns (UserCashbackState memory state);
 
+    /**
+     * @dev Returns the total amount of cashback held in the vault.
+     * @return The total cashback amount across all users.
+     */
+    function getTotalCashback() external view returns (uint256);
+
     /// @dev Returns the address of the underlying token contract.
     function underlyingToken() external view returns (address);
-
-    /**
-     * @dev Returns the balance of the vault.
-     * @return The balance of the vault.
-     */
-    function getVaultBalance() external view returns (uint256);
 }
 
 /**
@@ -159,7 +144,33 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
  * @dev The configuration part of the cashback vault smart contract interface.
  */
 interface ICashbackVaultConfiguration {
+    // --- Events ---- //
 
+    /**
+     * @dev Emitted when the maximum cashback per user has been changed.
+     *
+     * @param newMaxCashback The new maximum cashback per user.
+     * @param oldMaxCashback The previous maximum cashback per user.
+     */
+    event MaxCashbackPerUserChanged(uint256 newMaxCashback, uint256 oldMaxCashback);
+
+    // --- Transactional functions ----- //
+
+    /**
+     * @dev Sets the maximum cashback amount per user.
+     *
+     * This function can be called only by an account with the OWNER_ROLE.
+     *
+     * Emits a {MaxCashbackPerUserChanged} event.
+     *
+     * @param newMaxCashback The new maximum cashback amount per user.
+     */
+    function setMaxCashbackPerUser(uint256 newMaxCashback) external;
+
+    // --- View functions ----- //
+
+    /// @dev Returns the maximum cashback amount per user.
+    function maxCashbackPerUser() external view returns (uint256);
 }
 
 /**
@@ -170,6 +181,9 @@ interface ICashbackVaultConfiguration {
 interface ICashbackVaultErrors {
     /// @dev Thrown if the provided user address is zero.
     error CashbackVault_UserAddressZero();
+
+    /// @dev Thrown if the provided amount is zero.
+    error CashbackVault_AmountZero();
 
     /// @dev Thrown if the provided amount exceeds the maximum allowed.
     error CashbackVault_AmountExcess();
@@ -183,8 +197,14 @@ interface ICashbackVaultErrors {
     /// @dev Thrown if the provided token address is zero during initialization.
     error CashbackVault_TokenAddressZero();
 
+    /// @dev Thrown if the user's cashback balance would exceed the maximum allowed per user.
+    error CashbackVault_CashbackBalanceExcess();
+
     /// @dev Thrown if the provided new implementation address is not of a cashback vault contract.
     error CashbackVault_ImplementationAddressInvalid();
+
+    /// @dev Thrown if the token transfer operation fails.
+    error CashbackVault_TokenTransferFailed();
 }
 
 /**
