@@ -38,6 +38,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
      * @param newCashbackBalance The new cashback balance of the user.
      */
     event CashbackIncreased(
+        address indexed token,
         address indexed user,
         uint256 amount,
         uint256 newCashbackBalance
@@ -51,6 +52,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
      * @param newCashbackBalance The new cashback balance of the user.
      */
     event CashbackDecreased(
+        address indexed token,
         address indexed user,
         uint256 amount,
         uint256 newCashbackBalance
@@ -65,6 +67,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
      * @param newCashbackBalance The new cashback balance of the user.
      */
     event CashbackClaimed(
+        address indexed token,
         address indexed user,
         address indexed executor,
         uint256 amount,
@@ -140,14 +143,14 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
      */
     function getUserCashbackState(address user) external view returns (UserCashbackState memory state);
 
-    /**
-     * @dev Returns the total amount of cashback held in the vault.
-     * @return The total cashback amount across all users.
-     */
-    function getTotalCashback() external view returns (uint256);
-
     /// @dev Returns the address of the underlying token contract.
     function underlyingToken() external view returns (address);
+
+    /**
+     * @dev Returns the balance of the vault.
+     * @return The balance of the vault.
+     */
+    function getVaultBalance() external view returns (uint256);
 }
 
 /**
