@@ -32,29 +32,27 @@ interface Version {
 
 describe("Contracts 'CashbackVault'", async () => {
   let cashbackVaultFactory: CashbackVault__factory;
+  let tokenMockFactory: ERC20TokenMock__factory;
 
   let deployer: HardhatEthersSigner;
   let manager: HardhatEthersSigner;
   let cpp: HardhatEthersSigner;
   let user: HardhatEthersSigner;
-  let users: HardhatEthersSigner[];
 
   before(async () => {
-    let moreUsers: HardhatEthersSigner[];
-    [deployer, manager, cpp, user, ...moreUsers] = await ethers.getSigners();
-    users = [user, ...moreUsers];
+    [deployer, manager, cpp, user] = await ethers.getSigners();
 
     // The contract factories with the explicitly specified deployer account
     cashbackVaultFactory = await ethers.getContractFactory("CashbackVault");
     cashbackVaultFactory = cashbackVaultFactory.connect(deployer);
+    tokenMockFactory = await ethers.getContractFactory("ERC20TokenMock");
+    tokenMockFactory = tokenMockFactory.connect(deployer);
   });
   async function deployTokenMock() {
     const name = "ERC20 Test";
     const symbol = "TEST";
 
     // The token contract factory with the explicitly specified deployer account
-    let tokenMockFactory = await ethers.getContractFactory("ERC20TokenMock");
-    tokenMockFactory = tokenMockFactory.connect(deployer);
 
     // The token contract with the explicitly specified initial account
     const tokenMockDeployment = await tokenMockFactory.deploy(name, symbol);
@@ -67,13 +65,56 @@ describe("Contracts 'CashbackVault'", async () => {
     const cashbackVault = await upgrades.deployProxy(cashbackVaultFactory, [await tokenMock.getAddress()]);
     await cashbackVault.waitForDeployment();
 
+    await cashbackVault.grantRole(GRANTOR_ROLE, deployer.address);
+    await cashbackVault.grantRole(CPP_ROLE, cpp.address);
+    await cashbackVault.grantRole(MANAGER_ROLE, manager.address);
     return { cashbackVault, tokenMock };
   }
-  it("should deploy the contract", async () => {
+  it("should deploy the contract and match version", async () => {
     const { cashbackVault } = await deployContracts();
 
     expect(await cashbackVault.$__VERSION()).to.deep.equal([EXPECTED_VERSION.major,
       EXPECTED_VERSION.minor,
       EXPECTED_VERSION.patch]);
+  });
+  describe("CPP basic happy path flows", async () => {
+    let cashbackVault: CashbackVault;
+    let tokenMock: ERC20TokenMock;
+    let cashBackVaultAddress: string;
+    before(async () => {
+      const contracts = await deployContracts();
+      cashbackVault = contracts.cashbackVault;
+      tokenMock = contracts.tokenMock;
+      cashBackVaultAddress = await cashbackVault.getAddress();
+      await tokenMock.mint(cpp.address, BALANCE_INITIAL);
+      // TODO maybe use some trusted account?
+      await tokenMock.connect(cpp).approve(cashbackVault.getAddress(), BALANCE_INITIAL);
+    });
+    it("increse cashback", async () => {
+      const cashbackVaultFromCPP = cashbackVault.connect(cpp);
+      await cashbackVaultFromCPP.incCashback(user.address, 1000n);
+      expect(await cashbackVaultFromCPP.getCashbackBalance(user.address)).to.equal(1000n);
+      expect(await tokenMock.balanceOf(cashBackVaultAddress)).to.equal(1000n);
+      expect(await tokenMock.balanceOf(user.address)).to.equal(0n);
+      expect(await tokenMock.balanceOf(cpp.address)).to.equal(BALANCE_INITIAL - 1000n);
+      await cashbackVaultFromCPP.incCashback(user.address, 500n);
+      expect(await cashbackVaultFromCPP.getCashbackBalance(user.address)).to.equal(1500n);
+      expect(await tokenMock.balanceOf(cashBackVaultAddress)).to.equal(1500n);
+      expect(await tokenMock.balanceOf(user.address)).to.equal(0n);
+      expect(await tokenMock.balanceOf(cpp.address)).to.equal(BALANCE_INITIAL - 1500n);
+    });
+    it("dec cashback", async () => {
+      const cashbackVaultFromCPP = cashbackVault.connect(cpp);
+      await cashbackVaultFromCPP.decCashback(user.address, 100n);
+      expect(await cashbackVaultFromCPP.getCashbackBalance(user.address)).to.equal(1400n);
+      expect(await tokenMock.balanceOf(cashBackVaultAddress)).to.equal(1400n);
+      expect(await tokenMock.balanceOf(user.address)).to.equal(0n);
+      expect(await tokenMock.balanceOf(cpp.address)).to.equal(BALANCE_INITIAL - 1400n);
+      await cashbackVaultFromCPP.decCashback(user.address, 500n);
+      expect(await cashbackVaultFromCPP.getCashbackBalance(user.address)).to.equal(900n);
+      expect(await tokenMock.balanceOf(cashBackVaultAddress)).to.equal(900n);
+      expect(await tokenMock.balanceOf(user.address)).to.equal(0n);
+      expect(await tokenMock.balanceOf(cpp.address)).to.equal(BALANCE_INITIAL - 900n);
+    });
   });
 });
