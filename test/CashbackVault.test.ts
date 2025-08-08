@@ -62,14 +62,18 @@ describe("Contracts 'CashbackVault'", async () => {
 
     return tokenMockDeployment.connect(deployer);
   }
-  it("should deploy the contract", async () => {
-    const cashbackVaultDeployment = await cashbackVaultFactory.deploy();
-    await cashbackVaultDeployment.waitForDeployment();
+  async function deployContracts() {
+    const tokenMock = await deployTokenMock();
+    const cashbackVault = await upgrades.deployProxy(cashbackVaultFactory, [await tokenMock.getAddress()]);
+    await cashbackVault.waitForDeployment();
 
-    const cashbackVault = cashbackVaultDeployment.connect(deployer);
+    return { cashbackVault, tokenMock };
+  }
+  it("should deploy the contract", async () => {
+    const { cashbackVault } = await deployContracts();
+
     expect(await cashbackVault.$__VERSION()).to.deep.equal([EXPECTED_VERSION.major,
       EXPECTED_VERSION.minor,
-      EXPECTED_VERSION.patch
-    ]);
+      EXPECTED_VERSION.patch]);
   });
 });
