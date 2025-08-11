@@ -14,7 +14,11 @@ import { Versionable } from "./base/Versionable.sol";
 
 import { CardPaymentProcessorStorage } from "./CardPaymentProcessorStorage.sol";
 import { ICardPaymentProcessor } from "./interfaces/ICardPaymentProcessor.sol";
+import { ICardPaymentProcessorPrimary } from "./interfaces/ICardPaymentProcessor.sol";
+import { ICardPaymentProcessorConfiguration } from "./interfaces/ICardPaymentProcessor.sol";
 import { ICardPaymentCashback } from "./interfaces/ICardPaymentCashback.sol";
+import { ICardPaymentCashbackPrimary } from "./interfaces/ICardPaymentCashback.sol";
+import { ICardPaymentCashbackConfiguration } from "./interfaces/ICardPaymentCashback.sol";
 
 /**
  * @title CardPaymentProcessor contract
@@ -124,87 +128,6 @@ contract CardPaymentProcessor is
     /// @dev Default version of the event addendum.
     uint8 internal constant EVENT_ADDENDUM_DEFAULT_VERSION = 1;
 
-    // ------------------ Errors ---------------------------------- //
-
-    /// @dev The zero payer address has been passed as a function argument.
-    error AccountZeroAddress();
-
-    /// @dev The cashback operations are already enabled.
-    error CashbackAlreadyEnabled();
-
-    /// @dev The cashback operations are already disabled.
-    error CashbackAlreadyDisabled();
-
-    /// @dev The cashback treasury address is the same as previously set one.
-    error CashbackTreasuryUnchanged();
-
-    /// @dev The cashback treasury address is not configured.
-    error CashbackTreasuryNotConfigured();
-
-    /// @dev The zero cashback treasury address has been passed as a function argument.
-    error CashbackTreasuryZeroAddress();
-
-    /// @dev The provided cashback rate exceeds the allowed maximum.
-    error CashbackRateExcess();
-
-    /// @dev A new cashback rate is the same as previously set one.
-    error CashbackRateUnchanged();
-
-    /// @dev The cash-out account is not configured.
-    error CashOutAccountNotConfigured();
-
-    /// @dev A new cash-out account is the same as the previously set one.
-    error CashOutAccountUnchanged();
-
-    /// @dev Thrown if the provided new implementation address is not of a card payment processor contract.
-    error ImplementationAddressInvalid();
-
-    /// @dev The requested confirmation amount does not meet the requirements.
-    error InappropriateConfirmationAmount();
-
-    /**
-     * @dev The payment with the provided ID has an inappropriate status.
-     * @param paymentId The ID of the payment that does not exist.
-     * @param currentStatus The current status of the payment.
-     */
-    error InappropriatePaymentStatus(bytes32 paymentId, PaymentStatus currentStatus);
-
-    /// @dev The requested refunding amount does not meet the requirements.
-    error InappropriateRefundingAmount();
-
-    /// @dev The requested or result or updated sum amount (base + extra) does not meet the requirements.
-    error InappropriateSumAmount();
-
-    /// @dev The requested subsidy limit is greater than the allowed maximum to store.
-    error OverflowOfSubsidyLimit();
-
-    /// @dev The requested or result or updated sum amount (base + extra) is greater than the allowed maximum to store.
-    error OverflowOfSumAmount();
-
-    /// @dev The zero payer address has been passed as a function argument.
-    error PayerZeroAddress();
-
-    /// @dev The payment with the provided ID already exists and is not revoked.
-    error PaymentAlreadyExistent();
-
-    /// @dev The array of payment confirmations is empty.
-    error PaymentConfirmationArrayEmpty();
-
-    /**
-     * @dev The payment with the provided ID does not exist.
-     * @param paymentId The ID of the payment that does not exist.
-     */
-    error PaymentNonExistent(bytes32 paymentId);
-
-    /// @dev Zero payment ID has been passed as a function argument.
-    error PaymentZeroId();
-
-    /// @dev The sponsor address is zero while the subsidy limit is non-zero.
-    error SponsorZeroAddress();
-
-    /// @dev The zero token address has been passed as a function argument.
-    error TokenZeroAddress();
-
     // ------------------ Constructor ----------------------------- //
 
     /**
@@ -252,7 +175,7 @@ contract CardPaymentProcessor is
     // ------------------ Transactional functions ----------------- //
 
     /**
-     * @inheritdoc ICardPaymentProcessor
+     * @inheritdoc ICardPaymentProcessorConfiguration
      *
      * @dev Requirements:
      *
@@ -272,7 +195,7 @@ contract CardPaymentProcessor is
     }
 
     /**
-     * @inheritdoc ICardPaymentProcessor
+     * @inheritdoc ICardPaymentProcessorPrimary
      *
      * @dev Requirements:
      *
@@ -328,7 +251,7 @@ contract CardPaymentProcessor is
     }
 
     /**
-     * @inheritdoc ICardPaymentProcessor
+     * @inheritdoc ICardPaymentProcessorPrimary
      *
      * @dev Requirements:
      *
@@ -365,7 +288,7 @@ contract CardPaymentProcessor is
     }
 
     /**
-     * @inheritdoc ICardPaymentProcessor
+     * @inheritdoc ICardPaymentProcessorPrimary
      *
      * @dev Requirements:
      *
@@ -388,7 +311,7 @@ contract CardPaymentProcessor is
     }
 
     /**
-     * @inheritdoc ICardPaymentProcessor
+     * @inheritdoc ICardPaymentProcessorPrimary
      *
      * @dev Requirements:
      *
@@ -401,7 +324,7 @@ contract CardPaymentProcessor is
     }
 
     /**
-     * @inheritdoc ICardPaymentProcessor
+     * @inheritdoc ICardPaymentProcessorPrimary
      *
      * @dev Requirements:
      *
@@ -414,7 +337,7 @@ contract CardPaymentProcessor is
     }
 
     /**
-     * @inheritdoc ICardPaymentProcessor
+     * @inheritdoc ICardPaymentProcessorPrimary
      *
      * @dev Requirements:
      *
@@ -430,7 +353,7 @@ contract CardPaymentProcessor is
     }
 
     /**
-     * @inheritdoc ICardPaymentProcessor
+     * @inheritdoc ICardPaymentProcessorPrimary
      *
      * @dev Requirements:
      *
@@ -461,7 +384,7 @@ contract CardPaymentProcessor is
     }
 
     /**
-     * @inheritdoc ICardPaymentProcessor
+     * @inheritdoc ICardPaymentProcessorPrimary
      *
      * @dev Requirements:
      *
@@ -486,7 +409,7 @@ contract CardPaymentProcessor is
     }
 
     /**
-     * @inheritdoc ICardPaymentProcessor
+     * @inheritdoc ICardPaymentProcessorPrimary
      *
      * @dev Requirements:
      *
@@ -503,7 +426,7 @@ contract CardPaymentProcessor is
     }
 
     /**
-     * @inheritdoc ICardPaymentProcessor
+     * @inheritdoc ICardPaymentProcessorPrimary
      *
      * @dev Requirements:
      *
@@ -529,7 +452,7 @@ contract CardPaymentProcessor is
     }
 
     /**
-     * @inheritdoc ICardPaymentCashback
+     * @inheritdoc ICardPaymentCashbackConfiguration
      *
      * @dev Requirements:
      *
@@ -554,7 +477,7 @@ contract CardPaymentProcessor is
     }
 
     /**
-     * @inheritdoc ICardPaymentCashback
+     * @inheritdoc ICardPaymentCashbackConfiguration
      *
      * @dev Requirements:
      *
@@ -577,7 +500,7 @@ contract CardPaymentProcessor is
     }
 
     /**
-     * @inheritdoc ICardPaymentCashback
+     * @inheritdoc ICardPaymentCashbackConfiguration
      *
      * @dev Requirements:
      *
@@ -599,7 +522,7 @@ contract CardPaymentProcessor is
     }
 
     /**
-     * @inheritdoc ICardPaymentCashback
+     * @inheritdoc ICardPaymentCashbackConfiguration
      *
      * @dev Requirements:
      *
@@ -618,42 +541,42 @@ contract CardPaymentProcessor is
 
     // ------------------ View functions -------------------------- //
 
-    /// @inheritdoc ICardPaymentProcessor
+    /// @inheritdoc ICardPaymentProcessorPrimary
     function cashOutAccount() external view returns (address) {
         return _cashOutAccount;
     }
 
-    /// @inheritdoc ICardPaymentProcessor
+    /// @inheritdoc ICardPaymentProcessorPrimary
     function token() external view returns (address) {
         return _token;
     }
 
-    /// @inheritdoc ICardPaymentProcessor
+    /// @inheritdoc ICardPaymentProcessorPrimary
     function getPayment(bytes32 paymentId) external view returns (Payment memory) {
         return _payments[paymentId];
     }
 
-    /// @inheritdoc ICardPaymentProcessor
+    /// @inheritdoc ICardPaymentProcessorPrimary
     function getPaymentStatistics() external view returns (PaymentStatistics memory) {
         return _paymentStatistics;
     }
 
-    /// @inheritdoc ICardPaymentCashback
+    /// @inheritdoc ICardPaymentCashbackPrimary
     function cashbackTreasury() external view returns (address) {
         return _cashbackTreasury;
     }
 
-    /// @inheritdoc ICardPaymentCashback
+    /// @inheritdoc ICardPaymentCashbackPrimary
     function cashbackEnabled() external view returns (bool) {
         return _cashbackEnabled;
     }
 
-    /// @inheritdoc ICardPaymentCashback
+    /// @inheritdoc ICardPaymentCashbackPrimary
     function cashbackRate() external view returns (uint256) {
         return _cashbackRate;
     }
 
-    /// @inheritdoc ICardPaymentCashback
+    /// @inheritdoc ICardPaymentCashbackPrimary
     function getAccountCashbackState(address account) external view returns (AccountCashbackState memory) {
         return _accountCashbackStates[account];
     }
