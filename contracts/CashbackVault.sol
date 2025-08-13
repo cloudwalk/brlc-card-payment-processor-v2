@@ -93,14 +93,11 @@ contract CashbackVault is
      * - The caller must have the {CPP_ROLE} role.
      * - The provided user address must not be zero.
      * - The provided amount must not be zero.
-     * - The user's new balance must not exceed the maximum allowed per user.
      */
     function incCashback(
         address user,
         uint256 amount
-    ) external whenNotPaused onlyRole(CPP_ROLE) onlyValidAmount(amount) {
-        _validateUser(user);
-
+    ) external whenNotPaused onlyRole(CPP_ROLE) onlyValidAmount(amount) onlyValidUser(user) {
         CashbackVaultStorage storage $ = _getCashbackVaultStorage();
         UserCashbackState storage userState = $.userCashbackStates[user];
 
@@ -117,7 +114,7 @@ contract CashbackVault is
         // Transfer tokens from caller to vault
         IERC20($.token).transferFrom(_msgSender(), address(this), amount);
 
-        emit CashbackIncreased($.token, user, amount, newBalance);
+        emit CashbackGranted(user, _msgSender(), amount, newBalance);
     }
 
     /**
@@ -134,9 +131,7 @@ contract CashbackVault is
     function decCashback(
         address user,
         uint256 amount
-    ) external whenNotPaused onlyRole(CPP_ROLE) onlyValidAmount(amount) {
-        _validateUser(user);
-
+    ) external whenNotPaused onlyRole(CPP_ROLE) onlyValidAmount(amount) onlyValidUser(user) {
         CashbackVaultStorage storage $ = _getCashbackVaultStorage();
         UserCashbackState storage userState = $.userCashbackStates[user];
 
@@ -150,7 +145,7 @@ contract CashbackVault is
 
         // Transfer tokens from vault to caller
         IERC20($.token).transfer(_msgSender(), amount);
-        emit CashbackDecreased($.token, user, amount, newBalance);
+        emit CashbackRevoked(user, _msgSender(), amount, newBalance);
     }
 
     /**
@@ -163,12 +158,10 @@ contract CashbackVault is
      * - The provided user address must not be zero.
      * - The user must have sufficient cashback balance.
      */
-    function claimFor(
+    function claim(
         address user,
         uint256 amount
-    ) external whenNotPaused onlyRole(MANAGER_ROLE) onlyValidAmount(amount) {
-        _validateUser(user);
-
+    ) external whenNotPaused onlyRole(MANAGER_ROLE) onlyValidAmount(amount) onlyValidUser(user) {
         CashbackVaultStorage storage $ = _getCashbackVaultStorage();
         UserCashbackState storage userState = $.userCashbackStates[user];
 
@@ -184,7 +177,7 @@ contract CashbackVault is
 
         // Transfer tokens from vault to user
         IERC20($.token).transfer(user, amount);
-        emit CashbackClaimed($.token, user, _msgSender(), amount, newBalance);
+        emit CashbackClaimed(user, _msgSender(), amount, newBalance);
     }
 
     /**
@@ -197,9 +190,7 @@ contract CashbackVault is
      * - The provided user address must not be zero.
      * - The user must have cashback balance greater than zero.
      */
-    function claimAll(address user) external whenNotPaused onlyRole(MANAGER_ROLE) {
-        _validateUser(user);
-
+    function claimAll(address user) external whenNotPaused onlyRole(MANAGER_ROLE) onlyValidUser(user) {
         CashbackVaultStorage storage $ = _getCashbackVaultStorage();
         UserCashbackState storage userState = $.userCashbackStates[user];
 
@@ -211,7 +202,7 @@ contract CashbackVault is
 
         // Transfer tokens from vault to user
         IERC20($.token).transfer(user, amount);
-        emit CashbackClaimed($.token, user, _msgSender(), amount, 0);
+        emit CashbackClaimed(user, _msgSender(), amount, 0);
     }
 
     // --- View functions ----- //
@@ -249,16 +240,6 @@ contract CashbackVault is
     // ------------------ Internal functions ---------------------- //
 
     /**
-     * @dev Validates user address and amount parameters.
-     * @param user The user address to validate.
-     */
-    function _validateUser(address user) internal pure {
-        if (user == address(0)) {
-            revert CashbackVault_UserAddressZero();
-        }
-    }
-
-    /**
      * @dev The upgrade validation function for the UUPSExtUpgradeable contract.
      * @param newImplementation The address of the new implementation.
      */
@@ -275,6 +256,13 @@ contract CashbackVault is
     }
 
     // --------------------- Modifiers ---------------------------- //
+
+    modifier onlyValidUser(address user) {
+        if (user == address(0)) {
+            revert CashbackVault_UserAddressZero();
+        }
+        _;
+    }
 
     modifier onlyValidAmount(uint256 amount) {
         if (amount > type(uint64).max) {

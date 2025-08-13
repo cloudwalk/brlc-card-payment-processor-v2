@@ -33,29 +33,31 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
     /**
      * @dev Emitted when cashback balance has been increased for a user.
      *
-     * @param user The user whose cashback balance was increased.
-     * @param amount The amount by which the balance was increased.
-     * @param newCashbackBalance The new cashback balance of the user.
+     * @param user The user whose cashback balance was granted.
+     * @param executor The executor who performed the grant.
+     * @param amount The amount of cashback granted.
+     * @param newBalance The new cashback balance of the user.
      */
-    event CashbackIncreased(
-        address indexed token,
+    event CashbackGranted(
         address indexed user,
+        address indexed executor,
         uint256 amount,
-        uint256 newCashbackBalance
+        uint256 newBalance
     );
 
     /**
      * @dev Emitted when cashback balance has been decreased for a user.
      *
      * @param user The user whose cashback balance was decreased.
-     * @param amount The amount by which the balance was decreased.
-     * @param newCashbackBalance The new cashback balance of the user.
+     * @param executor The executor who performed the revocation.
+     * @param amount The amount of cashback revoked.
+     * @param newBalance The new cashback balance of the user.
      */
-    event CashbackDecreased(
-        address indexed token,
+    event CashbackRevoked(
         address indexed user,
+        address indexed executor,
         uint256 amount,
-        uint256 newCashbackBalance
+        uint256 newBalance
     );
 
     /**
@@ -64,14 +66,13 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
      * @param user The user for whom cashback was claimed.
      * @param executor The executor who performed the claim.
      * @param amount The amount of cashback claimed.
-     * @param newCashbackBalance The new cashback balance of the user.
+     * @param newBalance The new cashback balance of the user.
      */
     event CashbackClaimed(
-        address indexed token,
         address indexed user,
         address indexed executor,
         uint256 amount,
-        uint256 newCashbackBalance
+        uint256 newBalance
     );
 
     // --- Transactional functions ----- //
@@ -113,7 +114,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
      * @param user The user to claim cashback for.
      * @param amount The amount of cashback to claim.
      */
-    function claimFor(address user, uint256 amount) external;
+    function claim(address user, uint256 amount) external;
 
     /**
      * @dev Claims all available cashback for a user.
