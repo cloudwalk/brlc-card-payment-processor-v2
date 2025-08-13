@@ -88,7 +88,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
      * @param user The user to increase cashback balance for.
      * @param amount The amount to increase the balance by.
      */
-    function incCashback(address user, uint256 amount) external;
+    function grantCashback(address user, uint256 amount) external;
 
     /**
      * @dev Decreases the cashback balance for a user.
@@ -101,7 +101,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
      * @param user The user to decrease cashback balance for.
      * @param amount The amount to decrease the balance by.
      */
-    function decCashback(address user, uint256 amount) external;
+    function revokeCashback(address user, uint256 amount) external;
 
     /**
      * @dev Claims a specific amount of cashback for a user.
