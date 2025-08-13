@@ -94,7 +94,7 @@ contract CashbackVault is
      * - The provided user address must not be zero.
      * - The provided amount must not be zero.
      */
-    function incCashback(
+    function grantCashback(
         address user,
         uint256 amount
     ) external whenNotPaused onlyRole(CPP_ROLE) onlyValidAmount(amount) onlyValidUser(user) {
@@ -128,7 +128,7 @@ contract CashbackVault is
      * - The provided amount must not be zero.
      * - The user must have sufficient cashback balance.
      */
-    function decCashback(
+    function revokeCashback(
         address user,
         uint256 amount
     ) external whenNotPaused onlyRole(CPP_ROLE) onlyValidAmount(amount) onlyValidUser(user) {
