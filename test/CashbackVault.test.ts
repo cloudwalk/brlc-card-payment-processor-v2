@@ -1,20 +1,15 @@
 import { ethers, upgrades } from "hardhat";
 import { expect } from "chai";
-import { Contract, ContractFactory, TransactionResponse } from "ethers";
+import { TransactionResponse } from "ethers";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
-import { checkContractUupsUpgrading, connect, getAddress, proveTx } from "../test-utils/eth";
 import { CashbackVault__factory, CashbackVault, ERC20TokenMock, ERC20TokenMock__factory } from "../typechain-types";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { maxUintForBits } from "../test-utils/common";
 
 const ADDRESS_ZERO = ethers.ZeroAddress;
-const ALLOWANCE_MAX = ethers.MaxUint64;
 const BALANCE_INITIAL = 1000_000_000_000n;
 
-const OWNER_ROLE: string = ethers.id("OWNER_ROLE");
 const GRANTOR_ROLE: string = ethers.id("GRANTOR_ROLE");
-const PAUSER_ROLE: string = ethers.id("PAUSER_ROLE");
-const RESCUER_ROLE: string = ethers.id("RESCUER_ROLE");
 const MANAGER_ROLE: string = ethers.id("MANAGER_ROLE");
 const CASHBACK_GRANTOR_ROLE: string = ethers.id("CASHBACK_GRANTOR_ROLE");
 
@@ -92,6 +87,16 @@ describe("Contracts 'CashbackVault'", async () => {
     expect(await cashbackVault.$__VERSION()).to.deep.equal([EXPECTED_VERSION.major,
       EXPECTED_VERSION.minor,
       EXPECTED_VERSION.patch]);
+  });
+  describe("upgrade and deploy errors", async () => {
+    it("should revert if we try upgrade to not cashback vault", async () => {
+      await expect(cashbackVault.upgradeToAndCall(tokenMock.getAddress(), "0x"))
+        .to.be.revertedWithCustomError(cashbackVault, "CashbackVault_ImplementationAddressInvalid");
+    });
+    it("shoud revert deploy if we try to deploy with zero token address", async () => {
+      await expect(upgrades.deployProxy(cashbackVaultFactory, [ADDRESS_ZERO]))
+        .to.be.revertedWithCustomError(cashbackVaultFactory, "CashbackVault_TokenAddressZero");
+    });
   });
   describe("CPP basic happy path token flows and events checks", async () => {
     describe("granting 1000 tokens cashback", async () => {
