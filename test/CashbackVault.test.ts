@@ -114,5 +114,21 @@ describe("Contracts 'CashbackVault'", async () => {
       expect(await tokenMock.balanceOf(user.address)).to.equal(0n);
       expect(await tokenMock.balanceOf(cpp.address)).to.equal(BALANCE_INITIAL - 900n);
     });
+    it("claim cashback", async () => {
+      const cashbackVaultFromManager = cashbackVault.connect(manager);
+      await cashbackVaultFromManager.claim(user.address, 100n);
+      expect(await cashbackVaultFromManager.getCashbackBalance(user.address)).to.equal(800n);
+      expect(await tokenMock.balanceOf(cashBackVaultAddress)).to.equal(800n);
+      expect(await tokenMock.balanceOf(user.address)).to.equal(100n);
+      expect(await tokenMock.balanceOf(cpp.address)).to.equal(BALANCE_INITIAL - 800n);
+    });
+    it("claim all cashback", async () => {
+      const cashbackVaultFromManager = cashbackVault.connect(manager);
+      await cashbackVaultFromManager.claimAll(user.address);
+      expect(await cashbackVaultFromManager.getCashbackBalance(user.address)).to.equal(0n);
+      expect(await tokenMock.balanceOf(cashBackVaultAddress)).to.equal(0n);
+      expect(await tokenMock.balanceOf(user.address)).to.equal(1000n);
+      expect(await tokenMock.balanceOf(cpp.address)).to.equal(BALANCE_INITIAL - 1000n);
+    });
   });
 });
