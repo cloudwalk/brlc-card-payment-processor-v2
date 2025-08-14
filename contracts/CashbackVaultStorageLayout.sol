@@ -17,7 +17,7 @@ abstract contract CashbackVaultStorageLayout is ICashbackVaultTypes {
      * keccak256(abi.encode(uint256(keccak256("cloudwalk.storage.CashbackVault")) - 1)) & ~bytes32(uint256(0xff))
      */
     bytes32 private constant CASHBACK_VAULT_STORAGE_LOCATION =
-        0x77ff17a333e155d0867a10019a155145cb22ba8073d73c4e9efdacc9be865c00; // TODO RECALCULATE
+        0x77ff17a333e155d0867a10019a155145cb22ba8073d73c4e9efdacc9be865c00;
 
     /**
      * @dev Defines the contract storage structure.
@@ -25,7 +25,6 @@ abstract contract CashbackVaultStorageLayout is ICashbackVaultTypes {
      * Fields:
      *
      * - token ---- The address of the underlying token.
-     * - maxCashbackPerUser -- The maximum cashback amount allowed per user.
      * - totalCashback ----- The total amount of cashback across all users.
      * - userCashbackStates -- The mapping of cashback state for each user.
      *
@@ -34,7 +33,8 @@ abstract contract CashbackVaultStorageLayout is ICashbackVaultTypes {
     struct CashbackVaultStorage {
         // Slot 1
         address token;
-        // uint96 __reserved1; // Reserved until the end of the storage slot
+        uint64 totalCashback;
+        // uint32 __reserved1; // Reserved until the end of the storage slot
 
         // Slot 2
         mapping(address user => UserCashbackState state) userCashbackStates;

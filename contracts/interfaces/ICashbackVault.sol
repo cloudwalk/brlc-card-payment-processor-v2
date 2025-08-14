@@ -18,7 +18,8 @@ interface ICashbackVaultTypes {
     struct UserCashbackState {
         // Slot 1
         uint64 balance;
-        // uint96 __reserved1; // Reserved until the end of the storage slot
+        uint64 totalClaimed;
+        // uint128 __reserved1; // Reserved until the end of the storage slot
     }
 }
 
@@ -151,7 +152,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
      * @dev Returns the balance of the vault.
      * @return The balance of the vault.
      */
-    function getVaultBalance() external view returns (uint256);
+    function getTotalCashback() external view returns (uint256);
 }
 
 /**
