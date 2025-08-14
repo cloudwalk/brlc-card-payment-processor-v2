@@ -14,7 +14,7 @@ const GRANTOR_ROLE: string = ethers.id("GRANTOR_ROLE");
 const PAUSER_ROLE: string = ethers.id("PAUSER_ROLE");
 const RESCUER_ROLE: string = ethers.id("RESCUER_ROLE");
 const MANAGER_ROLE: string = ethers.id("MANAGER_ROLE");
-const CPP_ROLE: string = ethers.id("CPP_ROLE");
+const CASHBACK_GRANTOR_ROLE: string = ethers.id("CASHBACK_GRANTOR_ROLE");
 
 const EXPECTED_VERSION: Version = {
   major: 1n,
@@ -23,11 +23,9 @@ const EXPECTED_VERSION: Version = {
 };
 
 interface Version {
-  major: number;
-  minor: number;
-  patch: number;
-
-  [key: string]: number; // Indexing signature to ensure that fields are iterated over in a key-value style
+  major: bigint;
+  minor: bigint;
+  patch: bigint;
 }
 
 describe("Contracts 'CashbackVault'", async () => {
@@ -66,7 +64,7 @@ describe("Contracts 'CashbackVault'", async () => {
     await cashbackVault.waitForDeployment();
 
     await cashbackVault.grantRole(GRANTOR_ROLE, deployer.address);
-    await cashbackVault.grantRole(CPP_ROLE, cpp.address);
+    await cashbackVault.grantRole(CASHBACK_GRANTOR_ROLE, cpp.address);
     await cashbackVault.grantRole(MANAGER_ROLE, manager.address);
     return { cashbackVault, tokenMock };
   }
@@ -92,12 +90,12 @@ describe("Contracts 'CashbackVault'", async () => {
     });
     it("increse cashback", async () => {
       const cashbackVaultFromCPP = cashbackVault.connect(cpp);
-      await cashbackVaultFromCPP.incCashback(user.address, 1000n);
+      await cashbackVaultFromCPP.grantCashback(user.address, 1000n);
       expect(await cashbackVaultFromCPP.getCashbackBalance(user.address)).to.equal(1000n);
       expect(await tokenMock.balanceOf(cashBackVaultAddress)).to.equal(1000n);
       expect(await tokenMock.balanceOf(user.address)).to.equal(0n);
       expect(await tokenMock.balanceOf(cpp.address)).to.equal(BALANCE_INITIAL - 1000n);
-      await cashbackVaultFromCPP.incCashback(user.address, 500n);
+      await cashbackVaultFromCPP.grantCashback(user.address, 500n);
       expect(await cashbackVaultFromCPP.getCashbackBalance(user.address)).to.equal(1500n);
       expect(await tokenMock.balanceOf(cashBackVaultAddress)).to.equal(1500n);
       expect(await tokenMock.balanceOf(user.address)).to.equal(0n);
@@ -105,12 +103,12 @@ describe("Contracts 'CashbackVault'", async () => {
     });
     it("dec cashback", async () => {
       const cashbackVaultFromCPP = cashbackVault.connect(cpp);
-      await cashbackVaultFromCPP.decCashback(user.address, 100n);
+      await cashbackVaultFromCPP.revokeCashback(user.address, 100n);
       expect(await cashbackVaultFromCPP.getCashbackBalance(user.address)).to.equal(1400n);
       expect(await tokenMock.balanceOf(cashBackVaultAddress)).to.equal(1400n);
       expect(await tokenMock.balanceOf(user.address)).to.equal(0n);
       expect(await tokenMock.balanceOf(cpp.address)).to.equal(BALANCE_INITIAL - 1400n);
-      await cashbackVaultFromCPP.decCashback(user.address, 500n);
+      await cashbackVaultFromCPP.revokeCashback(user.address, 500n);
       expect(await cashbackVaultFromCPP.getCashbackBalance(user.address)).to.equal(900n);
       expect(await tokenMock.balanceOf(cashBackVaultAddress)).to.equal(900n);
       expect(await tokenMock.balanceOf(user.address)).to.equal(0n);
