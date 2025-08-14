@@ -198,6 +198,36 @@ describe("Contracts 'CashbackVault'", async () => {
             it("should increase user balance", async () => {
               expect(await tokenMock.balanceOf(user.address)).to.equal(100n);
             });
+            describe("claiming all tokens cashback", async () => {
+              let tx: TransactionResponse;
+              beforeEach(async () => {
+                tx = await loadFixture(async function claimCashbackAll() {
+                  return cashbackVaultFromManager.claimAll(user.address);
+                });
+              });
+              it("should emit CashbackClaimed event", async () => {
+                await expect(tx)
+                  .to.emit(cashbackVaultFromCPP, "CashbackClaimed").withArgs(user.address, manager.address, 1300n, 0n);
+              });
+              it("should decrease CashbackVault real token balance", async () => {
+                expect(await tokenMock.balanceOf(cashBackVaultAddress)).to.equal(0n);
+              });
+              it("should decrease CashbackVault tracked totalCashbackBalance", async () => {
+                expect(await cashbackVaultFromCPP.getTotalCashback()).to.equal(0n);
+              });
+              it("CPP token balance should not change", async () => {
+                expect(await tokenMock.balanceOf(cpp.address)).to.equal(BALANCE_INITIAL - 1400n);
+              });
+              it("should decrease user cashback balance", async () => {
+                expect(await cashbackVaultFromCPP.getCashbackBalance(user.address)).to.equal(0n);
+              });
+              it("should increase user totalClaimed in state", async () => {
+                expect((await cashbackVaultFromCPP.getUserCashbackState(user.address)).totalClaimed).to.equal(1400n);
+              });
+              it("should increase user balance", async () => {
+                expect(await tokenMock.balanceOf(user.address)).to.equal(1400n);
+              });
+            });
           });
         });
       });
