@@ -88,6 +88,9 @@ describe("Contracts 'CashbackVault'", async () => {
       EXPECTED_VERSION.minor,
       EXPECTED_VERSION.patch]);
   });
+  it("should give us underlying token address", async () => {
+    expect(await cashbackVault.underlyingToken()).to.equal(await tokenMock.getAddress());
+  });
   describe("upgrade and deploy errors", async () => {
     it("should revert if we try upgrade to not cashback vault", async () => {
       await expect(cashbackVault.upgradeToAndCall(tokenMock.getAddress(), "0x"))
