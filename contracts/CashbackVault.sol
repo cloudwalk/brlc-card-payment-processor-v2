@@ -104,11 +104,6 @@ contract CashbackVault is
         uint256 oldBalance = userState.balance;
         uint256 newBalance = oldBalance + amount;
 
-        // Check for overflow
-        if (newBalance > type(uint64).max) {
-            revert CashbackVault_AmountExcess();
-        }
-
         userState.balance = uint64(newBalance);
         $.totalCashback += uint64(amount);
 
