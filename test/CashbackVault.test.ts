@@ -5,9 +5,10 @@ import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { checkContractUupsUpgrading, connect, getAddress, proveTx } from "../test-utils/eth";
 import { CashbackVault__factory, CashbackVault, ERC20TokenMock, ERC20TokenMock__factory } from "../typechain-types";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { maxUintForBits } from "../test-utils/common";
 
 const ADDRESS_ZERO = ethers.ZeroAddress;
-const ALLOWANCE_MAX = ethers.MaxUint256;
+const ALLOWANCE_MAX = ethers.MaxUint64;
 const BALANCE_INITIAL = 1000_000_000_000n;
 
 const OWNER_ROLE: string = ethers.id("OWNER_ROLE");
@@ -28,16 +29,41 @@ interface Version {
   minor: bigint;
   patch: bigint;
 }
+let cashbackVaultFactory: CashbackVault__factory;
+let tokenMockFactory: ERC20TokenMock__factory;
+
+let deployer: HardhatEthersSigner;
+let manager: HardhatEthersSigner;
+let cpp: HardhatEthersSigner;
+let user: HardhatEthersSigner;
+async function deployTokenMock() {
+  const name = "ERC20 Test";
+  const symbol = "TEST";
+
+  // The token contract factory with the explicitly specified deployer account
+
+  // The token contract with the explicitly specified initial account
+  const tokenMockDeployment = await tokenMockFactory.deploy(name, symbol);
+  await tokenMockDeployment.waitForDeployment();
+
+  return tokenMockDeployment.connect(deployer);
+}
+async function deployContracts() {
+  const tokenMock = await deployTokenMock();
+  const cashbackVault = await upgrades.deployProxy(cashbackVaultFactory, [await tokenMock.getAddress()]);
+  await cashbackVault.waitForDeployment();
+
+  await cashbackVault.grantRole(GRANTOR_ROLE, deployer.address);
+  await cashbackVault.grantRole(CASHBACK_GRANTOR_ROLE, cpp.address);
+  await cashbackVault.grantRole(MANAGER_ROLE, manager.address);
+
+  await tokenMock.mint(cpp.address, BALANCE_INITIAL);
+  // TODO maybe use some trusted account?
+  await tokenMock.connect(cpp).approve(cashbackVault.getAddress(), BALANCE_INITIAL);
+  return { cashbackVault, tokenMock };
+}
 
 describe("Contracts 'CashbackVault'", async () => {
-  let cashbackVaultFactory: CashbackVault__factory;
-  let tokenMockFactory: ERC20TokenMock__factory;
-
-  let deployer: HardhatEthersSigner;
-  let manager: HardhatEthersSigner;
-  let cpp: HardhatEthersSigner;
-  let user: HardhatEthersSigner;
-
   before(async () => {
     [deployer, manager, cpp, user] = await ethers.getSigners();
 
@@ -47,32 +73,19 @@ describe("Contracts 'CashbackVault'", async () => {
     tokenMockFactory = await ethers.getContractFactory("ERC20TokenMock");
     tokenMockFactory = tokenMockFactory.connect(deployer);
   });
-  async function deployTokenMock() {
-    const name = "ERC20 Test";
-    const symbol = "TEST";
-
-    // The token contract factory with the explicitly specified deployer account
-
-    // The token contract with the explicitly specified initial account
-    const tokenMockDeployment = await tokenMockFactory.deploy(name, symbol);
-    await tokenMockDeployment.waitForDeployment();
-
-    return tokenMockDeployment.connect(deployer);
-  }
-  async function deployContracts() {
-    const tokenMock = await deployTokenMock();
-    const cashbackVault = await upgrades.deployProxy(cashbackVaultFactory, [await tokenMock.getAddress()]);
-    await cashbackVault.waitForDeployment();
-
-    await cashbackVault.grantRole(GRANTOR_ROLE, deployer.address);
-    await cashbackVault.grantRole(CASHBACK_GRANTOR_ROLE, cpp.address);
-    await cashbackVault.grantRole(MANAGER_ROLE, manager.address);
-
-    await tokenMock.mint(cpp.address, BALANCE_INITIAL);
-    // TODO maybe use some trusted account?
-    await tokenMock.connect(cpp).approve(cashbackVault.getAddress(), BALANCE_INITIAL);
-    return { cashbackVault, tokenMock };
-  }
+  let cashbackVault: CashbackVault;
+  let tokenMock: ERC20TokenMock;
+  let cashbackVaultFromCPP: CashbackVault;
+  let cashbackVaultFromManager: CashbackVault;
+  let cashBackVaultAddress: string;
+  beforeEach(async () => {
+    const contracts = await loadFixture(deployContracts);
+    cashbackVault = contracts.cashbackVault;
+    tokenMock = contracts.tokenMock;
+    cashBackVaultAddress = await cashbackVault.getAddress();
+    cashbackVaultFromCPP = cashbackVault.connect(cpp);
+    cashbackVaultFromManager = cashbackVault.connect(manager);
+  });
   it("should deploy the contract and match version", async () => {
     const { cashbackVault } = await deployContracts();
 
@@ -81,19 +94,6 @@ describe("Contracts 'CashbackVault'", async () => {
       EXPECTED_VERSION.patch]);
   });
   describe("CPP basic happy path token flows and events checks", async () => {
-    let cashbackVault: CashbackVault;
-    let tokenMock: ERC20TokenMock;
-    let cashbackVaultFromCPP: CashbackVault;
-    let cashbackVaultFromManager: CashbackVault;
-    let cashBackVaultAddress: string;
-    beforeEach(async () => {
-      const contracts = await loadFixture(deployContracts);
-      cashbackVault = contracts.cashbackVault;
-      tokenMock = contracts.tokenMock;
-      cashBackVaultAddress = await cashbackVault.getAddress();
-      cashbackVaultFromCPP = cashbackVault.connect(cpp);
-      cashbackVaultFromManager = cashbackVault.connect(manager);
-    });
     describe("granting 1000 tokens cashback", async () => {
       let tx: TransactionResponse;
       beforeEach(async () => {
@@ -230,6 +230,32 @@ describe("Contracts 'CashbackVault'", async () => {
             });
           });
         });
+      });
+    });
+  });
+  describe("CPP basic unhappy path token flows and errors checks", async () => {
+    it("should revert if we grant cashback for zero address", async () => {
+      await expect(cashbackVaultFromCPP.grantCashback(ADDRESS_ZERO, 1000n))
+        .to.be.revertedWithCustomError(cashbackVaultFromCPP, "CashbackVault_UserAddressZero");
+    });
+    it("should revert if we grant cashback for with amount greater than uint64 max", async () => {
+      await expect(cashbackVaultFromCPP.grantCashback(user.address, maxUintForBits(64) + 100n))
+        .to.be.revertedWithCustomError(cashbackVaultFromCPP, "CashbackVault_AmountExcess");
+    });
+    describe("granting 1000 tokens cashback", async () => {
+      let tx: TransactionResponse;
+      beforeEach(async () => {
+        tx = await loadFixture(async function grantCashback1000() {
+          return cashbackVaultFromCPP.grantCashback(user.address, 1000n);
+        });
+      });
+      it("should revert if we revoke more cashback than user have", async () => {
+        await expect(cashbackVaultFromCPP.revokeCashback(user.address, 1001n))
+          .to.be.revertedWithCustomError(cashbackVaultFromCPP, "CashbackVault_InsufficientCashbackBalance");
+      });
+      it("should revert if we claim more cashback than user have", async () => {
+        await expect(cashbackVaultFromManager.claim(user.address, 1001n))
+          .to.be.revertedWithCustomError(cashbackVaultFromManager, "CashbackVault_InsufficientCashbackBalance");
       });
     });
   });
