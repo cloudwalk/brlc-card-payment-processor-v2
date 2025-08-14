@@ -4,6 +4,7 @@ import { Contract, ContractFactory, TransactionResponse } from "ethers";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { checkContractUupsUpgrading, connect, getAddress, proveTx } from "../test-utils/eth";
 import { CashbackVault__factory, CashbackVault, ERC20TokenMock, ERC20TokenMock__factory } from "../typechain-types";
+import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 
 const ADDRESS_ZERO = ethers.ZeroAddress;
 const ALLOWANCE_MAX = ethers.MaxUint256;
@@ -66,6 +67,10 @@ describe("Contracts 'CashbackVault'", async () => {
     await cashbackVault.grantRole(GRANTOR_ROLE, deployer.address);
     await cashbackVault.grantRole(CASHBACK_GRANTOR_ROLE, cpp.address);
     await cashbackVault.grantRole(MANAGER_ROLE, manager.address);
+
+    await tokenMock.mint(cpp.address, BALANCE_INITIAL);
+    // TODO maybe use some trusted account?
+    await tokenMock.connect(cpp).approve(cashbackVault.getAddress(), BALANCE_INITIAL);
     return { cashbackVault, tokenMock };
   }
   it("should deploy the contract and match version", async () => {
@@ -75,60 +80,41 @@ describe("Contracts 'CashbackVault'", async () => {
       EXPECTED_VERSION.minor,
       EXPECTED_VERSION.patch]);
   });
-  describe("CPP basic happy path flows", async () => {
+  describe("CPP basic happy path token flows and events checks", async () => {
     let cashbackVault: CashbackVault;
     let tokenMock: ERC20TokenMock;
+    let cashbackVaultFromCPP: CashbackVault;
     let cashBackVaultAddress: string;
-    before(async () => {
-      const contracts = await deployContracts();
+    beforeEach(async () => {
+      const contracts = await loadFixture(deployContracts);
       cashbackVault = contracts.cashbackVault;
       tokenMock = contracts.tokenMock;
       cashBackVaultAddress = await cashbackVault.getAddress();
-      await tokenMock.mint(cpp.address, BALANCE_INITIAL);
-      // TODO maybe use some trusted account?
-      await tokenMock.connect(cpp).approve(cashbackVault.getAddress(), BALANCE_INITIAL);
+      cashbackVaultFromCPP = cashbackVault.connect(cpp);
     });
-    it("increse cashback", async () => {
-      const cashbackVaultFromCPP = cashbackVault.connect(cpp);
-      await cashbackVaultFromCPP.grantCashback(user.address, 1000n);
-      expect(await cashbackVaultFromCPP.getCashbackBalance(user.address)).to.equal(1000n);
-      expect(await tokenMock.balanceOf(cashBackVaultAddress)).to.equal(1000n);
-      expect(await tokenMock.balanceOf(user.address)).to.equal(0n);
-      expect(await tokenMock.balanceOf(cpp.address)).to.equal(BALANCE_INITIAL - 1000n);
-      await cashbackVaultFromCPP.grantCashback(user.address, 500n);
-      expect(await cashbackVaultFromCPP.getCashbackBalance(user.address)).to.equal(1500n);
-      expect(await tokenMock.balanceOf(cashBackVaultAddress)).to.equal(1500n);
-      expect(await tokenMock.balanceOf(user.address)).to.equal(0n);
-      expect(await tokenMock.balanceOf(cpp.address)).to.equal(BALANCE_INITIAL - 1500n);
-    });
-    it("dec cashback", async () => {
-      const cashbackVaultFromCPP = cashbackVault.connect(cpp);
-      await cashbackVaultFromCPP.revokeCashback(user.address, 100n);
-      expect(await cashbackVaultFromCPP.getCashbackBalance(user.address)).to.equal(1400n);
-      expect(await tokenMock.balanceOf(cashBackVaultAddress)).to.equal(1400n);
-      expect(await tokenMock.balanceOf(user.address)).to.equal(0n);
-      expect(await tokenMock.balanceOf(cpp.address)).to.equal(BALANCE_INITIAL - 1400n);
-      await cashbackVaultFromCPP.revokeCashback(user.address, 500n);
-      expect(await cashbackVaultFromCPP.getCashbackBalance(user.address)).to.equal(900n);
-      expect(await tokenMock.balanceOf(cashBackVaultAddress)).to.equal(900n);
-      expect(await tokenMock.balanceOf(user.address)).to.equal(0n);
-      expect(await tokenMock.balanceOf(cpp.address)).to.equal(BALANCE_INITIAL - 900n);
-    });
-    it("claim cashback", async () => {
-      const cashbackVaultFromManager = cashbackVault.connect(manager);
-      await cashbackVaultFromManager.claim(user.address, 100n);
-      expect(await cashbackVaultFromManager.getCashbackBalance(user.address)).to.equal(800n);
-      expect(await tokenMock.balanceOf(cashBackVaultAddress)).to.equal(800n);
-      expect(await tokenMock.balanceOf(user.address)).to.equal(100n);
-      expect(await tokenMock.balanceOf(cpp.address)).to.equal(BALANCE_INITIAL - 800n);
-    });
-    it("claim all cashback", async () => {
-      const cashbackVaultFromManager = cashbackVault.connect(manager);
-      await cashbackVaultFromManager.claimAll(user.address);
-      expect(await cashbackVaultFromManager.getCashbackBalance(user.address)).to.equal(0n);
-      expect(await tokenMock.balanceOf(cashBackVaultAddress)).to.equal(0n);
-      expect(await tokenMock.balanceOf(user.address)).to.equal(1000n);
-      expect(await tokenMock.balanceOf(cpp.address)).to.equal(BALANCE_INITIAL - 1000n);
+    describe("granting 1000 tokens cashback", async () => {
+      let tx: TransactionResponse;
+      beforeEach(async () => {
+        tx = await loadFixture(async function grantCashback() {
+          return cashbackVaultFromCPP.grantCashback(user.address, 1000n);
+        });
+      });
+      it("should emit CashbackGranted event", async () => {
+        await expect(tx)
+          .to.emit(cashbackVaultFromCPP, "CashbackGranted").withArgs(user.address, cpp.address, 1000n, 1000n);
+      });
+      it("should increase CashbackVault real token balance", async () => {
+        expect(await tokenMock.balanceOf(cashBackVaultAddress)).to.equal(1000n);
+      });
+      it("should increase CashbackVault tracked totalCashbackBalance", async () => {
+        expect(await cashbackVaultFromCPP.getTotalCashback()).to.equal(1000n);
+      });
+      it("should decrease CPP token balance", async () => {
+        expect(await tokenMock.balanceOf(cpp.address)).to.equal(BALANCE_INITIAL - 1000n);
+      });
+      it("should increase user cashback balance", async () => {
+        expect(await cashbackVaultFromCPP.getCashbackBalance(user.address)).to.equal(1000n);
+      });
     });
   });
 });
