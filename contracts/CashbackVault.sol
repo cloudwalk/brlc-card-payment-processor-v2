@@ -147,7 +147,7 @@ contract CashbackVault is
 
         uint256 oldBalance = accountState.balance;
         if (oldBalance < amount) {
-            revert CashbackVault_InsufficientCashbackBalance();
+            revert CashbackVault_CashbackBalanceInsufficient();
         }
 
         _validateOwnBalance(amount);
@@ -246,7 +246,7 @@ contract CashbackVault is
 
         uint256 oldBalance = accountState.balance;
         if (oldBalance < amount) {
-            revert CashbackVault_InsufficientCashbackBalance();
+            revert CashbackVault_CashbackBalanceInsufficient();
         }
 
         _validateOwnBalance(amount);
@@ -277,7 +277,7 @@ contract CashbackVault is
         // If real balance is not enouth we will got erc20 error
         // but what error we expect?
         if (IERC20(_getCashbackVaultStorage().token).balanceOf(address(this)) < amount) {
-            revert CashbackVault_InsufficientVaultBalance();
+            revert CashbackVault_VaultBalanceInsufficient();
         }
     }
 }
