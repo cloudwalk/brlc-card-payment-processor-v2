@@ -202,9 +202,6 @@ interface ICashbackVaultErrors {
 
     /// @notice Thrown if the provided token address is zero during initialization.
     error CashbackVault_TokenAddressZero();
-
-    /// @notice Thrown if the vault's token balance is insufficient for the operation.
-    error CashbackVault_VaultBalanceInsufficient();
 }
 
 /**
