@@ -19,10 +19,6 @@ import { CashbackVaultStorageLayout } from "./CashbackVaultStorageLayout.sol";
 /**
  * @title CashbackVault contract
  * @author CloudWalk Inc. (See https://www.cloudwalk.io)
- * @dev The smart contract manages cashback balances for accounts.
- * It allows CPP contracts to increase/decrease cashback balances and executors to claim cashback on behalf of accounts.
- *
- * See details about the contract in the comments of the {ICashbackVault} interface.
  */
 contract CashbackVault is
     CashbackVaultStorageLayout,
