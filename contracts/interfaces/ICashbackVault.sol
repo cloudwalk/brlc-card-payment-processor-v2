@@ -14,12 +14,15 @@ interface ICashbackVaultTypes {
      * Fields:
      *
      * - balance --- The cashback balance of the account.
+     * - totalClaimed --- The total amount of cashback claimed by the account.
+     * - lastClaimTimestamp --- The timestamp of the last claim operation.
      */
     struct AccountCashbackState {
         // Slot 1
         uint64 balance;
         uint64 totalClaimed;
-        // uint128 __reserved1; // Reserved until the end of the storage slot
+        uint64 lastClaimTimestamp;
+        // uint64 __reserved; // Reserved until the end of the storage slot
     }
 }
 
