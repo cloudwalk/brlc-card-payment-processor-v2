@@ -195,10 +195,10 @@ interface ICashbackVaultErrors {
     error CashbackVault_AmountExcess();
 
     /// @notice Thrown if the account's cashback balance is insufficient for the operation.
-    error CashbackVault_InsufficientCashbackBalance();
+    error CashbackVault_CashbackBalanceInsufficient();
 
     /// @notice Thrown if the vault's token balance is insufficient for the operation.
-    error CashbackVault_InsufficientVaultBalance();
+    error CashbackVault_VaultBalanceInsufficient();
 
     /// @notice Thrown if the provided token address is zero during initialization.
     error CashbackVault_TokenAddressZero();

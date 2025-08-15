@@ -262,11 +262,11 @@ describe("Contracts 'CashbackVault'", async () => {
       });
       it("should revert if we revoke more cashback than account have", async () => {
         await expect(cashbackVaultFromCPP.revokeCashback(account.address, 1001n))
-          .to.be.revertedWithCustomError(cashbackVaultFromCPP, "CashbackVault_InsufficientCashbackBalance");
+          .to.be.revertedWithCustomError(cashbackVaultFromCPP, "CashbackVault_CashbackBalanceInsufficient");
       });
       it("should revert if we claim more cashback than account have", async () => {
         await expect(cashbackVaultFromManager.claim(account.address, 1001n))
-          .to.be.revertedWithCustomError(cashbackVaultFromManager, "CashbackVault_InsufficientCashbackBalance");
+          .to.be.revertedWithCustomError(cashbackVaultFromManager, "CashbackVault_CashbackBalanceInsufficient");
       });
     });
   });
