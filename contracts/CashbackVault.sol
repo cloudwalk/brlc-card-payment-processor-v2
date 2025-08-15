@@ -36,7 +36,7 @@ contract CashbackVault is
     // --- Constants ---- //
 
     /// @dev The role of cashback grantors that are allowed to increase and decrease cashback balances.
-    bytes32 public constant CASHBACK_GRANTOR_ROLE = keccak256("CASHBACK_GRANTOR_ROLE");
+    bytes32 public constant CASHBACK_OPERATOR_ROLE = keccak256("CASHBACK_OPERATOR_ROLE");
 
     /// @dev The role of executors that are allowed to claim cashback on behalf of accounts.
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
@@ -77,7 +77,7 @@ contract CashbackVault is
         CashbackVaultStorage storage $ = _getCashbackVaultStorage();
         $.token = token_;
 
-        _setRoleAdmin(CASHBACK_GRANTOR_ROLE, GRANTOR_ROLE);
+        _setRoleAdmin(CASHBACK_OPERATOR_ROLE, GRANTOR_ROLE);
         _setRoleAdmin(MANAGER_ROLE, GRANTOR_ROLE);
         _grantRole(OWNER_ROLE, _msgSender());
     }
@@ -90,14 +90,14 @@ contract CashbackVault is
      * @dev Requirements:
      *
      * - The contract must not be paused.
-     * - The caller must have the {CPP_ROLE} role.
+     * - The caller must have the {CASHBACK_OPERATOR_ROLE} role.
      * - The provided account address must not be zero.
      * - The provided amount must not be zero.
      */
     function grantCashback(
         address account,
         uint256 amount
-    ) external whenNotPaused onlyRole(CASHBACK_GRANTOR_ROLE) onlyValidAmount(amount) onlyValidAccount(account) {
+    ) external whenNotPaused onlyRole(CASHBACK_OPERATOR_ROLE) onlyValidAmount(amount) onlyValidAccount(account) {
         CashbackVaultStorage storage $ = _getCashbackVaultStorage();
         AccountCashbackState storage accountState = $.accountCashbackStates[account];
 
@@ -119,7 +119,7 @@ contract CashbackVault is
      * @dev Requirements:
      *
      * - The contract must not be paused.
-     * - The caller must have the {CASHBACK_GRANTOR_ROLE} role.
+     * - The caller must have the {CASHBACK_OPERATOR_ROLE} role.
      * - The provided account address must not be zero.
      * - The provided amount must not be zero.
      * - The account must have sufficient cashback balance.
@@ -127,7 +127,7 @@ contract CashbackVault is
     function revokeCashback(
         address account,
         uint256 amount
-    ) external whenNotPaused onlyRole(CASHBACK_GRANTOR_ROLE) onlyValidAmount(amount) onlyValidAccount(account) {
+    ) external whenNotPaused onlyRole(CASHBACK_OPERATOR_ROLE) onlyValidAmount(amount) onlyValidAccount(account) {
         CashbackVaultStorage storage $ = _getCashbackVaultStorage();
         AccountCashbackState storage accountState = $.accountCashbackStates[account];
 
