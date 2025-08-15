@@ -146,8 +146,6 @@ contract CashbackVault is
             revert CashbackVault_CashbackBalanceInsufficient();
         }
 
-        _validateOwnBalance(amount);
-
         uint256 newBalance = oldBalance - amount;
         accountState.balance = uint64(newBalance);
         $.totalCashback -= uint64(amount);
@@ -161,7 +159,7 @@ contract CashbackVault is
      * @inheritdoc ICashbackVaultPrimary
      *
      * @dev Requirements:
-     *
+     *å
      * - The contract must not be paused.
      * - The caller must have the {MANAGER_ROLE} role.
      * - The provided account address must not be zero.
@@ -245,7 +243,6 @@ contract CashbackVault is
             revert CashbackVault_CashbackBalanceInsufficient();
         }
 
-        _validateOwnBalance(amount);
 
         uint256 newBalance = oldBalance - amount;
         accountState.balance = uint64(newBalance);
@@ -265,15 +262,6 @@ contract CashbackVault is
     function _validateUpgrade(address newImplementation) internal view override onlyRole(OWNER_ROLE) {
         try ICashbackVault(newImplementation).proveCashbackVault() {} catch {
             revert CashbackVault_ImplementationAddressInvalid();
-        }
-    }
-
-    function _validateOwnBalance(uint256 amount) internal view {
-        // TODO: check totalCashback from storage?
-        // If real balance is not enouth we will got erc20 error
-        // but what error we expect?
-        if (IERC20(_getCashbackVaultStorage().token).balanceOf(address(this)) < amount) {
-            revert CashbackVault_VaultBalanceInsufficient();
         }
     }
 }
