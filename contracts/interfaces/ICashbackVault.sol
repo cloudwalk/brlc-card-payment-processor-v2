@@ -213,10 +213,12 @@ interface ICashbackVaultErrors {
  * @notice The full interface of the cashback vault smart contract.
  *
  * The smart contract manages cashback balances for accounts and allows:
- * - CPP contracts to increase/decrease cashback balances
- * - Executors to claim cashback on behalf of accounts
- * - Accounts to view their cashback balances
- * 
+ * - Accounts with CASHBACK_OPERATOR_ROLE to increase/decrease cashback balances
+ * - Accounts with MANAGER_ROLE to claim cashback on behalf of accounts
+ * - To view account cashback balances
+ * - To view the total cashback balance of the vault
+ * - To view the cashback state of an account including the balance, total claimed and last claim timestamp
+ *
  * The contract stores both the tokens and the corresponding cashback balance mappings,
  * providing a centralized cashback management system.
  */
