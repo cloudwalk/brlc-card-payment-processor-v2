@@ -81,12 +81,15 @@ describe("Contracts 'CashbackVault'", async () => {
     cashbackVaultFromCPP = cashbackVault.connect(cpp);
     cashbackVaultFromManager = cashbackVault.connect(manager);
   });
-  it("should deploy the contract and match version", async () => {
-    const { cashbackVault } = await deployContracts();
-
-    expect(await cashbackVault.$__VERSION()).to.deep.equal([EXPECTED_VERSION.major,
+  it("should return version", async () => {
+    expect(await cashbackVault.$__VERSION()).to.deep.equal([
+      EXPECTED_VERSION.major,
       EXPECTED_VERSION.minor,
-      EXPECTED_VERSION.patch]);
+      EXPECTED_VERSION.patch,
+    ]);
+  });
+  it("should have proveCashbackVault function", async () => {
+    await expect(await cashbackVault.proveCashbackVault()).to.be.not.reverted;
   });
   it("should give us underlying token address", async () => {
     expect(await cashbackVault.underlyingToken()).to.equal(await tokenMock.getAddress());
