@@ -53,7 +53,6 @@ async function deployContracts() {
   await cashbackVault.grantRole(MANAGER_ROLE, manager.address);
 
   await tokenMock.mint(cpp.address, BALANCE_INITIAL);
-  // TODO maybe use some trusted account?
   await tokenMock.connect(cpp).approve(cashbackVault.getAddress(), BALANCE_INITIAL);
   return { cashbackVault, tokenMock };
 }
