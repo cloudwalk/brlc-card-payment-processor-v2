@@ -85,7 +85,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
      * @dev Increases the cashback balance for a account.
      *
      * Transfers tokens from the caller to the vault and increases the account's cashback balance.
-     * This function can be called only by an account with the CPP_ROLE.
+     * This function can be called only by an account with the CASHBACK_OPERATOR_ROLE.
      *
      * Emits a {CashbackIncreased} event.
      *
@@ -98,7 +98,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
      * @dev Decreases the cashback balance for a account.
      *
      * Transfers tokens from the vault to the caller and decreases the account's cashback balance.
-     * This function can be called only by an account with the CPP_ROLE.
+     * This function can be called only by an account with the CASHBACK_OPERATOR_ROLE.
      *
      * Emits a {CashbackDecreased} event.
      *

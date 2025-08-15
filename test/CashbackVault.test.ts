@@ -11,7 +11,7 @@ const BALANCE_INITIAL = 1000_000_000_000n;
 
 const GRANTOR_ROLE: string = ethers.id("GRANTOR_ROLE");
 const MANAGER_ROLE: string = ethers.id("MANAGER_ROLE");
-const CASHBACK_GRANTOR_ROLE: string = ethers.id("CASHBACK_GRANTOR_ROLE");
+const CASHBACK_OPERATOR_ROLE: string = ethers.id("CASHBACK_OPERATOR_ROLE");
 
 const EXPECTED_VERSION: Version = {
   major: 1n,
@@ -49,7 +49,7 @@ async function deployContracts() {
   await cashbackVault.waitForDeployment();
 
   await cashbackVault.grantRole(GRANTOR_ROLE, deployer.address);
-  await cashbackVault.grantRole(CASHBACK_GRANTOR_ROLE, cpp.address);
+  await cashbackVault.grantRole(CASHBACK_OPERATOR_ROLE, cpp.address);
   await cashbackVault.grantRole(MANAGER_ROLE, manager.address);
 
   await tokenMock.mint(cpp.address, BALANCE_INITIAL);
