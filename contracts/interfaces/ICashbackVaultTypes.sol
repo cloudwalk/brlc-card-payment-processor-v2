@@ -9,19 +9,19 @@ pragma solidity ^0.8.0;
  */
 interface ICashbackVaultTypes {
     /**
-     * @dev The cashback state of a single user within the cashback vault contract.
+     * @dev The cashback state of a single account within the cashback vault contract.
      *
      * Fields:
      *
-     * - balance --- The cashback balance of the user.
-     * - totalClaimed --- The total amount of cashback claimed by the user.
+     * - balance --- The cashback balance of the account.
+     * - totalClaimed --- The total amount of cashback claimed by the account.
      * - lastClaimTimestamp --- The timestamp of the last claim operation.
      */
-    struct UserCashbackState {
+    struct AccountCashbackState {
         // Slot 1
         uint64 balance;
         uint64 totalClaimed;
-        uint64 lastClaimTimestamp;
-        uint64 __reserved; // Reserved until the end of the storage slot
+        // uint64 lastClaimTimestamp;
+        // uint64 __reserved; // Reserved until the end of the storage slot
     }
 }

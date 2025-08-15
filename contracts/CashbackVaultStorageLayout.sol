@@ -25,8 +25,8 @@ abstract contract CashbackVaultStorageLayout is ICashbackVaultTypes {
      * Fields:
      *
      * - token ---- The address of the underlying token.
-     * - totalCashback ----- The total amount of cashback across all users.
-     * - userCashbackStates -- The mapping of cashback state for each user.
+     * - totalCashback ----- The total amount of cashback across all accounts.
+     * - accountCashbackStates -- The mapping of cashback state for each account.
      *
      * @custom:storage-location erc7201:cloudwalk.storage.CashbackVault
      */
@@ -37,7 +37,7 @@ abstract contract CashbackVaultStorageLayout is ICashbackVaultTypes {
         // uint32 __reserved1; // Reserved until the end of the storage slot
 
         // Slot 2
-        mapping(address user => UserCashbackState state) userCashbackStates;
+        mapping(address account => AccountCashbackState state) accountCashbackStates;
     }
 
     // --- Internal functions ---- //

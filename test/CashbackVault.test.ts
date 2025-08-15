@@ -30,7 +30,7 @@ let tokenMockFactory: ERC20TokenMock__factory;
 let deployer: HardhatEthersSigner;
 let manager: HardhatEthersSigner;
 let cpp: HardhatEthersSigner;
-let user: HardhatEthersSigner;
+let account: HardhatEthersSigner;
 async function deployTokenMock() {
   const name = "ERC20 Test";
   const symbol = "TEST";
@@ -60,7 +60,7 @@ async function deployContracts() {
 
 describe("Contracts 'CashbackVault'", async () => {
   before(async () => {
-    [deployer, manager, cpp, user] = await ethers.getSigners();
+    [deployer, manager, cpp, account] = await ethers.getSigners();
 
     // The contract factories with the explicitly specified deployer account
     cashbackVaultFactory = await ethers.getContractFactory("CashbackVault");
@@ -106,12 +106,12 @@ describe("Contracts 'CashbackVault'", async () => {
       let tx: TransactionResponse;
       beforeEach(async () => {
         tx = await loadFixture(async function grantCashback1000() {
-          return cashbackVaultFromCPP.grantCashback(user.address, 1000n);
+          return cashbackVaultFromCPP.grantCashback(account.address, 1000n);
         });
       });
       it("should emit CashbackGranted event", async () => {
         await expect(tx)
-          .to.emit(cashbackVaultFromCPP, "CashbackGranted").withArgs(user.address, cpp.address, 1000n, 1000n);
+          .to.emit(cashbackVaultFromCPP, "CashbackGranted").withArgs(account.address, cpp.address, 1000n, 1000n);
       });
       it("should increase CashbackVault real token balance", async () => {
         expect(await tokenMock.balanceOf(cashBackVaultAddress)).to.equal(1000n);
@@ -122,22 +122,22 @@ describe("Contracts 'CashbackVault'", async () => {
       it("should decrease CPP token balance", async () => {
         expect(await tokenMock.balanceOf(cpp.address)).to.equal(BALANCE_INITIAL - 1000n);
       });
-      it("should increase user cashback balance", async () => {
-        expect(await cashbackVaultFromCPP.getCashbackBalance(user.address)).to.equal(1000n);
+      it("should increase account cashback balance", async () => {
+        expect(await cashbackVaultFromCPP.getCashbackBalance(account.address)).to.equal(1000n);
       });
-      it("should not change user totalClaimed in state", async () => {
-        expect((await cashbackVaultFromCPP.getUserCashbackState(user.address)).totalClaimed).to.equal(0n);
+      it("should not change account totalClaimed in state", async () => {
+        expect((await cashbackVaultFromCPP.getAccountCashbackState(account.address)).totalClaimed).to.equal(0n);
       });
       describe("revoking 100 tokens cashback", async () => {
         let tx: TransactionResponse;
         beforeEach(async () => {
           tx = await loadFixture(async function revokeCashback100() {
-            return cashbackVaultFromCPP.revokeCashback(user.address, 100n);
+            return cashbackVaultFromCPP.revokeCashback(account.address, 100n);
           });
         });
         it("should emit CashbackRevoked event", async () => {
           await expect(tx)
-            .to.emit(cashbackVaultFromCPP, "CashbackRevoked").withArgs(user.address, cpp.address, 100n, 900n);
+            .to.emit(cashbackVaultFromCPP, "CashbackRevoked").withArgs(account.address, cpp.address, 100n, 900n);
         });
         it("should decrease CashbackVault real token balance", async () => {
           expect(await tokenMock.balanceOf(cashBackVaultAddress)).to.equal(900n);
@@ -148,19 +148,19 @@ describe("Contracts 'CashbackVault'", async () => {
         it("should increase CPP token balance", async () => {
           expect(await tokenMock.balanceOf(cpp.address)).to.equal(BALANCE_INITIAL - 900n);
         });
-        it("should decrease user cashback balance", async () => {
-          expect(await cashbackVaultFromCPP.getCashbackBalance(user.address)).to.equal(900n);
+        it("should decrease account cashback balance", async () => {
+          expect(await cashbackVaultFromCPP.getCashbackBalance(account.address)).to.equal(900n);
         });
         describe("grant more 500 tokens cashback", async () => {
           let tx: TransactionResponse;
           beforeEach(async () => {
             tx = await loadFixture(async function grantCashback500() {
-              return cashbackVaultFromCPP.grantCashback(user.address, 500n);
+              return cashbackVaultFromCPP.grantCashback(account.address, 500n);
             });
           });
           it("should emit CashbackGranted event", async () => {
             await expect(tx)
-              .to.emit(cashbackVaultFromCPP, "CashbackGranted").withArgs(user.address, cpp.address, 500n, 1400n);
+              .to.emit(cashbackVaultFromCPP, "CashbackGranted").withArgs(account.address, cpp.address, 500n, 1400n);
           });
           it("should increase CashbackVault real token balance", async () => {
             expect(await tokenMock.balanceOf(cashBackVaultAddress)).to.equal(1400n);
@@ -171,22 +171,23 @@ describe("Contracts 'CashbackVault'", async () => {
           it("should decrease CPP token balance", async () => {
             expect(await tokenMock.balanceOf(cpp.address)).to.equal(BALANCE_INITIAL - 1400n);
           });
-          it("should increase user cashback balance", async () => {
-            expect(await cashbackVaultFromCPP.getCashbackBalance(user.address)).to.equal(1400n);
+          it("should increase account cashback balance", async () => {
+            expect(await cashbackVaultFromCPP.getCashbackBalance(account.address)).to.equal(1400n);
           });
-          it("should not change user totalClaimed in state", async () => {
-            expect((await cashbackVaultFromCPP.getUserCashbackState(user.address)).totalClaimed).to.equal(0n);
+          it("should not change account totalClaimed in state", async () => {
+            expect((await cashbackVaultFromCPP.getAccountCashbackState(account.address)).totalClaimed).to.equal(0n);
           });
           describe("claiming 100 tokens cashback", async () => {
             let tx: TransactionResponse;
             beforeEach(async () => {
               tx = await loadFixture(async function claimCashback100() {
-                return cashbackVaultFromManager.claim(user.address, 100n);
+                return cashbackVaultFromManager.claim(account.address, 100n);
               });
             });
             it("should emit CashbackClaimed event", async () => {
               await expect(tx)
-                .to.emit(cashbackVaultFromCPP, "CashbackClaimed").withArgs(user.address, manager.address, 100n, 1300n);
+                .to.emit(cashbackVaultFromCPP, "CashbackClaimed")
+                .withArgs(account.address, manager.address, 100n, 1300n);
             });
             it("should decrease CashbackVault real token balance", async () => {
               expect(await tokenMock.balanceOf(cashBackVaultAddress)).to.equal(1300n);
@@ -197,25 +198,26 @@ describe("Contracts 'CashbackVault'", async () => {
             it("CPP token balance should not change", async () => {
               expect(await tokenMock.balanceOf(cpp.address)).to.equal(BALANCE_INITIAL - 1400n);
             });
-            it("should decrease user cashback balance", async () => {
-              expect(await cashbackVaultFromCPP.getCashbackBalance(user.address)).to.equal(1300n);
+            it("should decrease account cashback balance", async () => {
+              expect(await cashbackVaultFromCPP.getCashbackBalance(account.address)).to.equal(1300n);
             });
-            it("should increase user totalClaimed in state", async () => {
-              expect((await cashbackVaultFromCPP.getUserCashbackState(user.address)).totalClaimed).to.equal(100n);
+            it("should increase account totalClaimed in state", async () => {
+              expect((await cashbackVaultFromCPP.getAccountCashbackState(account.address)).totalClaimed).to.equal(100n);
             });
-            it("should increase user balance", async () => {
-              expect(await tokenMock.balanceOf(user.address)).to.equal(100n);
+            it("should increase account balance", async () => {
+              expect(await tokenMock.balanceOf(account.address)).to.equal(100n);
             });
             describe("claiming all tokens cashback", async () => {
               let tx: TransactionResponse;
               beforeEach(async () => {
                 tx = await loadFixture(async function claimCashbackAll() {
-                  return cashbackVaultFromManager.claimAll(user.address);
+                  return cashbackVaultFromManager.claimAll(account.address);
                 });
               });
               it("should emit CashbackClaimed event", async () => {
                 await expect(tx)
-                  .to.emit(cashbackVaultFromCPP, "CashbackClaimed").withArgs(user.address, manager.address, 1300n, 0n);
+                  .to.emit(cashbackVaultFromCPP, "CashbackClaimed")
+                  .withArgs(account.address, manager.address, 1300n, 0n);
               });
               it("should decrease CashbackVault real token balance", async () => {
                 expect(await tokenMock.balanceOf(cashBackVaultAddress)).to.equal(0n);
@@ -226,14 +228,15 @@ describe("Contracts 'CashbackVault'", async () => {
               it("CPP token balance should not change", async () => {
                 expect(await tokenMock.balanceOf(cpp.address)).to.equal(BALANCE_INITIAL - 1400n);
               });
-              it("should decrease user cashback balance", async () => {
-                expect(await cashbackVaultFromCPP.getCashbackBalance(user.address)).to.equal(0n);
+              it("should decrease account cashback balance", async () => {
+                expect(await cashbackVaultFromCPP.getCashbackBalance(account.address)).to.equal(0n);
               });
-              it("should increase user totalClaimed in state", async () => {
-                expect((await cashbackVaultFromCPP.getUserCashbackState(user.address)).totalClaimed).to.equal(1400n);
+              it("should increase account totalClaimed in state", async () => {
+                expect((await cashbackVaultFromCPP.getAccountCashbackState(account.address)).totalClaimed)
+                  .to.equal(1400n);
               });
-              it("should increase user balance", async () => {
-                expect(await tokenMock.balanceOf(user.address)).to.equal(1400n);
+              it("should increase account balance", async () => {
+                expect(await tokenMock.balanceOf(account.address)).to.equal(1400n);
               });
             });
           });
@@ -244,25 +247,25 @@ describe("Contracts 'CashbackVault'", async () => {
   describe("CPP basic unhappy path token flows and errors checks", async () => {
     it("should revert if we grant cashback for zero address", async () => {
       await expect(cashbackVaultFromCPP.grantCashback(ADDRESS_ZERO, 1000n))
-        .to.be.revertedWithCustomError(cashbackVaultFromCPP, "CashbackVault_UserAddressZero");
+        .to.be.revertedWithCustomError(cashbackVaultFromCPP, "CashbackVault_AccountAddressZero");
     });
     it("should revert if we grant cashback for with amount greater than uint64 max", async () => {
-      await expect(cashbackVaultFromCPP.grantCashback(user.address, maxUintForBits(64) + 100n))
+      await expect(cashbackVaultFromCPP.grantCashback(account.address, maxUintForBits(64) + 100n))
         .to.be.revertedWithCustomError(cashbackVaultFromCPP, "CashbackVault_AmountExcess");
     });
     describe("granting 1000 tokens cashback", async () => {
       let tx: TransactionResponse;
       beforeEach(async () => {
         tx = await loadFixture(async function grantCashback1000() {
-          return cashbackVaultFromCPP.grantCashback(user.address, 1000n);
+          return cashbackVaultFromCPP.grantCashback(account.address, 1000n);
         });
       });
-      it("should revert if we revoke more cashback than user have", async () => {
-        await expect(cashbackVaultFromCPP.revokeCashback(user.address, 1001n))
+      it("should revert if we revoke more cashback than account have", async () => {
+        await expect(cashbackVaultFromCPP.revokeCashback(account.address, 1001n))
           .to.be.revertedWithCustomError(cashbackVaultFromCPP, "CashbackVault_InsufficientCashbackBalance");
       });
-      it("should revert if we claim more cashback than user have", async () => {
-        await expect(cashbackVaultFromManager.claim(user.address, 1001n))
+      it("should revert if we claim more cashback than account have", async () => {
+        await expect(cashbackVaultFromManager.claim(account.address, 1001n))
           .to.be.revertedWithCustomError(cashbackVaultFromManager, "CashbackVault_InsufficientCashbackBalance");
       });
     });
