@@ -184,13 +184,18 @@ contract CashbackVault is
     // --- View functions ----- //
 
     /// @inheritdoc ICashbackVaultPrimary
-    function getCashbackBalance(address account) external view returns (uint256) {
+    function getAccountCashbackBalance(address account) external view returns (uint256) {
         return _getCashbackVaultStorage().accountCashbackStates[account].balance;
     }
 
     /// @inheritdoc ICashbackVaultPrimary
-    function getAccountCashbackState(address account) external view returns (AccountCashbackState memory) {
-        return _getCashbackVaultStorage().accountCashbackStates[account];
+    function getAccountCashbackState(address account) external view returns (GetAccountCashbackStateResult memory) {
+        AccountCashbackState storage accountState = _getCashbackVaultStorage().accountCashbackStates[account];
+        return GetAccountCashbackStateResult({
+            balance: accountState.balance,
+            totalClaimed: accountState.totalClaimed,
+            lastClaimTimestamp: accountState.lastClaimTimestamp
+        });
     }
 
     /// @inheritdoc ICashbackVaultPrimary
@@ -199,7 +204,7 @@ contract CashbackVault is
     }
 
     /// @inheritdoc ICashbackVaultPrimary
-    function getTotalCashback() external view returns (uint256) {
+    function getTotalCashbackBalance() external view returns (uint256) {
         return _getCashbackVaultStorage().totalCashback;
     }
 
