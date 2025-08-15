@@ -235,6 +235,7 @@ contract CashbackVault is
         uint256 newBalance = oldBalance - amount;
         accountState.balance = uint64(newBalance);
         accountState.totalClaimed += uint64(amount);
+        accountState.lastClaimTimestamp = uint64(block.timestamp);
         $.totalCashback -= uint64(amount);
 
         // Transfer tokens from vault to account
