@@ -92,13 +92,25 @@ describe("Contracts 'CashbackVault'", async () => {
     expect(await cashbackVault.underlyingToken()).to.equal(await tokenMock.getAddress());
   });
   describe("upgrade and deploy errors", async () => {
-    it("should revert if we try upgrade to not cashback vault", async () => {
-      await expect(cashbackVault.upgradeToAndCall(tokenMock.getAddress(), "0x"))
-        .to.be.revertedWithCustomError(cashbackVault, "CashbackVault_ImplementationAddressInvalid");
+    describe("upgrade to not cashback vault", async () => {
+      let tx: Promise<TransactionResponse>;
+      beforeEach(async () => {
+        tx = cashbackVault.upgradeToAndCall(tokenMock.getAddress(), "0x");
+      });
+      it("should revert with CashbackVault_ImplementationAddressInvalid", async () => {
+        await expect(tx)
+          .to.be.revertedWithCustomError(cashbackVault, "CashbackVault_ImplementationAddressInvalid");
+      });
     });
-    it("shoud revert deploy if we try to deploy with zero token address", async () => {
-      await expect(upgrades.deployProxy(cashbackVaultFactory, [ADDRESS_ZERO]))
-        .to.be.revertedWithCustomError(cashbackVaultFactory, "CashbackVault_TokenAddressZero");
+    describe("deploy with zero token address", async () => {
+      let tx: ReturnType<typeof upgrades.deployProxy>;
+      beforeEach(async () => {
+        tx = upgrades.deployProxy(cashbackVaultFactory, [ADDRESS_ZERO]);
+      });
+      it("should revert with CashbackVault_TokenAddressZero", async () => {
+        await expect(tx)
+          .to.be.revertedWithCustomError(cashbackVaultFactory, "CashbackVault_TokenAddressZero");
+      });
     });
   });
   describe("CPP basic happy path token flows and events checks", async () => {
