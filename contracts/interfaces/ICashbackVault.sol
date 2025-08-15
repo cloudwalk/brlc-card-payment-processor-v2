@@ -94,7 +94,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
         uint256 newBalance
     );
 
-    // --- Transactional functions ----- //
+    // ------------------ Transactional functions ----------------- //
 
     /**
      * @notice Increases the cashback balance for a account.
@@ -147,7 +147,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
      */
     function claimAll(address account) external;
 
-    // --- View functions ----- //
+    // ------------------ View functions -------------------------- //
 
     /**
      * @notice Returns the cashback balance of a specific account.

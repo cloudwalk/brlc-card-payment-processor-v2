@@ -33,7 +33,7 @@ contract CashbackVault is
     IVersionable,
     ICashbackVault
 {
-    // --- Constants ---- //
+    // ------------------ Constants ------------------------------- //
 
     /// @dev The role of cashback grantors that are allowed to increase and decrease cashback balances.
     bytes32 public constant CASHBACK_OPERATOR_ROLE = keccak256("CASHBACK_OPERATOR_ROLE");
@@ -41,7 +41,7 @@ contract CashbackVault is
     /// @dev The role of executors that are allowed to claim cashback on behalf of accounts.
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
 
-    // --- Constructor ----- //
+    // ------------------ Constructor ----------------------------- //
 
     /**
      * @dev Constructor that prohibits the initialization of the implementation of the upgradeable contract.
@@ -54,8 +54,22 @@ contract CashbackVault is
     constructor() {
         _disableInitializers();
     }
+    // --------------------- Modifiers ---------------------------- //
 
-    // --- Initializers ---- //
+    modifier onlyValidAccount(address account) {
+        if (account == address(0)) {
+            revert CashbackVault_AccountAddressZero();
+        }
+        _;
+    }
+
+    modifier onlyValidAmount(uint256 amount) {
+        if (amount > type(uint64).max) {
+            revert CashbackVault_AmountExcess();
+        }
+        _;
+    }
+    // ------------------ Initializers ---------------------------- //
 
     /**
      * @dev Initializer of the upgradeable contract.
@@ -82,7 +96,7 @@ contract CashbackVault is
         _grantRole(OWNER_ROLE, _msgSender());
     }
 
-    // --- Transactional functions ----- //
+    // ------------------ Transactional functions ----------------- //
 
     /**
      * @inheritdoc ICashbackVaultPrimary
@@ -181,7 +195,7 @@ contract CashbackVault is
         _claim(account, accountState.balance);
     }
 
-    // --- View functions ----- //
+    // ------------------ View functions -------------------------- //
 
     /// @inheritdoc ICashbackVaultPrimary
     function getAccountCashbackBalance(address account) external view returns (uint256) {
@@ -265,21 +279,5 @@ contract CashbackVault is
         if (IERC20(_getCashbackVaultStorage().token).balanceOf(address(this)) < amount) {
             revert CashbackVault_InsufficientVaultBalance();
         }
-    }
-
-    // --------------------- Modifiers ---------------------------- //
-
-    modifier onlyValidAccount(address account) {
-        if (account == address(0)) {
-            revert CashbackVault_AccountAddressZero();
-        }
-        _;
-    }
-
-    modifier onlyValidAmount(uint256 amount) {
-        if (amount > type(uint64).max) {
-            revert CashbackVault_AmountExcess();
-        }
-        _;
     }
 }
