@@ -47,7 +47,7 @@ interface ICashbackVaultTypes {
  * @notice The primary part of the cashback vault smart contract interface.
  */
 interface ICashbackVaultPrimary is ICashbackVaultTypes {
-    // --- Events ---- //
+    // ------------------ Events ------------------------------ //
 
     /**
      * @notice Emitted when cashback balance has been increased for a account.
@@ -105,7 +105,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
      * Emits a {CashbackIncreased} event.
      *
      * @param account The account to increase cashback balance for.
-     * @param amount The amount to increase the balance by.
+     * @param amount The amount to increase the cashback balance by.
      */
     function grantCashback(address account, uint256 amount) external;
 
@@ -118,7 +118,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
      * Emits a {CashbackDecreased} event.
      *
      * @param account The account to decrease cashback balance for.
-     * @param amount The amount to decrease the balance by.
+     * @param amount The amount to decrease the cashback balance by.
      */
     function revokeCashback(address account, uint256 amount) external;
 
@@ -167,8 +167,8 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
     function underlyingToken() external view returns (address);
 
     /**
-     * @notice Returns the balance of the vault.
-     * @return The balance of the vault.
+     * @notice Returns the total cashback balance of the vault.
+     * @return The total cashback balance of the vault.
      */
     function getTotalCashbackBalance() external view returns (uint256);
 }
@@ -217,7 +217,7 @@ interface ICashbackVaultErrors {
  * - Executors to claim cashback on behalf of accounts
  * - Accounts to view their cashback balances
  * 
- * The contract stores both the tokens and the corresponding balance mappings,
+ * The contract stores both the tokens and the corresponding cashback balance mappings,
  * providing a centralized cashback management system.
  */
 interface ICashbackVault is ICashbackVaultPrimary, ICashbackVaultConfiguration, ICashbackVaultErrors {
