@@ -117,13 +117,13 @@ describe("Contracts 'CashbackVault'", async () => {
         expect(await tokenMock.balanceOf(cashBackVaultAddress)).to.equal(1000n);
       });
       it("should increase CashbackVault tracked totalCashbackBalance", async () => {
-        expect(await cashbackVaultFromCPP.getTotalCashback()).to.equal(1000n);
+        expect(await cashbackVaultFromCPP.getTotalCashbackBalance()).to.equal(1000n);
       });
       it("should decrease CPP token balance", async () => {
         expect(await tokenMock.balanceOf(cpp.address)).to.equal(BALANCE_INITIAL - 1000n);
       });
       it("should increase account cashback balance", async () => {
-        expect(await cashbackVaultFromCPP.getCashbackBalance(account.address)).to.equal(1000n);
+        expect(await cashbackVaultFromCPP.getAccountCashbackBalance(account.address)).to.equal(1000n);
       });
       it("should not change account totalClaimed in state", async () => {
         expect((await cashbackVaultFromCPP.getAccountCashbackState(account.address)).totalClaimed).to.equal(0n);
@@ -143,13 +143,13 @@ describe("Contracts 'CashbackVault'", async () => {
           expect(await tokenMock.balanceOf(cashBackVaultAddress)).to.equal(900n);
         });
         it("should decrease CashbackVault tracked totalCashbackBalance", async () => {
-          expect(await cashbackVaultFromCPP.getTotalCashback()).to.equal(900n);
+          expect(await cashbackVaultFromCPP.getTotalCashbackBalance()).to.equal(900n);
         });
         it("should increase CPP token balance", async () => {
           expect(await tokenMock.balanceOf(cpp.address)).to.equal(BALANCE_INITIAL - 900n);
         });
         it("should decrease account cashback balance", async () => {
-          expect(await cashbackVaultFromCPP.getCashbackBalance(account.address)).to.equal(900n);
+          expect(await cashbackVaultFromCPP.getAccountCashbackBalance(account.address)).to.equal(900n);
         });
         describe("grant more 500 tokens cashback", async () => {
           let tx: TransactionResponse;
@@ -166,13 +166,13 @@ describe("Contracts 'CashbackVault'", async () => {
             expect(await tokenMock.balanceOf(cashBackVaultAddress)).to.equal(1400n);
           });
           it("should increase CashbackVault tracked totalCashbackBalance", async () => {
-            expect(await cashbackVaultFromCPP.getTotalCashback()).to.equal(1400n);
+            expect(await cashbackVaultFromCPP.getTotalCashbackBalance()).to.equal(1400n);
           });
           it("should decrease CPP token balance", async () => {
             expect(await tokenMock.balanceOf(cpp.address)).to.equal(BALANCE_INITIAL - 1400n);
           });
           it("should increase account cashback balance", async () => {
-            expect(await cashbackVaultFromCPP.getCashbackBalance(account.address)).to.equal(1400n);
+            expect(await cashbackVaultFromCPP.getAccountCashbackBalance(account.address)).to.equal(1400n);
           });
           it("should not change account totalClaimed in state", async () => {
             expect((await cashbackVaultFromCPP.getAccountCashbackState(account.address)).totalClaimed).to.equal(0n);
@@ -193,13 +193,13 @@ describe("Contracts 'CashbackVault'", async () => {
               expect(await tokenMock.balanceOf(cashBackVaultAddress)).to.equal(1300n);
             });
             it("should decrease CashbackVault tracked totalCashbackBalance", async () => {
-              expect(await cashbackVaultFromCPP.getTotalCashback()).to.equal(1300n);
+              expect(await cashbackVaultFromCPP.getTotalCashbackBalance()).to.equal(1300n);
             });
             it("CPP token balance should not change", async () => {
               expect(await tokenMock.balanceOf(cpp.address)).to.equal(BALANCE_INITIAL - 1400n);
             });
             it("should decrease account cashback balance", async () => {
-              expect(await cashbackVaultFromCPP.getCashbackBalance(account.address)).to.equal(1300n);
+              expect(await cashbackVaultFromCPP.getAccountCashbackBalance(account.address)).to.equal(1300n);
             });
             it("should increase account totalClaimed in state", async () => {
               expect((await cashbackVaultFromCPP.getAccountCashbackState(account.address)).totalClaimed).to.equal(100n);
@@ -223,13 +223,13 @@ describe("Contracts 'CashbackVault'", async () => {
                 expect(await tokenMock.balanceOf(cashBackVaultAddress)).to.equal(0n);
               });
               it("should decrease CashbackVault tracked totalCashbackBalance", async () => {
-                expect(await cashbackVaultFromCPP.getTotalCashback()).to.equal(0n);
+                expect(await cashbackVaultFromCPP.getTotalCashbackBalance()).to.equal(0n);
               });
               it("CPP token balance should not change", async () => {
                 expect(await tokenMock.balanceOf(cpp.address)).to.equal(BALANCE_INITIAL - 1400n);
               });
               it("should decrease account cashback balance", async () => {
-                expect(await cashbackVaultFromCPP.getCashbackBalance(account.address)).to.equal(0n);
+                expect(await cashbackVaultFromCPP.getAccountCashbackBalance(account.address)).to.equal(0n);
               });
               it("should increase account totalClaimed in state", async () => {
                 expect((await cashbackVaultFromCPP.getAccountCashbackState(account.address)).totalClaimed)
