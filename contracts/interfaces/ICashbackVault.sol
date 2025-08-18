@@ -26,7 +26,9 @@ interface ICashbackVaultTypes {
     }
 
     /**
-     * @notice The result of the getAccountCashbackState function.
+     * @notice The view of the cashback state for a single account.
+     *
+     * This structure is used as the return type of view functions.
      *
      * Fields:
      *
@@ -34,10 +36,10 @@ interface ICashbackVaultTypes {
      * - totalClaimed --- The total amount of cashback claimed by the account.
      * - lastClaimTimestamp --- The timestamp of the last claim operation.
      */
-    struct GetAccountCashbackStateResult {
-        uint64 balance;
-        uint64 totalClaimed;
-        uint64 lastClaimTimestamp;
+    struct AccountCashbackStateView {
+        uint256 balance;
+        uint256 totalClaimed;
+        uint256 lastClaimTimestamp;
     }
 }
 
@@ -161,7 +163,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
      * @param account The account to get the cashback state of.
      * @return result The complete cashback state of the account.
      */
-    function getAccountCashbackState(address account) external view returns (GetAccountCashbackStateResult memory);
+    function getAccountCashbackState(address account) external view returns (AccountCashbackStateView memory);
 
     /// @notice Returns the address of the underlying token contract.
     function underlyingToken() external view returns (address);

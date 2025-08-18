@@ -197,9 +197,9 @@ contract CashbackVault is
     }
 
     /// @inheritdoc ICashbackVaultPrimary
-    function getAccountCashbackState(address account) external view returns (GetAccountCashbackStateResult memory) {
+    function getAccountCashbackState(address account) external view returns (AccountCashbackStateView memory) {
         AccountCashbackState storage accountState = _getCashbackVaultStorage().accountCashbackStates[account];
-        return GetAccountCashbackStateResult({
+        return AccountCashbackStateView({
             balance: accountState.balance,
             totalClaimed: accountState.totalClaimed,
             lastClaimTimestamp: accountState.lastClaimTimestamp
