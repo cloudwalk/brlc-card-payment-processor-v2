@@ -59,12 +59,6 @@ contract CashbackVault is
         _;
     }
 
-    modifier onlyValidAmount(uint256 amount) {
-        if (amount > type(uint64).max) {
-            revert CashbackVault_AmountExcess();
-        }
-        _;
-    }
     // ------------------ Initializers ---------------------------- //
 
     /**
