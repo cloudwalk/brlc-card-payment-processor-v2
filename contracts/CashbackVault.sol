@@ -197,8 +197,7 @@ contract CashbackVault is
      * - The account must have cashback balance greater than zero.
      */
     function claimAll(address account) external whenNotPaused onlyRole(MANAGER_ROLE) onlyValidAccount(account) {
-        CashbackVaultStorage storage $ = _getCashbackVaultStorage();
-        AccountCashbackState storage accountState = $.accountCashbackStates[account];
+        AccountCashbackState storage accountState = _getCashbackVaultStorage().accountCashbackStates[account];
 
         _claim(account, accountState.balance);
     }
