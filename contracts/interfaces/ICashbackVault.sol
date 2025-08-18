@@ -193,6 +193,9 @@ interface ICashbackVaultErrors {
     /// @notice Thrown if the provided account address is zero.
     error CashbackVault_AccountAddressZero();
 
+    /// @notice Thrown if the resulting cashback balance of an account exceeds the maximum allowed.
+    error CashbackVault_AccountBalanceExcess();
+
     /// @notice Thrown if the provided amount exceeds the maximum allowed.
     error CashbackVault_AmountExcess();
 
@@ -204,6 +207,9 @@ interface ICashbackVaultErrors {
 
     /// @notice Thrown if the provided token address is zero during initialization.
     error CashbackVault_TokenAddressZero();
+
+    /// @notice Thrown if the resulting total cashback balance of the vault exceeds the maximum allowed.
+    error CashbackVault_TotalBalanceExcess();
 }
 
 /**

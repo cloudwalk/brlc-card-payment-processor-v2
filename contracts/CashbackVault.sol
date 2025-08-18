@@ -111,16 +111,29 @@ contract CashbackVault is
         CashbackVaultStorage storage $ = _getCashbackVaultStorage();
         AccountCashbackState storage accountState = $.accountCashbackStates[account];
 
-        uint256 oldBalance = accountState.balance;
-        uint256 newBalance = oldBalance + amount;
+        uint256 accountBalance = accountState.balance;
+        unchecked{
+            accountBalance += amount;
+        }
+        if (accountBalance > type(uint64).max) {
+            revert CashbackVault_AccountBalanceExcess();
+        }
 
-        accountState.balance = uint64(newBalance);
-        $.totalCashback += uint64(amount);
+        uint256 totalBalance = $.totalCashback;
+        unchecked{
+            totalBalance += amount;
+        }
+        if (totalBalance > type(uint64).max) {
+            revert CashbackVault_TotalBalanceExcess();
+        }
+
+        accountState.balance = uint64(accountBalance);
+        $.totalCashback = uint64(totalBalance);
 
         // Transfer tokens from caller to vault
         IERC20($.token).transferFrom(_msgSender(), address(this), amount);
 
-        emit CashbackGranted(account, _msgSender(), amount, newBalance);
+        emit CashbackGranted(account, _msgSender(), amount, accountBalance);
     }
 
     /**
