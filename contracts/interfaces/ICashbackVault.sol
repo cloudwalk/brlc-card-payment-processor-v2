@@ -159,6 +159,12 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
     function getAccountCashbackBalance(address account) external view returns (uint256);
 
     /**
+     * @notice Returns the total cashback balance of the vault.
+     * @return The total cashback balance of the vault.
+     */
+    function getTotalCashbackBalance() external view returns (uint256);
+
+    /**
      * @notice Returns the complete cashback state of a account.
      * @param account The account to get the cashback state of.
      * @return result The complete cashback state of the account.
@@ -167,12 +173,6 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
 
     /// @notice Returns the address of the underlying token contract.
     function underlyingToken() external view returns (address);
-
-    /**
-     * @notice Returns the total cashback balance of the vault.
-     * @return The total cashback balance of the vault.
-     */
-    function getTotalCashbackBalance() external view returns (uint256);
 }
 
 /**

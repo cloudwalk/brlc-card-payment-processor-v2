@@ -197,6 +197,11 @@ contract CashbackVault is
     }
 
     /// @inheritdoc ICashbackVaultPrimary
+    function getTotalCashbackBalance() external view returns (uint256) {
+        return _getCashbackVaultStorage().totalCashback;
+    }
+
+    /// @inheritdoc ICashbackVaultPrimary
     function getAccountCashbackState(address account) external view returns (AccountCashbackStateView memory) {
         AccountCashbackState storage accountState = _getCashbackVaultStorage().accountCashbackStates[account];
         return AccountCashbackStateView({
@@ -209,11 +214,6 @@ contract CashbackVault is
     /// @inheritdoc ICashbackVaultPrimary
     function underlyingToken() external view returns (address) {
         return _getCashbackVaultStorage().token;
-    }
-
-    /// @inheritdoc ICashbackVaultPrimary
-    function getTotalCashbackBalance() external view returns (uint256) {
-        return _getCashbackVaultStorage().totalCashback;
     }
 
     // ------------------ Pure functions -------------------------- //
