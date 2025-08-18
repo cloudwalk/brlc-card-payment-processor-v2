@@ -8,6 +8,8 @@ import { maxUintForBits } from "../test-utils/common";
 
 // TODO: All custom errors must be tested for all possible functions
 // TODO: Check tests with the linter
+// TODO: Check roles for each function.
+// TODO: Check roles of the contract after initialization (hashes, role admins, granted roles).
 
 const ADDRESS_ZERO = ethers.ZeroAddress;
 const BALANCE_INITIAL = 1000_000_000_000n;
