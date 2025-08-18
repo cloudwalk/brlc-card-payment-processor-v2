@@ -196,6 +196,9 @@ interface ICashbackVaultErrors {
     /// @notice Thrown if the resulting cashback balance of an account exceeds the maximum allowed.
     error CashbackVault_AccountBalanceExcess();
 
+    /// @notice Thrown if the resulting total claimed cashback of an account exceeds the maximum allowed.
+    error CashbackVault_AccountTotalClaimedExcess();
+
     /// @notice Thrown if the provided amount exceeds the maximum allowed.
     error CashbackVault_AmountExcess();
 
