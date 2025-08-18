@@ -3,8 +3,7 @@ import { expect } from "chai";
 import { TransactionResponse } from "ethers";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { CashbackVault__factory, CashbackVault, ERC20TokenMock, ERC20TokenMock__factory } from "../typechain-types";
-import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
-import { maxUintForBits } from "../test-utils/common";
+import { maxUintForBits, setUpFixture } from "../test-utils/common";
 
 const ADDRESS_ZERO = ethers.ZeroAddress;
 const BALANCE_INITIAL = 1000_000_000_000n;
@@ -73,7 +72,7 @@ describe("Contracts 'CashbackVault'", async () => {
   let cashbackVaultFromManager: CashbackVault;
   let cashBackVaultAddress: string;
   beforeEach(async () => {
-    const contracts = await loadFixture(deployContracts);
+    const contracts = await setUpFixture(deployContracts);
     cashbackVault = contracts.cashbackVault;
     tokenMock = contracts.tokenMock;
     cashBackVaultAddress = await cashbackVault.getAddress();
@@ -119,9 +118,7 @@ describe("Contracts 'CashbackVault'", async () => {
     describe("granting 1000 tokens cashback", async () => {
       let tx: TransactionResponse;
       beforeEach(async () => {
-        tx = await loadFixture(async function grantCashback1000() {
-          return cashbackVaultFromCPP.grantCashback(account.address, 1000n);
-        });
+        tx = await cashbackVaultFromCPP.grantCashback(account.address, 1000n);
       });
       it("should emit CashbackGranted event", async () => {
         await expect(tx)
@@ -145,9 +142,7 @@ describe("Contracts 'CashbackVault'", async () => {
       describe("revoking 100 tokens cashback", async () => {
         let tx: TransactionResponse;
         beforeEach(async () => {
-          tx = await loadFixture(async function revokeCashback100() {
-            return cashbackVaultFromCPP.revokeCashback(account.address, 100n);
-          });
+          tx = await cashbackVaultFromCPP.revokeCashback(account.address, 100n);
         });
         it("should emit CashbackRevoked event", async () => {
           await expect(tx)
@@ -168,9 +163,7 @@ describe("Contracts 'CashbackVault'", async () => {
         describe("grant more 500 tokens cashback", async () => {
           let tx: TransactionResponse;
           beforeEach(async () => {
-            tx = await loadFixture(async function grantCashback500() {
-              return cashbackVaultFromCPP.grantCashback(account.address, 500n);
-            });
+            tx = await cashbackVaultFromCPP.grantCashback(account.address, 500n);
           });
           it("should emit CashbackGranted event", async () => {
             await expect(tx)
@@ -194,9 +187,7 @@ describe("Contracts 'CashbackVault'", async () => {
           describe("claiming 100 tokens cashback", async () => {
             let tx: TransactionResponse;
             beforeEach(async () => {
-              tx = await loadFixture(async function claimCashback100() {
-                return cashbackVaultFromManager.claim(account.address, 100n);
-              });
+              tx = await cashbackVaultFromManager.claim(account.address, 100n);
             });
             it("should emit CashbackClaimed event", async () => {
               await expect(tx)
@@ -224,9 +215,7 @@ describe("Contracts 'CashbackVault'", async () => {
             describe("claiming all tokens cashback", async () => {
               let tx: TransactionResponse;
               beforeEach(async () => {
-                tx = await loadFixture(async function claimCashbackAll() {
-                  return cashbackVaultFromManager.claimAll(account.address);
-                });
+                tx = await cashbackVaultFromManager.claimAll(account.address);
               });
               it("should emit CashbackClaimed event", async () => {
                 await expect(tx)
@@ -270,9 +259,7 @@ describe("Contracts 'CashbackVault'", async () => {
     describe("granting 1000 tokens cashback", async () => {
       let tx: TransactionResponse;
       beforeEach(async () => {
-        tx = await loadFixture(async function grantCashback1000() {
-          return cashbackVaultFromCPP.grantCashback(account.address, 1000n);
-        });
+        tx = await cashbackVaultFromCPP.grantCashback(account.address, 1000n);
       });
       it("should revert if we revoke more cashback than account have", async () => {
         await expect(cashbackVaultFromCPP.revokeCashback(account.address, 1001n))
