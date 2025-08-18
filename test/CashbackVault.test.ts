@@ -24,6 +24,7 @@ interface Version {
   minor: bigint;
   patch: bigint;
 }
+
 let cashbackVaultFactory: CashbackVault__factory;
 let tokenMockFactory: ERC20TokenMock__factory;
 
@@ -31,6 +32,7 @@ let deployer: HardhatEthersSigner;
 let manager: HardhatEthersSigner;
 let cpp: HardhatEthersSigner;
 let account: HardhatEthersSigner;
+
 async function deployTokenMock() {
   const name = "ERC20 Test";
   const symbol = "TEST";
@@ -43,6 +45,7 @@ async function deployTokenMock() {
 
   return tokenMockDeployment.connect(deployer);
 }
+
 async function deployContracts() {
   const tokenMock = await deployTokenMock();
   const cashbackVault = await upgrades.deployProxy(cashbackVaultFactory, [await tokenMock.getAddress()]);
@@ -57,7 +60,7 @@ async function deployContracts() {
   return { cashbackVault, tokenMock };
 }
 
-describe("Contracts 'CashbackVault'", async () => {
+describe("Contract 'CashbackVault'", async () => {
   before(async () => {
     [deployer, manager, cpp, account] = await ethers.getSigners();
 
@@ -67,11 +70,13 @@ describe("Contracts 'CashbackVault'", async () => {
     tokenMockFactory = await ethers.getContractFactory("ERC20TokenMock");
     tokenMockFactory = tokenMockFactory.connect(deployer);
   });
+
   let cashbackVault: CashbackVault;
   let tokenMock: ERC20TokenMock;
   let cashbackVaultFromCPP: CashbackVault;
   let cashbackVaultFromManager: CashbackVault;
   let cashBackVaultAddress: string;
+
   beforeEach(async () => {
     const contracts = await loadFixture(deployContracts);
     cashbackVault = contracts.cashbackVault;
@@ -80,80 +85,93 @@ describe("Contracts 'CashbackVault'", async () => {
     cashbackVaultFromCPP = cashbackVault.connect(cpp);
     cashbackVaultFromManager = cashbackVault.connect(manager);
   });
-  it("should return version", async () => {
+
+  it("Returns version", async () => {
     expect(await cashbackVault.$__VERSION()).to.deep.equal([
       EXPECTED_VERSION.major,
       EXPECTED_VERSION.minor,
       EXPECTED_VERSION.patch,
     ]);
   });
-  it("should have proveCashbackVault function", async () => {
+
+  it("Has proveCashbackVault function", async () => {
     await expect(await cashbackVault.proveCashbackVault()).to.be.not.reverted;
   });
-  it("should give us underlying token address", async () => {
+
+  it("Gives us underlying token address", async () => {
     expect(await cashbackVault.underlyingToken()).to.equal(await tokenMock.getAddress());
   });
-  describe("upgrade and deploy errors", async () => {
-    describe("upgrade to not cashback vault", async () => {
+
+  describe("Upgrade and deploy errors", async () => {
+    describe("Upgrade to not cashback vault", async () => {
       let tx: Promise<TransactionResponse>;
       beforeEach(async () => {
         tx = cashbackVault.upgradeToAndCall(tokenMock.getAddress(), "0x");
       });
-      it("should revert with CashbackVault_ImplementationAddressInvalid", async () => {
+
+      it("Reverts with the proper custom error", async () => {
         await expect(tx)
           .to.be.revertedWithCustomError(cashbackVault, "CashbackVault_ImplementationAddressInvalid");
       });
     });
-    describe("deploy with zero token address", async () => {
+
+    describe("Deploy with zero token address", async () => {
       let tx: ReturnType<typeof upgrades.deployProxy>;
+
       beforeEach(async () => {
         tx = upgrades.deployProxy(cashbackVaultFactory, [ADDRESS_ZERO]);
       });
-      it("should revert with CashbackVault_TokenAddressZero", async () => {
+
+      it("Reverts with the proper custom error", async () => {
         await expect(tx)
           .to.be.revertedWithCustomError(cashbackVaultFactory, "CashbackVault_TokenAddressZero");
       });
     });
   });
-  describe("CPP basic happy path token flows and events checks", async () => {
-    describe("granting 1000 tokens cashback", async () => {
+
+  describe("Basic happy path token flows and events checks", async () => {
+    describe("Granting 1000 tokens cashback", async () => {
       let tx: TransactionResponse;
+
       beforeEach(async () => {
         tx = await loadFixture(async function grantCashback1000() {
           return cashbackVaultFromCPP.grantCashback(account.address, 1000n);
         });
       });
-      it("should emit CashbackGranted event", async () => {
+
+      it("Emits the expected event", async () => {
         await expect(tx)
           .to.emit(cashbackVaultFromCPP, "CashbackGranted").withArgs(account.address, cpp.address, 1000n, 1000n);
       });
-      it("should increase CashbackVault real token balance", async () => {
+
+      it("Increases the vault token balance", async () => {
         expect(await tokenMock.balanceOf(cashBackVaultAddress)).to.equal(1000n);
       });
-      it("should increase CashbackVault tracked totalCashbackBalance", async () => {
+
+      it("Increases the vault total balance variable", async () => {
         expect(await cashbackVaultFromCPP.getTotalCashbackBalance()).to.equal(1000n);
       });
-      it("should decrease CPP token balance", async () => {
+      it("Decrease the caller token balance", async () => {
         expect(await tokenMock.balanceOf(cpp.address)).to.equal(BALANCE_INITIAL - 1000n);
       });
-      it("should increase account cashback balance", async () => {
+      it("Increases the account cashback balance on the vault", async () => {
         expect(await cashbackVaultFromCPP.getAccountCashbackBalance(account.address)).to.equal(1000n);
       });
-      it("should not change account totalClaimed in state", async () => {
+      it("Does not change the account total claimed variable", async () => {
         expect((await cashbackVaultFromCPP.getAccountCashbackState(account.address)).totalClaimed).to.equal(0n);
       });
-      describe("revoking 100 tokens cashback", async () => {
+      describe("Revoking 100 tokens cashback", async () => {
         let tx: TransactionResponse;
         beforeEach(async () => {
           tx = await loadFixture(async function revokeCashback100() {
             return cashbackVaultFromCPP.revokeCashback(account.address, 100n);
           });
         });
-        it("should emit CashbackRevoked event", async () => {
+        it("Emits the expected event", async () => {
           await expect(tx)
             .to.emit(cashbackVaultFromCPP, "CashbackRevoked").withArgs(account.address, cpp.address, 100n, 900n);
         });
-        it("should decrease CashbackVault real token balance", async () => {
+        it("Decreases 'CashbackVault' real token balance", async () => {
           expect(await tokenMock.balanceOf(cashBackVaultAddress)).to.equal(900n);
         });
         it("should decrease CashbackVault tracked totalCashbackBalance", async () => {
@@ -258,7 +276,7 @@ describe("Contracts 'CashbackVault'", async () => {
       });
     });
   });
-  describe("CPP basic unhappy path token flows and errors checks", async () => {
+  describe("Basic unhappy path token flows and errors checks", async () => {
     it("should revert if we grant cashback for zero address", async () => {
       await expect(cashbackVaultFromCPP.grantCashback(ADDRESS_ZERO, 1000n))
         .to.be.revertedWithCustomError(cashbackVaultFromCPP, "CashbackVault_AccountAddressZero");
