@@ -88,7 +88,7 @@ describe("Contracts 'CashbackVault'", async () => {
     ]);
   });
   it("should have proveCashbackVault function", async () => {
-    await expect(await cashbackVault.proveCashbackVault()).to.be.not.reverted;
+    await expect(cashbackVault.proveCashbackVault()).to.be.not.reverted;
   });
   it("should give us underlying token address", async () => {
     expect(await cashbackVault.underlyingToken()).to.equal(await tokenMock.getAddress());
