@@ -6,6 +6,9 @@ import { CashbackVault__factory, CashbackVault, ERC20TokenMock, ERC20TokenMock__
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { maxUintForBits } from "../test-utils/common";
 
+// TODO: All custom errors must be tested for all possible functions
+// TODO: Check tests with the linter
+
 const ADDRESS_ZERO = ethers.ZeroAddress;
 const BALANCE_INITIAL = 1000_000_000_000n;
 
