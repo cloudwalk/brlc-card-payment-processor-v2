@@ -91,7 +91,7 @@ describe("Contracts 'CashbackVault'", async () => {
   it("should give us underlying token address", async () => {
     expect(await cashbackVault.underlyingToken()).to.equal(await tokenMock.getAddress());
   });
-  describe("upgrade and deploy errors", async () => {
+  describe("upgrade and deploy scenarios", async () => {
     describe("upgrade to not cashback vault", async () => {
       let tx: Promise<TransactionResponse>;
       beforeEach(async () => {
@@ -246,9 +246,8 @@ describe("Contracts 'CashbackVault'", async () => {
         .to.be.revertedWithCustomError(cashbackVaultFromCPP, "CashbackVault_AmountExcess");
     });
     describe("granting 1000 tokens cashback", async () => {
-      let tx: TransactionResponse;
       beforeEach(async () => {
-        tx = await cashbackVaultFromCPP.grantCashback(account.address, 1000n);
+        await cashbackVaultFromCPP.grantCashback(account.address, 1000n);
       });
       it("should revert if we revoke more cashback than account have", async () => {
         await expect(cashbackVaultFromCPP.revokeCashback(account.address, 1001n))
