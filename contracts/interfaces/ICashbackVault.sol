@@ -218,8 +218,8 @@ interface ICashbackVaultErrors {
  * - To view the total cashback balance of the vault
  * - To view the cashback state of an account including the balance, total claimed and last claim timestamp
  *
- * The contract stores both the tokens and the corresponding cashback balance mappings,
- * providing a centralized cashback management system.
+ * The contract holds granted cashback tokens at its own address and maintains the corresponding
+ * cashback balance mappings, providing a centralized cashback management system.
  */
 interface ICashbackVault is ICashbackVaultPrimary, ICashbackVaultConfiguration, ICashbackVaultErrors {
     /**
