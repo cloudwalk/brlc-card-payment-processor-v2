@@ -150,22 +150,26 @@ contract CashbackVault is
     function revokeCashback(
         address account,
         uint256 amount
-    ) external whenNotPaused onlyRole(CASHBACK_OPERATOR_ROLE) onlyValidAmount(amount) onlyValidAccount(account) {
+    ) external whenNotPaused onlyRole(CASHBACK_OPERATOR_ROLE) onlyValidAccount(account) {
         CashbackVaultStorage storage $ = _getCashbackVaultStorage();
         AccountCashbackState storage accountState = $.accountCashbackStates[account];
 
-        uint256 oldBalance = accountState.balance;
-        if (oldBalance < amount) {
+        uint256 accountBalance = accountState.balance;
+        uint256 totalBalance = $.totalCashback;
+        if (accountBalance < amount) {
             revert CashbackVault_CashbackBalanceInsufficient();
         }
 
-        uint256 newBalance = oldBalance - amount;
-        accountState.balance = uint64(newBalance);
-        $.totalCashback -= uint64(amount);
+        unchecked {
+            accountBalance -= amount;
+            totalBalance -= amount; // It is safe due to the contract logic
+        }
+        accountState.balance = uint64(accountBalance);
+        $.totalCashback = uint64(totalBalance);
 
         // Transfer tokens from vault to caller
         IERC20($.token).transfer(_msgSender(), amount);
-        emit CashbackRevoked(account, _msgSender(), amount, newBalance);
+        emit CashbackRevoked(account, _msgSender(), amount, accountBalance);
     }
 
     /**
