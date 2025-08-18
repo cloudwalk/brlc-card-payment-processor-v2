@@ -107,21 +107,24 @@ contract CashbackVault is
     function grantCashback(
         address account,
         uint256 amount
-    ) external whenNotPaused onlyRole(CASHBACK_OPERATOR_ROLE) onlyValidAmount(amount) onlyValidAccount(account) {
+    ) external whenNotPaused onlyRole(CASHBACK_OPERATOR_ROLE) onlyValidAccount(account) {
         CashbackVaultStorage storage $ = _getCashbackVaultStorage();
         AccountCashbackState storage accountState = $.accountCashbackStates[account];
 
-        uint256 accountBalance = accountState.balance;
-        unchecked{
-            accountBalance += amount;
-        }
-        if (accountBalance > type(uint64).max) {
-            revert CashbackVault_AccountBalanceExcess();
+        if (amount > type(uint64).max) {
+            revert CashbackVault_AmountExcess();
         }
 
+        uint256 accountBalance = accountState.balance;
         uint256 totalBalance = $.totalCashback;
+
         unchecked{
+            accountBalance += amount;
             totalBalance += amount;
+        }
+
+        if (accountBalance > type(uint64).max) {
+            revert CashbackVault_AccountBalanceExcess();
         }
         if (totalBalance > type(uint64).max) {
             revert CashbackVault_TotalBalanceExcess();

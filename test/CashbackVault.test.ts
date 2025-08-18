@@ -264,7 +264,7 @@ describe("Contracts 'CashbackVault'", async () => {
         .to.be.revertedWithCustomError(cashbackVaultFromCPP, "CashbackVault_AccountAddressZero");
     });
     it("should revert if we grant cashback for with amount greater than uint64 max", async () => {
-      await expect(cashbackVaultFromCPP.grantCashback(account.address, maxUintForBits(64) + 100n))
+      await expect(cashbackVaultFromCPP.grantCashback(account.address, maxUintForBits(64) + 1n))
         .to.be.revertedWithCustomError(cashbackVaultFromCPP, "CashbackVault_AmountExcess");
     });
     describe("granting 1000 tokens cashback", async () => {
