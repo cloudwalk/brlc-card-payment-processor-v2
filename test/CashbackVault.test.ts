@@ -455,17 +455,19 @@ describe("Contracts 'CashbackVault'", async () => {
     });
   });
 
-  xdescribe("BDD complex path with token flow and events checks", async () => {
+  describe("BDD scenarios", async () => {
     describe("granting 1000 tokens cashback", async () => {
       let tx: TransactionResponse;
       beforeEach(async () => {
         tx = await cashbackVaultFromOperator.grantCashback(account.address, 1000n);
       });
+
       it("should emit CashbackGranted event", async () => {
         await expect(tx)
           .to.emit(cashbackVaultFromOperator, "CashbackGranted")
           .withArgs(account.address, operator.address, 1000n, 1000n);
       });
+
       it("should move tokens from Operator to CashbackVault", async () => {
         await expect(tx).to.changeTokenBalances(
           tokenMock,
@@ -473,25 +475,42 @@ describe("Contracts 'CashbackVault'", async () => {
           [-1000n, 1000n]
         );
       });
+
       it("should increase CashbackVault tracked totalCashbackBalance", async () => {
         expect(await cashbackVaultFromOperator.getTotalCashbackBalance()).to.equal(1000n);
       });
+
       it("should increase account cashback balance", async () => {
         expect(await cashbackVaultFromOperator.getAccountCashbackBalance(account.address)).to.equal(1000n);
       });
+
       it("should not change account totalClaimed in state", async () => {
         expect((await cashbackVaultFromOperator.getAccountCashbackState(account.address)).totalClaimed).to.equal(0n);
+      });
+
+      describe("revoking more than account has", async () => {
+        let tx: Promise<TransactionResponse>;
+        beforeEach(async () => {
+          tx = cashbackVaultFromOperator.revokeCashback(account.address, 1001n);
+        });
+
+        it("should revert", async () => {
+          await expect(tx)
+            .to.be.revertedWithCustomError(cashbackVaultFromOperator, "CashbackVault_CashbackBalanceInsufficient");
+        });
       });
       describe("revoking 100 tokens cashback", async () => {
         let tx: TransactionResponse;
         beforeEach(async () => {
           tx = await cashbackVaultFromOperator.revokeCashback(account.address, 100n);
         });
+
         it("should emit CashbackRevoked event", async () => {
           await expect(tx)
             .to.emit(cashbackVaultFromOperator, "CashbackRevoked")
             .withArgs(account.address, operator.address, 100n, 900n);
         });
+
         it("should move tokens from CashbackVault to Operator", async () => {
           await expect(tx).to.changeTokenBalances(
             tokenMock,
@@ -499,22 +518,38 @@ describe("Contracts 'CashbackVault'", async () => {
             [-100n, 100n]
           );
         });
+
         it("should decrease CashbackVault tracked totalCashbackBalance", async () => {
           expect(await cashbackVaultFromOperator.getTotalCashbackBalance()).to.equal(900n);
         });
+
         it("should decrease account cashback balance", async () => {
           expect(await cashbackVaultFromOperator.getAccountCashbackBalance(account.address)).to.equal(900n);
+        });
+
+        describe("claiming more than account has", async () => {
+          let tx: Promise<TransactionResponse>;
+          beforeEach(async () => {
+            tx = cashbackVaultFromManager.claim(account.address, 901n);
+          });
+
+          it("should revert", async () => {
+            await expect(tx)
+              .to.be.revertedWithCustomError(cashbackVaultFromManager, "CashbackVault_CashbackBalanceInsufficient");
+          });
         });
         describe("claiming 100 tokens cashback", async () => {
           let tx: TransactionResponse;
           beforeEach(async () => {
             tx = await cashbackVaultFromManager.claim(account.address, 100n);
           });
+
           it("should emit CashbackClaimed event", async () => {
             await expect(tx)
               .to.emit(cashbackVaultFromOperator, "CashbackClaimed")
               .withArgs(account.address, manager.address, 100n, 800n);
           });
+
           it("should move tokens from CashbackVault to account", async () => {
             await expect(tx).to.changeTokenBalances(
               tokenMock,
@@ -522,9 +557,11 @@ describe("Contracts 'CashbackVault'", async () => {
               [-100n, 100n]
             );
           });
+
           it("should decrease CashbackVault tracked totalCashbackBalance", async () => {
             expect(await cashbackVaultFromOperator.getTotalCashbackBalance()).to.equal(800n);
           });
+
           it("Operator token balance should not change", async () => {
             await expect(tx).to.changeTokenBalances(
               tokenMock,
@@ -532,23 +569,28 @@ describe("Contracts 'CashbackVault'", async () => {
               [0n]
             );
           });
+
           it("should decrease account cashback balance", async () => {
             expect(await cashbackVaultFromOperator.getAccountCashbackBalance(account.address)).to.equal(800n);
           });
+
           it("should increase account totalClaimed in state", async () => {
             expect((await cashbackVaultFromOperator.getAccountCashbackState(account.address)).totalClaimed)
               .to.equal(100n);
           });
+
           describe("claiming all tokens cashback", async () => {
             let tx: TransactionResponse;
             beforeEach(async () => {
               tx = await cashbackVaultFromManager.claimAll(account.address);
             });
+
             it("should emit CashbackClaimed event", async () => {
               await expect(tx)
                 .to.emit(cashbackVaultFromOperator, "CashbackClaimed")
                 .withArgs(account.address, manager.address, 800n, 0n);
             });
+
             it("should move tokens from CashbackVault to account", async () => {
               await expect(tx).to.changeTokenBalances(
                 tokenMock,
@@ -556,9 +598,11 @@ describe("Contracts 'CashbackVault'", async () => {
                 [-800n, 800n]
               );
             });
+
             it("should decrease CashbackVault tracked totalCashbackBalance", async () => {
               expect(await cashbackVaultFromOperator.getTotalCashbackBalance()).to.equal(0n);
             });
+
             it("Operator token balance should not change", async () => {
               await expect(tx).to.changeTokenBalances(
                 tokenMock,
@@ -566,38 +610,17 @@ describe("Contracts 'CashbackVault'", async () => {
                 [0n]
               );
             });
+
             it("should decrease account cashback balance", async () => {
               expect(await cashbackVaultFromOperator.getAccountCashbackBalance(account.address)).to.equal(0n);
             });
+
             it("should increase account totalClaimed in state", async () => {
               expect((await cashbackVaultFromOperator.getAccountCashbackState(account.address)).totalClaimed)
                 .to.equal(900n);
             });
           });
         });
-      });
-    });
-  });
-  xdescribe("CV basic unhappy path token flows and errors checks", async () => {
-    it("should revert if we grant cashback for zero address", async () => {
-      await expect(cashbackVaultFromOperator.grantCashback(ADDRESS_ZERO, 1000n))
-        .to.be.revertedWithCustomError(cashbackVaultFromOperator, "CashbackVault_AccountAddressZero");
-    });
-    it("should revert if we grant cashback for with amount greater than uint64 max", async () => {
-      await expect(cashbackVaultFromOperator.grantCashback(account.address, maxUintForBits(64) + 100n))
-        .to.be.rejectedWith(Error, "value out-of-bounds");
-    });
-    describe("granting 1000 tokens cashback", async () => {
-      beforeEach(async () => {
-        await cashbackVaultFromOperator.grantCashback(account.address, 1000n);
-      });
-      it("should revert if we revoke more cashback than account have", async () => {
-        await expect(cashbackVaultFromOperator.revokeCashback(account.address, 1001n))
-          .to.be.revertedWithCustomError(cashbackVaultFromOperator, "CashbackVault_CashbackBalanceInsufficient");
-      });
-      it("should revert if we claim more cashback than account have", async () => {
-        await expect(cashbackVaultFromManager.claim(account.address, 1001n))
-          .to.be.revertedWithCustomError(cashbackVaultFromManager, "CashbackVault_CashbackBalanceInsufficient");
       });
     });
   });
