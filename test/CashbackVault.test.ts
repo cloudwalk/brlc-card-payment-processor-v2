@@ -1,8 +1,8 @@
 import { ethers, upgrades } from "hardhat";
 import { expect } from "chai";
-import { getAddress, TransactionResponse } from "ethers";
+import { TransactionResponse } from "ethers";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
-import { maxUintForBits, setUpFixture } from "../test-utils/common";
+import { setUpFixture } from "../test-utils/common";
 import * as Contracts from "../typechain-types";
 import { getTxTimestamp } from "../test-utils/eth";
 
