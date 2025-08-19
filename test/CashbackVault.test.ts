@@ -12,38 +12,28 @@ const GRANTOR_ROLE: string = ethers.id("GRANTOR_ROLE");
 const MANAGER_ROLE: string = ethers.id("MANAGER_ROLE");
 const CASHBACK_OPERATOR_ROLE: string = ethers.id("CASHBACK_OPERATOR_ROLE");
 
-const EXPECTED_VERSION: Version = {
+const EXPECTED_VERSION = {
   major: 1n,
   minor: 0n,
   patch: 0n
-};
+} as const;
 
-interface Version {
-  major: bigint;
-  minor: bigint;
-  patch: bigint;
-}
 let cashbackVaultFactory: CashbackVault__factory;
 let tokenMockFactory: ERC20TokenMock__factory;
 
-let deployer: HardhatEthersSigner;
-let manager: HardhatEthersSigner;
-let operator: HardhatEthersSigner;
-let account: HardhatEthersSigner;
-async function deployTokenMock() {
+let deployer: HardhatEthersSigner; // has GRANTOR_ROLE AND OWNER_ROLE
+let manager: HardhatEthersSigner; // has MANAGER_ROLE
+let operator: HardhatEthersSigner; // has CASHBACK_OPERATOR_ROLE
+let account: HardhatEthersSigner; // has no roles
+
+async function deployContracts() {
   const name = "ERC20 Test";
   const symbol = "TEST";
 
-  // The token contract factory with the explicitly specified deployer account
-
-  // The token contract with the explicitly specified initial account
   const tokenMockDeployment = await tokenMockFactory.deploy(name, symbol);
   await tokenMockDeployment.waitForDeployment();
 
-  return tokenMockDeployment.connect(deployer);
-}
-async function deployContracts() {
-  const tokenMock = await deployTokenMock();
+  const tokenMock = tokenMockDeployment.connect(deployer);
   const cashbackVault = await upgrades.deployProxy(cashbackVaultFactory, [await tokenMock.getAddress()]);
   await cashbackVault.waitForDeployment();
 
@@ -69,6 +59,8 @@ describe("Contracts 'CashbackVault'", async () => {
   let tokenMock: ERC20TokenMock;
   let cashbackVaultFromOperator: CashbackVault;
   let cashbackVaultFromManager: CashbackVault;
+  let cashbackVaultFromStranger: CashbackVault;
+
   let cashBackVaultAddress: string;
   beforeEach(async () => {
     const contracts = await setUpFixture(deployContracts);
@@ -77,6 +69,7 @@ describe("Contracts 'CashbackVault'", async () => {
     cashBackVaultAddress = await cashbackVault.getAddress();
     cashbackVaultFromOperator = cashbackVault.connect(operator);
     cashbackVaultFromManager = cashbackVault.connect(manager);
+    cashbackVaultFromStranger = cashbackVault.connect(account);
   });
   it("should return version", async () => {
     expect(await cashbackVault.$__VERSION()).to.deep.equal([
@@ -121,7 +114,8 @@ describe("Contracts 'CashbackVault'", async () => {
       });
       it("should emit CashbackGranted event", async () => {
         await expect(tx)
-          .to.emit(cashbackVaultFromOperator, "CashbackGranted").withArgs(account.address, operator.address, 1000n, 1000n);
+          .to.emit(cashbackVaultFromOperator, "CashbackGranted")
+          .withArgs(account.address, operator.address, 1000n, 1000n);
       });
       it("should move tokens from Operator to CashbackVault", async () => {
         await expect(tx).to.changeTokenBalances(
@@ -146,7 +140,8 @@ describe("Contracts 'CashbackVault'", async () => {
         });
         it("should emit CashbackRevoked event", async () => {
           await expect(tx)
-            .to.emit(cashbackVaultFromOperator, "CashbackRevoked").withArgs(account.address, operator.address, 100n, 900n);
+            .to.emit(cashbackVaultFromOperator, "CashbackRevoked")
+            .withArgs(account.address, operator.address, 100n, 900n);
         });
         it("should move tokens from CashbackVault to Operator", async () => {
           await expect(tx).to.changeTokenBalances(
@@ -192,7 +187,8 @@ describe("Contracts 'CashbackVault'", async () => {
             expect(await cashbackVaultFromOperator.getAccountCashbackBalance(account.address)).to.equal(800n);
           });
           it("should increase account totalClaimed in state", async () => {
-            expect((await cashbackVaultFromOperator.getAccountCashbackState(account.address)).totalClaimed).to.equal(100n);
+            expect((await cashbackVaultFromOperator.getAccountCashbackState(account.address)).totalClaimed)
+              .to.equal(100n);
           });
           describe("claiming all tokens cashback", async () => {
             let tx: TransactionResponse;
