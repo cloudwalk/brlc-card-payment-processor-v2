@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.24;
+pragma solidity ^0.8.24;
 
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -50,6 +50,7 @@ contract CashbackVault is
     constructor() {
         _disableInitializers();
     }
+
     // --------------------- Modifiers ---------------------------- //
 
     modifier onlyValidAccount(address account) {
@@ -59,12 +60,13 @@ contract CashbackVault is
         _;
     }
 
-    modifier onlyValidAmount(uint256 amount) {
-        if (amount > type(uint64).max) {
-            revert CashbackVault_AmountExcess();
+    modifier onlyValidAmount(uint64 amount) {
+        if (amount == 0) {
+            revert CashbackVault_AmountZero();
         }
         _;
     }
+
     // ------------------ Initializers ---------------------------- //
 
     /**
@@ -106,21 +108,17 @@ contract CashbackVault is
      */
     function grantCashback(
         address account,
-        uint256 amount
-    ) external whenNotPaused onlyRole(CASHBACK_OPERATOR_ROLE) onlyValidAmount(amount) onlyValidAccount(account) {
+        uint64 amount
+    ) external whenNotPaused onlyRole(CASHBACK_OPERATOR_ROLE) onlyValidAccount(account) onlyValidAmount(amount) {
         CashbackVaultStorage storage $ = _getCashbackVaultStorage();
         AccountCashbackState storage accountState = $.accountCashbackStates[account];
 
-        uint256 oldBalance = accountState.balance;
-        uint256 newBalance = oldBalance + amount;
+        accountState.balance += amount;
+        $.totalCashback += amount;
 
-        accountState.balance = uint64(newBalance);
-        $.totalCashback += uint64(amount);
-
-        // Transfer tokens from caller to vault
         IERC20($.token).transferFrom(_msgSender(), address(this), amount);
 
-        emit CashbackGranted(account, _msgSender(), amount, newBalance);
+        emit CashbackGranted(account, _msgSender(), amount, accountState.balance);
     }
 
     /**
@@ -136,23 +134,21 @@ contract CashbackVault is
      */
     function revokeCashback(
         address account,
-        uint256 amount
+        uint64 amount
     ) external whenNotPaused onlyRole(CASHBACK_OPERATOR_ROLE) onlyValidAmount(amount) onlyValidAccount(account) {
         CashbackVaultStorage storage $ = _getCashbackVaultStorage();
         AccountCashbackState storage accountState = $.accountCashbackStates[account];
 
-        uint256 oldBalance = accountState.balance;
-        if (oldBalance < amount) {
+        if (accountState.balance < amount) {
             revert CashbackVault_CashbackBalanceInsufficient();
         }
 
-        uint256 newBalance = oldBalance - amount;
-        accountState.balance = uint64(newBalance);
-        $.totalCashback -= uint64(amount);
+        accountState.balance -= amount;
+        accountState.lastGrantTimestamp = uint64(block.timestamp);
+        $.totalCashback -= amount;
 
-        // Transfer tokens from vault to caller
         IERC20($.token).transfer(_msgSender(), amount);
-        emit CashbackRevoked(account, _msgSender(), amount, newBalance);
+        emit CashbackRevoked(account, _msgSender(), amount, accountState.balance);
     }
 
     /**
@@ -164,11 +160,12 @@ contract CashbackVault is
      * - The caller must have the {MANAGER_ROLE} role.
      * - The provided account address must not be zero.
      * - The account must have sufficient cashback balance.
+     * - The provided amount must not be zero.
      */
     function claim(
         address account,
-        uint256 amount
-    ) external whenNotPaused onlyRole(MANAGER_ROLE) onlyValidAmount(amount) onlyValidAccount(account) {
+        uint64 amount
+    ) external whenNotPaused onlyRole(MANAGER_ROLE) onlyValidAccount(account) {
         _claim(account, amount);
     }
 
@@ -192,18 +189,20 @@ contract CashbackVault is
     // ------------------ View functions -------------------------- //
 
     /// @inheritdoc ICashbackVaultPrimary
-    function getAccountCashbackBalance(address account) external view returns (uint256) {
+    function getAccountCashbackBalance(address account) external view returns (uint64) {
         return _getCashbackVaultStorage().accountCashbackStates[account].balance;
     }
 
     /// @inheritdoc ICashbackVaultPrimary
-    function getAccountCashbackState(address account) external view returns (GetAccountCashbackStateResult memory) {
+    function getAccountCashbackState(address account) external view returns (AccountCashbackStateView memory) {
         AccountCashbackState storage accountState = _getCashbackVaultStorage().accountCashbackStates[account];
-        return GetAccountCashbackStateResult({
-            balance: accountState.balance,
-            totalClaimed: accountState.totalClaimed,
-            lastClaimTimestamp: accountState.lastClaimTimestamp
-        });
+        return
+            AccountCashbackStateView({
+                balance: accountState.balance,
+                totalClaimed: accountState.totalClaimed,
+                lastClaimTimestamp: accountState.lastClaimTimestamp,
+                lastGrantTimestamp: accountState.lastGrantTimestamp
+            });
     }
 
     /// @inheritdoc ICashbackVaultPrimary
@@ -212,7 +211,7 @@ contract CashbackVault is
     }
 
     /// @inheritdoc ICashbackVaultPrimary
-    function getTotalCashbackBalance() external view returns (uint256) {
+    function getTotalCashbackBalance() external view returns (uint64) {
         return _getCashbackVaultStorage().totalCashback;
     }
 
@@ -234,25 +233,24 @@ contract CashbackVault is
      * @param account The account to claim cashback for.
      * @param amount The amount of cashback to claim.
      */
-    function _claim(address account, uint256 amount) internal {
+    function _claim(address account, uint64 amount) internal {
         CashbackVaultStorage storage $ = _getCashbackVaultStorage();
         AccountCashbackState storage accountState = $.accountCashbackStates[account];
+        if (amount == 0) {
+            revert CashbackVault_AmountZero();
+        }
 
-        uint256 oldBalance = accountState.balance;
-        if (oldBalance < amount) {
+        if (accountState.balance < amount) {
             revert CashbackVault_CashbackBalanceInsufficient();
         }
 
-
-        uint256 newBalance = oldBalance - amount;
-        accountState.balance = uint64(newBalance);
-        accountState.totalClaimed += uint64(amount);
+        accountState.balance -= amount;
+        accountState.totalClaimed += amount;
         accountState.lastClaimTimestamp = uint64(block.timestamp);
-        $.totalCashback -= uint64(amount);
+        $.totalCashback -= amount;
 
-        // Transfer tokens from vault to account
         IERC20($.token).transfer(account, amount);
-        emit CashbackClaimed(account, _msgSender(), amount, newBalance);
+        emit CashbackClaimed(account, _msgSender(), amount, accountState.balance);
     }
 
     /**

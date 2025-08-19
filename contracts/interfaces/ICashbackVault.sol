@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.24;
 
 /**
  * @title ICashbackVaultTypes interface
@@ -16,13 +16,14 @@ interface ICashbackVaultTypes {
      * - balance --- The cashback balance of the account.
      * - totalClaimed --- The total amount of cashback claimed by the account.
      * - lastClaimTimestamp --- The timestamp of the last claim operation.
+     * - lastGrantTimestamp --- The timestamp of the last grant operation.
      */
     struct AccountCashbackState {
         // Slot 1
         uint64 balance;
         uint64 totalClaimed;
         uint64 lastClaimTimestamp;
-        // uint64 __reserved; // Reserved until the end of the storage slot
+        uint64 lastGrantTimestamp;
     }
 
     /**
@@ -33,11 +34,13 @@ interface ICashbackVaultTypes {
      * - balance --- The cashback balance of the account.
      * - totalClaimed --- The total amount of cashback claimed by the account.
      * - lastClaimTimestamp --- The timestamp of the last claim operation.
+     * - lastGrantTimestamp --- The timestamp of the last grant operation.
      */
-    struct GetAccountCashbackStateResult {
+    struct AccountCashbackStateView {
         uint64 balance;
         uint64 totalClaimed;
         uint64 lastClaimTimestamp;
+        uint64 lastGrantTimestamp;
     }
 }
 
@@ -107,7 +110,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
      * @param account The account to increase cashback balance for.
      * @param amount The amount to increase the cashback balance by.
      */
-    function grantCashback(address account, uint256 amount) external;
+    function grantCashback(address account, uint64 amount) external;
 
     /**
      * @notice Decreases the cashback balance for a account.
@@ -120,7 +123,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
      * @param account The account to decrease cashback balance for.
      * @param amount The amount to decrease the cashback balance by.
      */
-    function revokeCashback(address account, uint256 amount) external;
+    function revokeCashback(address account, uint64 amount) external;
 
     /**
      * @notice Claims a specific amount of cashback for a account.
@@ -133,7 +136,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
      * @param account The account to claim cashback for.
      * @param amount The amount of cashback to claim.
      */
-    function claim(address account, uint256 amount) external;
+    function claim(address account, uint64 amount) external;
 
     /**
      * @notice Claims all available cashback for a account.
@@ -154,23 +157,23 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
      * @param account The account to check the cashback balance of.
      * @return The current cashback balance of the account.
      */
-    function getAccountCashbackBalance(address account) external view returns (uint256);
+    function getAccountCashbackBalance(address account) external view returns (uint64);
+
+    /**
+     * @notice Returns the total cashback balance of the vault.
+     * @return The total cashback balance of the vault.
+     */
+    function getTotalCashbackBalance() external view returns (uint64);
 
     /**
      * @notice Returns the complete cashback state of a account.
      * @param account The account to get the cashback state of.
      * @return result The complete cashback state of the account.
      */
-    function getAccountCashbackState(address account) external view returns (GetAccountCashbackStateResult memory);
+    function getAccountCashbackState(address account) external view returns (AccountCashbackStateView memory);
 
     /// @notice Returns the address of the underlying token contract.
     function underlyingToken() external view returns (address);
-
-    /**
-     * @notice Returns the total cashback balance of the vault.
-     * @return The total cashback balance of the vault.
-     */
-    function getTotalCashbackBalance() external view returns (uint256);
 }
 
 /**
@@ -191,8 +194,8 @@ interface ICashbackVaultErrors {
     /// @notice Thrown if the provided account address is zero.
     error CashbackVault_AccountAddressZero();
 
-    /// @notice Thrown if the provided amount exceeds the maximum allowed.
-    error CashbackVault_AmountExcess();
+    /// @notice Thrown if the provided amount is zero.
+    error CashbackVault_AmountZero();
 
     /// @notice Thrown if the account's cashback balance is insufficient for the operation.
     error CashbackVault_CashbackBalanceInsufficient();
@@ -216,8 +219,8 @@ interface ICashbackVaultErrors {
  * - To view the total cashback balance of the vault
  * - To view the cashback state of an account including the balance, total claimed and last claim timestamp
  *
- * The contract stores both the tokens and the corresponding cashback balance mappings,
- * providing a centralized cashback management system.
+ * The contract holds granted cashback tokens at its own address and maintains the corresponding
+ * cashback balance mappings, providing a centralized cashback management system.
  */
 interface ICashbackVault is ICashbackVaultPrimary, ICashbackVaultConfiguration, ICashbackVaultErrors {
     /**
