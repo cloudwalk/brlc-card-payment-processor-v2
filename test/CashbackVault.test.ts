@@ -1,4 +1,4 @@
-import { ethers, upgrades, network } from "hardhat";
+import { ethers, upgrades } from "hardhat";
 import { expect } from "chai";
 import { TransactionResponse } from "ethers";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
@@ -73,9 +73,7 @@ describe("Contracts 'CashbackVault'", async () => {
     cashbackVaultFromManager = cashbackVault.connect(manager);
     cashbackVaultFromStranger = cashbackVault.connect(stranger);
   });
-  async function setupAccountWithCashback(account: HardhatEthersSigner, amount: bigint) {
-    await cashbackVaultFromOperator.grantCashback(account.address, amount);
-  }
+
   describe("method grantCashback()", async () => {
     const amountToGrant = 1000n;
     describe("operator successfully grants cashback to account", async () => {
@@ -313,8 +311,10 @@ describe("Contracts 'CashbackVault'", async () => {
       expect(await cashbackVault.underlyingToken()).to.equal(await tokenMock.getAddress());
     });
   });
-  it("should have proveCashbackVault() method", async () => {
-    await expect(cashbackVault.proveCashbackVault()).to.be.not.reverted;
+  describe("method proveCashbackVault()", async () => {
+    it("should exist and not revert", async () => {
+      await expect(cashbackVault.proveCashbackVault()).to.be.not.reverted;
+    });
   });
   describe("deploy and upgrade error scenarios", async () => {
     it("should revert when upgrading to non-cashback vault", async () => {
