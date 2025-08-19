@@ -77,33 +77,59 @@ describe("Contracts 'CashbackVault'", async () => {
     await cashbackVaultFromOperator.grantCashback(account.address, amount);
   }
   describe("method grantCashback(address account, uint64 amount)", async () => {
+    const amountToGrant = 1000n;
     describe("operator grants cashback to account", async () => {
       let tx: TransactionResponse;
       beforeEach(async () => {
-        tx = await cashbackVaultFromOperator.grantCashback(account.address, 1000n);
+        tx = await cashbackVaultFromOperator.grantCashback(account.address, amountToGrant);
       });
+
       it("should increase account cashback balance", async () => {
-        expect(await cashbackVaultFromOperator.getAccountCashbackBalance(account.address)).to.equal(1000n);
+        expect(await cashbackVaultFromOperator.getAccountCashbackBalance(account.address)).to.equal(amountToGrant);
       });
+
       it("should increase total cashback balance", async () => {
-        expect(await cashbackVaultFromOperator.getTotalCashbackBalance()).to.equal(1000n);
+        expect(await cashbackVaultFromOperator.getTotalCashbackBalance()).to.equal(amountToGrant);
       });
+
       it("should emit CashbackGranted event", async () => {
         await expect(tx)
           .to.emit(cashbackVaultFromOperator, "CashbackGranted")
-          .withArgs(account.address, operator.address, 1000n, 1000n);
+          .withArgs(account.address, operator.address, amountToGrant, amountToGrant);
       });
+
       it("should move tokens from Operator to CashbackVault", async () => {
         await expect(tx).to.changeTokenBalances(
           tokenMock,
           [operator.address, cashBackVaultAddress],
-          [-1000n, 1000n]
+          [-amountToGrant, amountToGrant]
         );
       });
+
       it("stores lastGrantTimestamp in state", async () => {
         expect((await cashbackVaultFromOperator.getAccountCashbackState(account.address)).lastGrantTimestamp)
           .to.equal(await getTxTimestamp(Promise.resolve(tx)));
       });
+    });
+
+    it("should revert if account is zero address", async () => {
+      await expect(cashbackVaultFromOperator.grantCashback(ADDRESS_ZERO, 1000n))
+        .to.be.revertedWithCustomError(cashbackVaultFromOperator, "CashbackVault_AccountAddressZero");
+    });
+
+    it("should revert if amount is zero", async () => {
+      await expect(cashbackVaultFromOperator.grantCashback(account.address, 0n))
+        .to.be.revertedWithCustomError(cashbackVaultFromOperator, "CashbackVault_AmountZero");
+    });
+    it("should revert if operator has not enough tokens", async () => {
+      await tokenMock.connect(operator).transfer(stranger.address, BALANCE_INITIAL);
+      await expect(cashbackVaultFromOperator.grantCashback(account.address, amountToGrant))
+        .to.be.revertedWithCustomError(tokenMock, "ERC20InsufficientBalance");
+    });
+    it("should revert if operator has not enough allowance", async () => {
+      await tokenMock.connect(operator).approve(cashBackVaultAddress, 0n);
+      await expect(cashbackVaultFromOperator.grantCashback(account.address, amountToGrant))
+        .to.be.revertedWithCustomError(tokenMock, "ERC20InsufficientAllowance");
     });
   });
   describe("method revokeCashback(address account, uint64 amount)", async () => {
@@ -149,14 +175,17 @@ describe("Contracts 'CashbackVault'", async () => {
 
         tx = await cashbackVaultFromManager.claim(account.address, amountToClaim);
       });
+
       it("should decrease account cashback balance", async () => {
         expect(await cashbackVaultFromManager.getAccountCashbackBalance(account.address))
           .to.equal(initialCashbackBalance - amountToClaim);
       });
+
       it("should decrease total cashback balance", async () => {
         expect(await cashbackVaultFromManager.getTotalCashbackBalance())
           .to.equal(initialCashbackBalance - amountToClaim);
       });
+
       it("should move tokens from CashbackVault to account", async () => {
         await expect(tx).to.changeTokenBalances(
           tokenMock,
@@ -164,11 +193,13 @@ describe("Contracts 'CashbackVault'", async () => {
           [-amountToClaim, amountToClaim]
         );
       });
+
       it("should emit CashbackClaimed event", async () => {
         await expect(tx)
           .to.emit(cashbackVaultFromManager, "CashbackClaimed")
           .withArgs(account.address, manager.address, amountToClaim, initialCashbackBalance - amountToClaim);
       });
+
       it("stores lastClaimTimestamp in state", async () => {
         expect((await cashbackVaultFromManager.getAccountCashbackState(account.address)).lastClaimTimestamp)
           .to.equal(await getTxTimestamp(Promise.resolve(tx)));
