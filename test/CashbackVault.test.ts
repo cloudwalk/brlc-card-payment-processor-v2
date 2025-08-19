@@ -1,9 +1,10 @@
-import { ethers, upgrades } from "hardhat";
+import { ethers, upgrades, network } from "hardhat";
 import { expect } from "chai";
 import { TransactionResponse } from "ethers";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { maxUintForBits, setUpFixture } from "../test-utils/common";
 import * as Contracts from "../typechain-types";
+import { getTxTimestamp } from "../test-utils/eth";
 
 const ADDRESS_ZERO = ethers.ZeroAddress;
 const BALANCE_INITIAL = 1000_000_000_000n;
@@ -99,6 +100,10 @@ describe("Contracts 'CashbackVault'", async () => {
           [-1000n, 1000n]
         );
       });
+      it("stores lastGrantTimestamp in state", async () => {
+        expect((await cashbackVaultFromOperator.getAccountCashbackState(account.address)).lastGrantTimestamp)
+          .to.equal(await getTxTimestamp(Promise.resolve(tx)));
+      });
     });
   });
   describe("method revokeCashback(address account, uint64 amount)", async () => {
@@ -164,6 +169,10 @@ describe("Contracts 'CashbackVault'", async () => {
           .to.emit(cashbackVaultFromManager, "CashbackClaimed")
           .withArgs(account.address, manager.address, amountToClaim, initialCashbackBalance - amountToClaim);
       });
+      it("stores lastClaimTimestamp in state", async () => {
+        expect((await cashbackVaultFromManager.getAccountCashbackState(account.address)).lastClaimTimestamp)
+          .to.equal(await getTxTimestamp(Promise.resolve(tx)));
+      });
     });
   });
   describe("method claimAll(address account)", async () => {
@@ -194,6 +203,10 @@ describe("Contracts 'CashbackVault'", async () => {
         await expect(tx)
           .to.emit(cashbackVaultFromManager, "CashbackClaimed")
           .withArgs(account.address, manager.address, initialCashbackBalance, 0n);
+      });
+      it("stores lastClaimTimestamp in state", async () => {
+        expect((await cashbackVaultFromManager.getAccountCashbackState(account.address)).lastClaimTimestamp)
+          .to.equal(await getTxTimestamp(Promise.resolve(tx)));
       });
     });
   });

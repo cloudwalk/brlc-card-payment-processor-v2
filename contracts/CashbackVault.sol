@@ -114,6 +114,7 @@ contract CashbackVault is
         AccountCashbackState storage accountState = $.accountCashbackStates[account];
 
         accountState.balance += amount;
+        accountState.lastGrantTimestamp = uint64(block.timestamp);
         $.totalCashback += amount;
 
         IERC20($.token).transferFrom(_msgSender(), address(this), amount);
@@ -144,7 +145,6 @@ contract CashbackVault is
         }
 
         accountState.balance -= amount;
-        accountState.lastGrantTimestamp = uint64(block.timestamp);
         $.totalCashback -= amount;
 
         IERC20($.token).transfer(_msgSender(), amount);
