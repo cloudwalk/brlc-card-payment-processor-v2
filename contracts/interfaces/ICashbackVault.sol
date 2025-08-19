@@ -27,7 +27,7 @@ interface ICashbackVaultTypes {
     }
 
     /**
-     * @notice The result of the getAccountCashbackState function.
+     * @notice The result of the {getAccountCashbackState} function.
      *
      * Fields:
      *
@@ -53,7 +53,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
     // ------------------ Events ------------------------------ //
 
     /**
-     * @notice Emitted when cashback balance has been increased for a account.
+     * @notice Emitted when the cashback balance has been increased for an account.
      *
      * @param account The account whose cashback balance was granted.
      * @param executor The executor who performed the grant.
@@ -68,7 +68,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
     );
 
     /**
-     * @notice Emitted when cashback balance has been decreased for a account.
+     * @notice Emitted when the cashback balance has been decreased for an account.
      *
      * @param account The account whose cashback balance was decreased.
      * @param executor The executor who performed the revocation.
@@ -83,7 +83,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
     );
 
     /**
-     * @notice Emitted when cashback has been claimed for a account.
+     * @notice Emitted when cashback has been claimed for an account.
      *
      * @param account The account for whom cashback was claimed.
      * @param executor The executor who performed the claim.
@@ -100,12 +100,12 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
     // ------------------ Transactional functions ----------------- //
 
     /**
-     * @notice Increases the cashback balance for a account.
+     * @notice Increases the cashback balance for an account.
      *
      * Transfers tokens from the caller to the vault and increases the account's cashback balance.
      * This function can be called only by an account with the CASHBACK_OPERATOR_ROLE.
      *
-     * Emits a {CashbackIncreased} event.
+     * Emits a {CashbackGranted} event.
      *
      * @param account The account to increase cashback balance for.
      * @param amount The amount to increase the cashback balance by.
@@ -113,12 +113,12 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
     function grantCashback(address account, uint64 amount) external;
 
     /**
-     * @notice Decreases the cashback balance for a account.
+     * @notice Decreases the cashback balance for an account.
      *
      * Transfers tokens from the vault to the caller and decreases the account's cashback balance.
      * This function can be called only by an account with the CASHBACK_OPERATOR_ROLE.
      *
-     * Emits a {CashbackDecreased} event.
+     * Emits a {CashbackRevoked} event.
      *
      * @param account The account to decrease cashback balance for.
      * @param amount The amount to decrease the cashback balance by.
@@ -126,7 +126,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
     function revokeCashback(address account, uint64 amount) external;
 
     /**
-     * @notice Claims a specific amount of cashback for a account.
+     * @notice Claims a specific amount of cashback for an account.
      *
      * Transfers the specified amount of tokens from the vault to the account.
      * This function can be called only by an account with the MANAGER_ROLE.
@@ -139,7 +139,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
     function claim(address account, uint64 amount) external;
 
     /**
-     * @notice Claims all available cashback for a account.
+     * @notice Claims all available cashback for an account.
      *
      * Transfers all available cashback tokens from the vault to the account.
      * This function can be called only by an account with the MANAGER_ROLE.
@@ -166,7 +166,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
     function getTotalCashbackBalance() external view returns (uint64);
 
     /**
-     * @notice Returns the complete cashback state of a account.
+     * @notice Returns the complete cashback state of an account.
      * @param account The account to get the cashback state of.
      * @return result The complete cashback state of the account.
      */
@@ -197,7 +197,7 @@ interface ICashbackVaultErrors {
     /// @notice Thrown if the provided amount is zero.
     error CashbackVault_AmountZero();
 
-    /// @notice Thrown if the account's cashback balance is insufficient for the operation.
+    /// @notice Thrown if the account’s cashback balance is insufficient for the operation.
     error CashbackVault_CashbackBalanceInsufficient();
 
     /// @notice Thrown if the provided new implementation address is not of a cashback vault contract.

@@ -31,10 +31,10 @@ contract CashbackVault is
 {
     // ------------------ Constants ------------------------------- //
 
-    /// @dev The role of cashback grantors that are allowed to increase and decrease cashback balances.
+    /// @dev The role for cashback operators who are allowed to increase and decrease cashback balances.
     bytes32 public constant CASHBACK_OPERATOR_ROLE = keccak256("CASHBACK_OPERATOR_ROLE");
 
-    /// @dev The role of executors that are allowed to claim cashback on behalf of accounts.
+    /// @dev The role for managers who are allowed to claim cashback on behalf of accounts.
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
 
     // ------------------ Constructor ----------------------------- //
@@ -80,7 +80,7 @@ contract CashbackVault is
         __AccessControlExt_init_unchained();
         __PausableExt_init_unchained();
         __Rescuable_init_unchained();
-        __UUPSExt_init_unchained(); // This is needed only to avoid errors during coverage assessmen
+        __UUPSExt_init_unchained(); // This is needed only to avoid errors during coverage assessment
 
         if (token_ == address(0)) {
             revert CashbackVault_TokenAddressZero();
@@ -155,7 +155,6 @@ contract CashbackVault is
      * @inheritdoc ICashbackVaultPrimary
      *
      * @dev Requirements:
-     *å
      * - The contract must not be paused.
      * - The caller must have the {MANAGER_ROLE} role.
      * - The provided account address must not be zero.
@@ -175,9 +174,9 @@ contract CashbackVault is
      * @dev Requirements:
      *
      * - The contract must not be paused.
-     * - The caller must have the {EXECUTOR_ROLE} role.
+     * - The caller must have the {MANAGER_ROLE} role.
      * - The provided account address must not be zero.
-     * - The account must have cashback balance greater than zero.
+     * - The account must have a cashback balance greater than zero.
      */
     function claimAll(address account) external whenNotPaused onlyRole(MANAGER_ROLE) onlyValidAccount(account) {
         CashbackVaultStorage storage $ = _getCashbackVaultStorage();
@@ -228,7 +227,7 @@ contract CashbackVault is
     // ------------------ Internal functions ---------------------- //
 
     /**
-     * @dev Claims cashback for a account.
+     * @dev Claims cashback for an account.
      *
      * @param account The account to claim cashback for.
      * @param amount The amount of cashback to claim.
