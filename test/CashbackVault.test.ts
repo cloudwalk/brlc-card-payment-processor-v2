@@ -226,7 +226,7 @@ describe("Contracts 'CashbackVault'", async () => {
 
       it("stores lastClaimTimestamp in state", async () => {
         expect((await cashbackVaultFromManager.getAccountCashbackState(account.address)).lastClaimTimestamp)
-          .to.equal(await getTxTimestamp(Promise.resolve(tx)));
+          .to.equal(await getTxTimestamp(tx));
       });
     });
 
@@ -283,7 +283,7 @@ describe("Contracts 'CashbackVault'", async () => {
 
       it("stores lastClaimTimestamp in state", async () => {
         expect((await cashbackVaultFromManager.getAccountCashbackState(account.address)).lastClaimTimestamp)
-          .to.equal(await getTxTimestamp(Promise.resolve(tx)));
+          .to.equal(await getTxTimestamp(tx));
       });
     });
 
@@ -316,26 +316,16 @@ describe("Contracts 'CashbackVault'", async () => {
   it("should have proveCashbackVault() method", async () => {
     await expect(cashbackVault.proveCashbackVault()).to.be.not.reverted;
   });
-  describe("upgrade and deploy scenarios", async () => {
-    describe("upgrade to not cashback vault", async () => {
-      let tx: Promise<TransactionResponse>;
-      beforeEach(async () => {
-        tx = cashbackVault.upgradeToAndCall(tokenMock.getAddress(), "0x");
-      });
-      it("should revert with CashbackVault_ImplementationAddressInvalid", async () => {
-        await expect(tx)
-          .to.be.revertedWithCustomError(cashbackVault, "CashbackVault_ImplementationAddressInvalid");
-      });
+  describe("deploy and upgrade error scenarios", async () => {
+    it("should revert when upgrading to non-cashback vault", async () => {
+      const tx = cashbackVault.upgradeToAndCall(tokenMock.getAddress(), "0x");
+      await expect(tx)
+        .to.be.revertedWithCustomError(cashbackVault, "CashbackVault_ImplementationAddressInvalid");
     });
-    describe("deploy with zero token address", async () => {
-      let tx: ReturnType<typeof upgrades.deployProxy>;
-      beforeEach(async () => {
-        tx = upgrades.deployProxy(cashbackVaultFactory, [ADDRESS_ZERO]);
-      });
-      it("should revert with CashbackVault_TokenAddressZero", async () => {
-        await expect(tx)
-          .to.be.revertedWithCustomError(cashbackVaultFactory, "CashbackVault_TokenAddressZero");
-      });
+    it("should revert when deploying with zero token address", async () => {
+      const tx = upgrades.deployProxy(cashbackVaultFactory, [ADDRESS_ZERO]);
+      await expect(tx)
+        .to.be.revertedWithCustomError(cashbackVaultFactory, "CashbackVault_TokenAddressZero");
     });
   });
   xdescribe("BDD complex path with token flow and events checks", async () => {

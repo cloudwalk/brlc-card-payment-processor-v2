@@ -47,8 +47,8 @@ export async function getLatestBlockTimestamp(): Promise<number> {
   return getBlockTimestamp("latest");
 }
 
-export async function getTxTimestamp(tx: Promise<TransactionResponse>): Promise<number> {
-  const receipt = await proveTx(tx);
+export async function getTxTimestamp(tx: Promise<TransactionResponse> | TransactionResponse): Promise<number> {
+  const receipt = await proveTx(Promise.resolve(tx));
   const block = await ethers.provider.getBlock(receipt.blockNumber);
   return Number(block?.timestamp ?? 0);
 }
