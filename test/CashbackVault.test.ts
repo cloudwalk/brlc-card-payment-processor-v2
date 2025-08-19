@@ -2,8 +2,8 @@ import { ethers, upgrades } from "hardhat";
 import { expect } from "chai";
 import { TransactionResponse } from "ethers";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
-import { CashbackVault__factory, CashbackVault, ERC20TokenMock, ERC20TokenMock__factory } from "../typechain-types";
 import { maxUintForBits, setUpFixture } from "../test-utils/common";
+import * as Contracts from "../typechain-types";
 
 const ADDRESS_ZERO = ethers.ZeroAddress;
 const BALANCE_INITIAL = 1000_000_000_000n;
@@ -18,8 +18,8 @@ const EXPECTED_VERSION = {
   patch: 0n
 } as const;
 
-let cashbackVaultFactory: CashbackVault__factory;
-let tokenMockFactory: ERC20TokenMock__factory;
+let cashbackVaultFactory: Contracts.CashbackVault__factory;
+let tokenMockFactory: Contracts.ERC20TokenMock__factory;
 
 let deployer: HardhatEthersSigner; // has GRANTOR_ROLE AND OWNER_ROLE
 let manager: HardhatEthersSigner; // has MANAGER_ROLE
@@ -55,11 +55,11 @@ describe("Contracts 'CashbackVault'", async () => {
     tokenMockFactory = await ethers.getContractFactory("ERC20TokenMock");
     tokenMockFactory = tokenMockFactory.connect(deployer);
   });
-  let cashbackVault: CashbackVault;
-  let tokenMock: ERC20TokenMock;
-  let cashbackVaultFromOperator: CashbackVault;
-  let cashbackVaultFromManager: CashbackVault;
-  let cashbackVaultFromStranger: CashbackVault;
+  let cashbackVault: Contracts.CashbackVault;
+  let tokenMock: Contracts.ERC20TokenMock;
+  let cashbackVaultFromOperator: Contracts.CashbackVault;
+  let cashbackVaultFromManager: Contracts.CashbackVault;
+  let cashbackVaultFromStranger: Contracts.CashbackVault;
 
   let cashBackVaultAddress: string;
   beforeEach(async () => {
