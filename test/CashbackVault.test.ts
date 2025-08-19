@@ -229,36 +229,44 @@ describe("Contracts 'CashbackVault'", async () => {
           .to.equal(await getTxTimestamp(Promise.resolve(tx)));
       });
     });
+
     it("should revert if account is zero address", async () => {
       await expect(cashbackVaultFromManager.claim(ADDRESS_ZERO, 1000n))
         .to.be.revertedWithCustomError(cashbackVaultFromManager, "CashbackVault_AccountAddressZero");
     });
+
     it("should revert if amount is zero", async () => {
       await expect(cashbackVaultFromManager.claim(account.address, 0n))
         .to.be.revertedWithCustomError(cashbackVaultFromManager, "CashbackVault_AmountZero");
     });
+
     it("should revert if account has no enough cashback balance", async () => {
       await expect(cashbackVaultFromManager.claim(account.address, initialCashbackBalance + 1n))
         .to.be.revertedWithCustomError(cashbackVaultFromManager, "CashbackVault_CashbackBalanceInsufficient");
     });
   });
   describe("method claimAll(address account)", async () => {
-    describe("manager claims all cashback from account", async () => {
-      let tx: TransactionResponse;
-      const initialCashbackBalance = 1000n;
-      beforeEach(async () => {
-        await setupAccountWithCashback(account, initialCashbackBalance);
+    const initialCashbackBalance = 1000n;
+    beforeEach(async () => {
+      await cashbackVaultFromOperator.grantCashback(account.address, initialCashbackBalance);
+    });
 
+    describe("manager successfully claims all cashback from account", async () => {
+      let tx: TransactionResponse;
+      beforeEach(async () => {
         tx = await cashbackVaultFromManager.claimAll(account.address);
       });
+
       it("should empty account cashback balance", async () => {
         expect(await cashbackVaultFromManager.getAccountCashbackBalance(account.address))
           .to.equal(0n);
       });
+
       it("should empty total cashback balance", async () => {
         expect(await cashbackVaultFromManager.getTotalCashbackBalance())
           .to.equal(0n);
       });
+
       it("should move tokens from CashbackVault to account", async () => {
         await expect(tx).to.changeTokenBalances(
           tokenMock,
@@ -266,15 +274,29 @@ describe("Contracts 'CashbackVault'", async () => {
           [-initialCashbackBalance, initialCashbackBalance]
         );
       });
+
       it("should emit CashbackClaimed event", async () => {
         await expect(tx)
           .to.emit(cashbackVaultFromManager, "CashbackClaimed")
           .withArgs(account.address, manager.address, initialCashbackBalance, 0n);
       });
+
       it("stores lastClaimTimestamp in state", async () => {
         expect((await cashbackVaultFromManager.getAccountCashbackState(account.address)).lastClaimTimestamp)
           .to.equal(await getTxTimestamp(Promise.resolve(tx)));
       });
+    });
+
+    it("should revert if account has no cashback balance", async () => {
+      // first revoke all cashback
+      await cashbackVaultFromOperator.revokeCashback(account.address, initialCashbackBalance);
+
+      await expect(cashbackVaultFromManager.claimAll(account.address))
+        .to.be.revertedWithCustomError(cashbackVaultFromManager, "CashbackVault_AmountZero");
+    });
+    it("should revert if account is zero address", async () => {
+      await expect(cashbackVaultFromManager.claimAll(ADDRESS_ZERO))
+        .to.be.revertedWithCustomError(cashbackVaultFromManager, "CashbackVault_AccountAddressZero");
     });
   });
   describe("method $__VERSION()", async () => {
