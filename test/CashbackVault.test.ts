@@ -188,13 +188,15 @@ describe("Contracts 'CashbackVault'", async () => {
   });
 
   describe("method claim(address account, uint64 amount)", async () => {
-    describe("manager claims cashback from account", async () => {
+    const initialCashbackBalance = 1000n;
+    beforeEach(async () => {
+      // prepare some existing cashback state
+      await cashbackVaultFromOperator.grantCashback(account.address, initialCashbackBalance);
+    });
+    describe("manager successfully claims cashback from account", async () => {
       let tx: TransactionResponse;
-      const initialCashbackBalance = 1000n;
       const amountToClaim = 100n;
       beforeEach(async () => {
-        await setupAccountWithCashback(account, initialCashbackBalance);
-
         tx = await cashbackVaultFromManager.claim(account.address, amountToClaim);
       });
 
@@ -226,6 +228,18 @@ describe("Contracts 'CashbackVault'", async () => {
         expect((await cashbackVaultFromManager.getAccountCashbackState(account.address)).lastClaimTimestamp)
           .to.equal(await getTxTimestamp(Promise.resolve(tx)));
       });
+    });
+    it("should revert if account is zero address", async () => {
+      await expect(cashbackVaultFromManager.claim(ADDRESS_ZERO, 1000n))
+        .to.be.revertedWithCustomError(cashbackVaultFromManager, "CashbackVault_AccountAddressZero");
+    });
+    it("should revert if amount is zero", async () => {
+      await expect(cashbackVaultFromManager.claim(account.address, 0n))
+        .to.be.revertedWithCustomError(cashbackVaultFromManager, "CashbackVault_AmountZero");
+    });
+    it("should revert if account has no enough cashback balance", async () => {
+      await expect(cashbackVaultFromManager.claim(account.address, initialCashbackBalance + 1n))
+        .to.be.revertedWithCustomError(cashbackVaultFromManager, "CashbackVault_CashbackBalanceInsufficient");
     });
   });
   describe("method claimAll(address account)", async () => {
