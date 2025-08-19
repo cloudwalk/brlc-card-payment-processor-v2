@@ -25,6 +25,7 @@ let deployer: HardhatEthersSigner; // has GRANTOR_ROLE AND OWNER_ROLE
 let manager: HardhatEthersSigner; // has MANAGER_ROLE
 let operator: HardhatEthersSigner; // has CASHBACK_OPERATOR_ROLE
 let account: HardhatEthersSigner; // has no roles
+let stranger: HardhatEthersSigner; // has no roles
 
 async function deployContracts() {
   const name = "ERC20 Test";
@@ -48,7 +49,7 @@ async function deployContracts() {
 
 describe("Contracts 'CashbackVault'", async () => {
   before(async () => {
-    [deployer, manager, operator, account] = await ethers.getSigners();
+    [deployer, manager, operator, account, stranger] = await ethers.getSigners();
 
     cashbackVaultFactory = await ethers.getContractFactory("CashbackVault");
     cashbackVaultFactory = cashbackVaultFactory.connect(deployer);
@@ -69,20 +70,149 @@ describe("Contracts 'CashbackVault'", async () => {
     cashBackVaultAddress = await cashbackVault.getAddress();
     cashbackVaultFromOperator = cashbackVault.connect(operator);
     cashbackVaultFromManager = cashbackVault.connect(manager);
-    cashbackVaultFromStranger = cashbackVault.connect(account);
+    cashbackVaultFromStranger = cashbackVault.connect(stranger);
   });
-  it("should return version", async () => {
-    expect(await cashbackVault.$__VERSION()).to.deep.equal([
-      EXPECTED_VERSION.major,
-      EXPECTED_VERSION.minor,
-      EXPECTED_VERSION.patch
-    ]);
+  async function setupAccountWithCashback(account: HardhatEthersSigner, amount: bigint) {
+    await cashbackVaultFromOperator.grantCashback(account.address, amount);
+  }
+  describe("method grantCashback(address account, uint64 amount)", async () => {
+    describe("operator grants cashback to account", async () => {
+      let tx: TransactionResponse;
+      beforeEach(async () => {
+        tx = await cashbackVaultFromOperator.grantCashback(account.address, 1000n);
+      });
+      it("should increase account cashback balance", async () => {
+        expect(await cashbackVaultFromOperator.getAccountCashbackBalance(account.address)).to.equal(1000n);
+      });
+      it("should increase total cashback balance", async () => {
+        expect(await cashbackVaultFromOperator.getTotalCashbackBalance()).to.equal(1000n);
+      });
+      it("should emit CashbackGranted event", async () => {
+        await expect(tx)
+          .to.emit(cashbackVaultFromOperator, "CashbackGranted")
+          .withArgs(account.address, operator.address, 1000n, 1000n);
+      });
+      it("should move tokens from Operator to CashbackVault", async () => {
+        await expect(tx).to.changeTokenBalances(
+          tokenMock,
+          [operator.address, cashBackVaultAddress],
+          [-1000n, 1000n]
+        );
+      });
+    });
   });
-  it("should have proveCashbackVault function", async () => {
+  describe("method revokeCashback(address account, uint64 amount)", async () => {
+    describe("operator revokes cashback from account", async () => {
+      let tx: TransactionResponse;
+      const initialCashbackBalance = 1000n;
+      const amountToRevoke = 100n;
+      beforeEach(async () => {
+        await setupAccountWithCashback(account, initialCashbackBalance);
+
+        tx = await cashbackVaultFromOperator.revokeCashback(account.address, amountToRevoke);
+      });
+      it("should decrease account cashback balance", async () => {
+        expect(await cashbackVaultFromOperator.getAccountCashbackBalance(account.address))
+          .to.equal(initialCashbackBalance - amountToRevoke);
+      });
+      it("should decrease total cashback balance", async () => {
+        expect(await cashbackVaultFromOperator.getTotalCashbackBalance())
+          .to.equal(initialCashbackBalance - amountToRevoke);
+      });
+      it("should move tokens from CashbackVault to Operator", async () => {
+        await expect(tx).to.changeTokenBalances(
+          tokenMock,
+          [cashBackVaultAddress, operator.address],
+          [-100n, 100n]
+        );
+      });
+      it("should emit CashbackRevoked event", async () => {
+        await expect(tx)
+          .to.emit(cashbackVaultFromOperator, "CashbackRevoked")
+          .withArgs(account.address, operator.address, amountToRevoke, initialCashbackBalance - amountToRevoke);
+      });
+    });
+  });
+
+  describe("method claim(address account, uint64 amount)", async () => {
+    describe("manager claims cashback from account", async () => {
+      let tx: TransactionResponse;
+      const initialCashbackBalance = 1000n;
+      const amountToClaim = 100n;
+      beforeEach(async () => {
+        await setupAccountWithCashback(account, initialCashbackBalance);
+
+        tx = await cashbackVaultFromManager.claim(account.address, amountToClaim);
+      });
+      it("should decrease account cashback balance", async () => {
+        expect(await cashbackVaultFromManager.getAccountCashbackBalance(account.address))
+          .to.equal(initialCashbackBalance - amountToClaim);
+      });
+      it("should decrease total cashback balance", async () => {
+        expect(await cashbackVaultFromManager.getTotalCashbackBalance())
+          .to.equal(initialCashbackBalance - amountToClaim);
+      });
+      it("should move tokens from CashbackVault to account", async () => {
+        await expect(tx).to.changeTokenBalances(
+          tokenMock,
+          [cashBackVaultAddress, account.address],
+          [-amountToClaim, amountToClaim]
+        );
+      });
+      it("should emit CashbackClaimed event", async () => {
+        await expect(tx)
+          .to.emit(cashbackVaultFromManager, "CashbackClaimed")
+          .withArgs(account.address, manager.address, amountToClaim, initialCashbackBalance - amountToClaim);
+      });
+    });
+  });
+  describe("method claimAll(address account)", async () => {
+    describe("manager claims all cashback from account", async () => {
+      let tx: TransactionResponse;
+      const initialCashbackBalance = 1000n;
+      beforeEach(async () => {
+        await setupAccountWithCashback(account, initialCashbackBalance);
+
+        tx = await cashbackVaultFromManager.claimAll(account.address);
+      });
+      it("should empty account cashback balance", async () => {
+        expect(await cashbackVaultFromManager.getAccountCashbackBalance(account.address))
+          .to.equal(0n);
+      });
+      it("should empty total cashback balance", async () => {
+        expect(await cashbackVaultFromManager.getTotalCashbackBalance())
+          .to.equal(0n);
+      });
+      it("should move tokens from CashbackVault to account", async () => {
+        await expect(tx).to.changeTokenBalances(
+          tokenMock,
+          [cashBackVaultAddress, account.address],
+          [-initialCashbackBalance, initialCashbackBalance]
+        );
+      });
+      it("should emit CashbackClaimed event", async () => {
+        await expect(tx)
+          .to.emit(cashbackVaultFromManager, "CashbackClaimed")
+          .withArgs(account.address, manager.address, initialCashbackBalance, 0n);
+      });
+    });
+  });
+  describe("method $__VERSION()", async () => {
+    it("should return version", async () => {
+      expect(await cashbackVault.$__VERSION()).to.deep.equal([
+        EXPECTED_VERSION.major,
+        EXPECTED_VERSION.minor,
+        EXPECTED_VERSION.patch
+      ]);
+    });
+  });
+  describe("method underlyingToken()", async () => {
+    it("should give us underlying token address", async () => {
+      expect(await cashbackVault.underlyingToken()).to.equal(await tokenMock.getAddress());
+    });
+  });
+  it("should have proveCashbackVault() method", async () => {
     await expect(cashbackVault.proveCashbackVault()).to.be.not.reverted;
-  });
-  it("should give us underlying token address", async () => {
-    expect(await cashbackVault.underlyingToken()).to.equal(await tokenMock.getAddress());
   });
   describe("upgrade and deploy scenarios", async () => {
     describe("upgrade to not cashback vault", async () => {
