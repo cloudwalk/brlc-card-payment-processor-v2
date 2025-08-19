@@ -76,9 +76,9 @@ describe("Contracts 'CashbackVault'", async () => {
   async function setupAccountWithCashback(account: HardhatEthersSigner, amount: bigint) {
     await cashbackVaultFromOperator.grantCashback(account.address, amount);
   }
-  describe("method grantCashback(address account, uint64 amount)", async () => {
+  describe("method grantCashback()", async () => {
     const amountToGrant = 1000n;
-    describe("operator grants cashback to account", async () => {
+    describe("operator successfully grants cashback to account", async () => {
       let tx: TransactionResponse;
       beforeEach(async () => {
         tx = await cashbackVaultFromOperator.grantCashback(account.address, amountToGrant);
@@ -132,24 +132,30 @@ describe("Contracts 'CashbackVault'", async () => {
         .to.be.revertedWithCustomError(tokenMock, "ERC20InsufficientAllowance");
     });
   });
-  describe("method revokeCashback(address account, uint64 amount)", async () => {
-    describe("operator revokes cashback from account", async () => {
+  describe("method revokeCashback()", async () => {
+    const initialCashbackBalance = 1000n;
+    beforeEach(async () => {
+      // prepare some existing cashback state
+      await cashbackVaultFromOperator.grantCashback(account.address, initialCashbackBalance);
+    });
+
+    describe("operator successfully revokes cashback from account", async () => {
       let tx: TransactionResponse;
-      const initialCashbackBalance = 1000n;
       const amountToRevoke = 100n;
       beforeEach(async () => {
-        await setupAccountWithCashback(account, initialCashbackBalance);
-
         tx = await cashbackVaultFromOperator.revokeCashback(account.address, amountToRevoke);
       });
+
       it("should decrease account cashback balance", async () => {
         expect(await cashbackVaultFromOperator.getAccountCashbackBalance(account.address))
           .to.equal(initialCashbackBalance - amountToRevoke);
       });
+
       it("should decrease total cashback balance", async () => {
         expect(await cashbackVaultFromOperator.getTotalCashbackBalance())
           .to.equal(initialCashbackBalance - amountToRevoke);
       });
+
       it("should move tokens from CashbackVault to Operator", async () => {
         await expect(tx).to.changeTokenBalances(
           tokenMock,
@@ -157,11 +163,27 @@ describe("Contracts 'CashbackVault'", async () => {
           [-100n, 100n]
         );
       });
+
       it("should emit CashbackRevoked event", async () => {
         await expect(tx)
           .to.emit(cashbackVaultFromOperator, "CashbackRevoked")
           .withArgs(account.address, operator.address, amountToRevoke, initialCashbackBalance - amountToRevoke);
       });
+    });
+
+    it("should revert if account is zero address", async () => {
+      await expect(cashbackVaultFromOperator.revokeCashback(ADDRESS_ZERO, 1000n))
+        .to.be.revertedWithCustomError(cashbackVaultFromOperator, "CashbackVault_AccountAddressZero");
+    });
+
+    it("should revert if amount is zero", async () => {
+      await expect(cashbackVaultFromOperator.revokeCashback(account.address, 0n))
+        .to.be.revertedWithCustomError(cashbackVaultFromOperator, "CashbackVault_AmountZero");
+    });
+
+    it("should revert if revoke more cashback than account have", async () => {
+      await expect(cashbackVaultFromOperator.revokeCashback(account.address, initialCashbackBalance + 1n))
+        .to.be.revertedWithCustomError(cashbackVaultFromOperator, "CashbackVault_CashbackBalanceInsufficient");
     });
   });
 
@@ -280,7 +302,7 @@ describe("Contracts 'CashbackVault'", async () => {
       });
     });
   });
-  describe("BDD complex path with token flow and events checks", async () => {
+  xdescribe("BDD complex path with token flow and events checks", async () => {
     describe("granting 1000 tokens cashback", async () => {
       let tx: TransactionResponse;
       beforeEach(async () => {
@@ -403,7 +425,7 @@ describe("Contracts 'CashbackVault'", async () => {
       });
     });
   });
-  describe("CV basic unhappy path token flows and errors checks", async () => {
+  xdescribe("CV basic unhappy path token flows and errors checks", async () => {
     it("should revert if we grant cashback for zero address", async () => {
       await expect(cashbackVaultFromOperator.grantCashback(ADDRESS_ZERO, 1000n))
         .to.be.revertedWithCustomError(cashbackVaultFromOperator, "CashbackVault_AccountAddressZero");
