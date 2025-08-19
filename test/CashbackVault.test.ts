@@ -1,6 +1,6 @@
 import { ethers, upgrades } from "hardhat";
 import { expect } from "chai";
-import { TransactionResponse } from "ethers";
+import { getAddress, TransactionResponse } from "ethers";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { maxUintForBits, setUpFixture } from "../test-utils/common";
 import * as Contracts from "../typechain-types";
@@ -9,6 +9,7 @@ import { getTxTimestamp } from "../test-utils/eth";
 const ADDRESS_ZERO = ethers.ZeroAddress;
 const BALANCE_INITIAL = 1000_000_000_000n;
 
+const OWNER_ROLE = ethers.id("OWNER_ROLE");
 const GRANTOR_ROLE = ethers.id("GRANTOR_ROLE");
 const MANAGER_ROLE = ethers.id("MANAGER_ROLE");
 const CASHBACK_OPERATOR_ROLE = ethers.id("CASHBACK_OPERATOR_ROLE");
@@ -80,6 +81,55 @@ describe("Contracts 'CashbackVault'", async () => {
     cashbackVaultFromPauser = cashbackVaultFromOwner.connect(pauser);
   });
 
+  describe("deploy and upgrade error scenarios", async () => {
+    it("should revert when upgrading to non-cashback vault", async () => {
+      const tx = cashbackVaultFromOwner.upgradeToAndCall(tokenMock.getAddress(), "0x");
+      await expect(tx)
+        .to.be.revertedWithCustomError(cashbackVaultFromStranger, "CashbackVault_ImplementationAddressInvalid");
+    });
+
+    it("should revert when deploying with zero token address", async () => {
+      const tx = upgrades.deployProxy(cashbackVaultFactory, [ADDRESS_ZERO]);
+      await expect(tx)
+        .to.be.revertedWithCustomError(cashbackVaultFactory, "CashbackVault_TokenAddressZero");
+    });
+    it("should revert upgrading from non owner", async () => {
+      const tx = cashbackVaultFromStranger.upgradeToAndCall(tokenMock.getAddress(), "0x");
+      await expect(tx)
+        .to.be.revertedWithCustomError(cashbackVaultFromOperator, "AccessControlUnauthorizedAccount")
+        .withArgs(stranger.address, OWNER_ROLE);
+    });
+  });
+
+  describe("method initialize()", async () => {
+    it("should have right roles hashes", async () => {
+      expect(await cashbackVaultFromOwner.OWNER_ROLE()).to.equal(OWNER_ROLE);
+      expect(await cashbackVaultFromOwner.GRANTOR_ROLE()).to.equal(GRANTOR_ROLE);
+      expect(await cashbackVaultFromOwner.PAUSER_ROLE()).to.equal(PAUSER_ROLE);
+      expect(await cashbackVaultFromOwner.RESCUER_ROLE()).to.equal(RESCUER_ROLE);
+      expect(await cashbackVaultFromOwner.MANAGER_ROLE()).to.equal(MANAGER_ROLE);
+      expect(await cashbackVaultFromOwner.CASHBACK_OPERATOR_ROLE()).to.equal(CASHBACK_OPERATOR_ROLE);
+    });
+
+    it("should have right role admins", async () => {
+      expect(await cashbackVaultFromOwner.getRoleAdmin(OWNER_ROLE)).to.equal(OWNER_ROLE);
+      expect(await cashbackVaultFromOwner.getRoleAdmin(GRANTOR_ROLE)).to.equal(OWNER_ROLE);
+      expect(await cashbackVaultFromOwner.getRoleAdmin(PAUSER_ROLE)).to.equal(GRANTOR_ROLE);
+      expect(await cashbackVaultFromOwner.getRoleAdmin(RESCUER_ROLE)).to.equal(GRANTOR_ROLE);
+      expect(await cashbackVaultFromOwner.getRoleAdmin(MANAGER_ROLE)).to.equal(GRANTOR_ROLE);
+      expect(await cashbackVaultFromOwner.getRoleAdmin(CASHBACK_OPERATOR_ROLE)).to.equal(GRANTOR_ROLE);
+    });
+
+    it("should not be paused after initialization", async () => {
+      expect(await cashbackVaultFromOwner.paused()).to.equal(false);
+    });
+
+    it("should revert if it is called a second time", async () => {
+      await expect(cashbackVaultFromOwner.initialize(await tokenMock.getAddress()))
+        .to.be.revertedWithCustomError(cashbackVaultFromOwner, "InvalidInitialization");
+    });
+  });
+
   describe("method grantCashback()", async () => {
     const amountToGrant = 1000n;
     describe("operator successfully grants cashback to account", async () => {
@@ -125,11 +175,13 @@ describe("Contracts 'CashbackVault'", async () => {
         await expect(cashbackVaultFromOperator.grantCashback(account.address, 0n))
           .to.be.revertedWithCustomError(cashbackVaultFromOperator, "CashbackVault_AmountZero");
       });
+
       it("operator has not enough tokens", async () => {
         await tokenMock.connect(operator).transfer(stranger.address, BALANCE_INITIAL);
         await expect(cashbackVaultFromOperator.grantCashback(account.address, amountToGrant))
           .to.be.revertedWithCustomError(tokenMock, "ERC20InsufficientBalance");
       });
+
       it("operator has not enough allowance", async () => {
         await tokenMock.connect(operator).approve(cashBackVaultAddress, 0n);
         await expect(cashbackVaultFromOperator.grantCashback(account.address, amountToGrant))
@@ -215,11 +267,13 @@ describe("Contracts 'CashbackVault'", async () => {
         await expect(cashbackVaultFromOperator.revokeCashback(account.address, amountToRevoke))
           .to.be.revertedWithCustomError(cashbackVaultFromOperator, "EnforcedPause");
       });
+
       it("caller does not have CASHBACK_OPERATOR_ROLE", async () => {
         await expect(cashbackVaultFromStranger.revokeCashback(account.address, amountToRevoke))
           .to.be.revertedWithCustomError(cashbackVaultFromStranger, "AccessControlUnauthorizedAccount")
           .withArgs(stranger.address, CASHBACK_OPERATOR_ROLE);
       });
+
       it("caller is even owner", async () => {
         await expect(cashbackVaultFromOwner.revokeCashback(account.address, amountToRevoke))
           .to.be.revertedWithCustomError(cashbackVaultFromOwner, "AccessControlUnauthorizedAccount")
@@ -292,11 +346,13 @@ describe("Contracts 'CashbackVault'", async () => {
         await expect(cashbackVaultFromManager.claim(account.address, amountToClaim))
           .to.be.revertedWithCustomError(cashbackVaultFromManager, "EnforcedPause");
       });
+
       it("caller does not have MANAGER_ROLE", async () => {
         await expect(cashbackVaultFromStranger.claim(account.address, amountToClaim))
           .to.be.revertedWithCustomError(cashbackVaultFromStranger, "AccessControlUnauthorizedAccount")
           .withArgs(stranger.address, MANAGER_ROLE);
       });
+
       it("caller is even owner", async () => {
         await expect(cashbackVaultFromOwner.claim(account.address, amountToClaim))
           .to.be.revertedWithCustomError(cashbackVaultFromOwner, "AccessControlUnauthorizedAccount")
@@ -353,6 +409,7 @@ describe("Contracts 'CashbackVault'", async () => {
         await expect(cashbackVaultFromManager.claimAll(account.address))
           .to.be.revertedWithCustomError(cashbackVaultFromManager, "CashbackVault_AmountZero");
       });
+
       it("account is zero address", async () => {
         await expect(cashbackVaultFromManager.claimAll(ADDRESS_ZERO))
           .to.be.revertedWithCustomError(cashbackVaultFromManager, "CashbackVault_AccountAddressZero");
@@ -364,11 +421,13 @@ describe("Contracts 'CashbackVault'", async () => {
         await expect(cashbackVaultFromManager.claimAll(account.address))
           .to.be.revertedWithCustomError(cashbackVaultFromManager, "EnforcedPause");
       });
+
       it("caller does not have MANAGER_ROLE", async () => {
         await expect(cashbackVaultFromStranger.claimAll(account.address))
           .to.be.revertedWithCustomError(cashbackVaultFromStranger, "AccessControlUnauthorizedAccount")
           .withArgs(stranger.address, MANAGER_ROLE);
       });
+
       it("caller is even owner", async () => {
         await expect(cashbackVaultFromOwner.claimAll(account.address))
           .to.be.revertedWithCustomError(cashbackVaultFromOwner, "AccessControlUnauthorizedAccount")
@@ -395,18 +454,7 @@ describe("Contracts 'CashbackVault'", async () => {
       await expect(cashbackVaultFromStranger.proveCashbackVault()).to.be.not.reverted;
     });
   });
-  describe("deploy and upgrade error scenarios", async () => {
-    it("should revert when upgrading to non-cashback vault", async () => {
-      const tx = cashbackVaultFromOwner.upgradeToAndCall(tokenMock.getAddress(), "0x");
-      await expect(tx)
-        .to.be.revertedWithCustomError(cashbackVaultFromStranger, "CashbackVault_ImplementationAddressInvalid");
-    });
-    it("should revert when deploying with zero token address", async () => {
-      const tx = upgrades.deployProxy(cashbackVaultFactory, [ADDRESS_ZERO]);
-      await expect(tx)
-        .to.be.revertedWithCustomError(cashbackVaultFactory, "CashbackVault_TokenAddressZero");
-    });
-  });
+
   xdescribe("BDD complex path with token flow and events checks", async () => {
     describe("granting 1000 tokens cashback", async () => {
       let tx: TransactionResponse;
