@@ -27,7 +27,8 @@ interface ICashbackVaultTypes {
     }
 
     /**
-     * @notice The result of the {getAccountCashbackState} function.
+     * @notice The view of the cashback state for a single account.
+     * This structure is used as a return type for appropriate view functions.  
      *
      * Fields:
      *
@@ -53,7 +54,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
     // ------------------ Events ------------------------------ //
 
     /**
-     * @notice Emitted when the cashback balance has been increased for an account.
+     * @notice Emitted when the cashback has been granted for an account.
      *
      * @param account The account whose cashback balance was granted.
      * @param executor The executor who performed the grant.
@@ -63,7 +64,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
     event CashbackGranted(address indexed account, address indexed executor, uint256 amount, uint256 newBalance);
 
     /**
-     * @notice Emitted when the cashback balance has been decreased for an account.
+     * @notice Emitted when the cashback has been revoked for an account.
      *
      * @param account The account whose cashback balance was decreased.
      * @param executor The executor who performed the revocation.
