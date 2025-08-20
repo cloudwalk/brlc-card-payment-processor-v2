@@ -59,7 +59,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
      * @param account The account whose cashback balance was granted.
      * @param executor The executor who performed the grant.
      * @param amount The amount of cashback granted.
-     * @param newBalance The new cashback balance of the account.
+     * @param newBalance The new cashback balance of the account within the vault and available for claiming.
      */
     event CashbackGranted(address indexed account, address indexed executor, uint256 amount, uint256 newBalance);
 
@@ -69,7 +69,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
      * @param account The account whose cashback balance was decreased.
      * @param executor The executor who performed the revocation.
      * @param amount The amount of cashback revoked.
-     * @param newBalance The new cashback balance of the account.
+     * @param newBalance The new cashback balance of the account within the vault and available for claiming.
      */
     event CashbackRevoked(address indexed account, address indexed executor, uint256 amount, uint256 newBalance);
 
@@ -79,7 +79,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
      * @param account The account for whom cashback was claimed.
      * @param executor The executor who performed the claim.
      * @param amount The amount of cashback claimed.
-     * @param newBalance The new cashback balance of the account.
+     * @param newBalance The new cashback balance of the account within the vault and available for claiming.
      */
     event CashbackClaimed(address indexed account, address indexed executor, uint256 amount, uint256 newBalance);
 
@@ -114,7 +114,8 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
     /**
      * @notice Claims a specific amount of cashback for an account.
      *
-     * Transfers the specified amount of tokens from the vault to the account.
+     * Transfers the specified amount of tokens from the vault to the account
+     * and decreases the account's cashback balance.
      * This function can be called only by an account with the MANAGER_ROLE.
      *
      * Emits a {CashbackClaimed} event.
@@ -127,7 +128,8 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
     /**
      * @notice Claims all available cashback for an account.
      *
-     * Transfers all available cashback tokens from the vault to the account.
+     * Transfers all available cashback tokens from the vault to the account
+     * and sets the account's cashback balance to zero.
      * This function can be called only by an account with the MANAGER_ROLE.
      *
      * Emits a {CashbackClaimed} event.
