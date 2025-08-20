@@ -37,10 +37,10 @@ interface ICashbackVaultTypes {
      * - lastGrantTimestamp --- The timestamp of the last grant operation.
      */
     struct AccountCashbackStateView {
-        uint64 balance;
-        uint64 totalClaimed;
-        uint64 lastClaimTimestamp;
-        uint64 lastGrantTimestamp;
+        uint256 balance;
+        uint256 totalClaimed;
+        uint256 lastClaimTimestamp;
+        uint256 lastGrantTimestamp;
     }
 }
 
@@ -157,13 +157,13 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
      * @param account The account to check the cashback balance of.
      * @return The current cashback balance of the account.
      */
-    function getAccountCashbackBalance(address account) external view returns (uint64);
+    function getAccountCashbackBalance(address account) external view returns (uint256);
 
     /**
      * @notice Returns the total cashback balance of the vault.
      * @return The total cashback balance of the vault.
      */
-    function getTotalCashbackBalance() external view returns (uint64);
+    function getTotalCashbackBalance() external view returns (uint256);
 
     /**
      * @notice Returns the complete cashback state of an account.

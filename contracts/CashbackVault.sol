@@ -188,7 +188,7 @@ contract CashbackVault is
     // ------------------ View functions -------------------------- //
 
     /// @inheritdoc ICashbackVaultPrimary
-    function getAccountCashbackBalance(address account) external view returns (uint64) {
+    function getAccountCashbackBalance(address account) external view returns (uint256) {
         return _getCashbackVaultStorage().accountCashbackStates[account].balance;
     }
 
@@ -210,7 +210,7 @@ contract CashbackVault is
     }
 
     /// @inheritdoc ICashbackVaultPrimary
-    function getTotalCashbackBalance() external view returns (uint64) {
+    function getTotalCashbackBalance() external view returns (uint256) {
         return _getCashbackVaultStorage().totalCashback;
     }
 
