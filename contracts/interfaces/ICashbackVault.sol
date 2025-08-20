@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.24;
+pragma solidity ^0.8.4;
 
 /**
  * @title ICashbackVaultTypes interface
@@ -13,10 +13,10 @@ interface ICashbackVaultTypes {
      *
      * Fields:
      *
-     * - balance --- The cashback balance of the account.
-     * - totalClaimed --- The total amount of cashback claimed by the account.
-     * - lastClaimTimestamp --- The timestamp of the last claim operation.
-     * - lastGrantTimestamp --- The timestamp of the last grant operation.
+     * - balance ------------- The cashback balance of the account.
+     * - totalClaimed -------- The total amount of cashback claimed by the account.
+     * - lastClaimTimestamp -- The timestamp of the last claim operation.
+     * - lastGrantTimestamp -- The timestamp of the last grant operation.
      */
     struct AccountCashbackState {
         // Slot 1
@@ -31,10 +31,10 @@ interface ICashbackVaultTypes {
      *
      * Fields:
      *
-     * - balance --- The cashback balance of the account.
-     * - totalClaimed --- The total amount of cashback claimed by the account.
-     * - lastClaimTimestamp --- The timestamp of the last claim operation.
-     * - lastGrantTimestamp --- The timestamp of the last grant operation.
+     * - balance ------------- The cashback balance of the account.
+     * - totalClaimed -------- The total amount of cashback claimed by the account.
+     * - lastClaimTimestamp -- The timestamp of the last claim operation.
+     * - lastGrantTimestamp -- The timestamp of the last grant operation.
      */
     struct AccountCashbackStateView {
         uint256 balance;
@@ -60,12 +60,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
      * @param amount The amount of cashback granted.
      * @param newBalance The new cashback balance of the account.
      */
-    event CashbackGranted(
-        address indexed account,
-        address indexed executor,
-        uint256 amount,
-        uint256 newBalance
-    );
+    event CashbackGranted(address indexed account, address indexed executor, uint256 amount, uint256 newBalance);
 
     /**
      * @notice Emitted when the cashback balance has been decreased for an account.
@@ -75,12 +70,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
      * @param amount The amount of cashback revoked.
      * @param newBalance The new cashback balance of the account.
      */
-    event CashbackRevoked(
-        address indexed account,
-        address indexed executor,
-        uint256 amount,
-        uint256 newBalance
-    );
+    event CashbackRevoked(address indexed account, address indexed executor, uint256 amount, uint256 newBalance);
 
     /**
      * @notice Emitted when cashback has been claimed for an account.
@@ -90,12 +80,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
      * @param amount The amount of cashback claimed.
      * @param newBalance The new cashback balance of the account.
      */
-    event CashbackClaimed(
-        address indexed account,
-        address indexed executor,
-        uint256 amount,
-        uint256 newBalance
-    );
+    event CashbackClaimed(address indexed account, address indexed executor, uint256 amount, uint256 newBalance);
 
     // ------------------ Transactional functions ----------------- //
 
