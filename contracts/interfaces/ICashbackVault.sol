@@ -5,11 +5,11 @@ pragma solidity ^0.8.4;
 /**
  * @title ICashbackVaultTypes interface
  * @author CloudWalk Inc. (See https://www.cloudwalk.io)
- * @notice Defines the types used in the cashback vault smart contract.
+ * @dev Defines the types used in the cashback vault smart contract.
  */
 interface ICashbackVaultTypes {
     /**
-     * @notice The cashback state of a single account within the cashback vault contract.
+     * @dev The cashback state of a single account within the cashback vault contract.
      *
      * Fields:
      *
@@ -27,7 +27,7 @@ interface ICashbackVaultTypes {
     }
 
     /**
-     * @notice The view of the cashback state for a single account.
+     * @dev The view of the cashback state for a single account.
      * This structure is used as a return type for appropriate view functions.  
      *
      * Fields:
@@ -48,13 +48,13 @@ interface ICashbackVaultTypes {
 /**
  * @title ICashbackVaultPrimary interface
  * @author CloudWalk Inc. (See https://www.cloudwalk.io)
- * @notice The primary part of the cashback vault smart contract interface.
+ * @dev The primary part of the cashback vault smart contract interface.
  */
 interface ICashbackVaultPrimary is ICashbackVaultTypes {
     // ------------------ Events ------------------------------ //
 
     /**
-     * @notice Emitted when the cashback has been granted for an account.
+     * @dev Emitted when the cashback has been granted for an account.
      *
      * @param account The account whose cashback balance was granted.
      * @param executor The executor who performed the grant.
@@ -64,7 +64,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
     event CashbackGranted(address indexed account, address indexed executor, uint256 amount, uint256 newBalance);
 
     /**
-     * @notice Emitted when the cashback has been revoked for an account.
+     * @dev Emitted when the cashback has been revoked for an account.
      *
      * @param account The account whose cashback balance was decreased.
      * @param executor The executor who performed the revocation.
@@ -74,7 +74,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
     event CashbackRevoked(address indexed account, address indexed executor, uint256 amount, uint256 newBalance);
 
     /**
-     * @notice Emitted when cashback has been claimed for an account.
+     * @dev Emitted when cashback has been claimed for an account.
      *
      * @param account The account for whom cashback was claimed.
      * @param executor The executor who performed the claim.
@@ -86,7 +86,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
     // ------------------ Transactional functions ----------------- //
 
     /**
-     * @notice Increases the cashback balance for an account.
+     * @dev Increases the cashback balance for an account.
      *
      * Transfers tokens from the caller to the vault and increases the account's cashback balance.
      * This function can be called only by an account with the CASHBACK_OPERATOR_ROLE.
@@ -99,7 +99,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
     function grantCashback(address account, uint64 amount) external;
 
     /**
-     * @notice Decreases the cashback balance for an account.
+     * @dev Decreases the cashback balance for an account.
      *
      * Transfers tokens from the vault to the caller and decreases the account's cashback balance.
      * This function can be called only by an account with the CASHBACK_OPERATOR_ROLE.
@@ -112,7 +112,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
     function revokeCashback(address account, uint64 amount) external;
 
     /**
-     * @notice Claims a specific amount of cashback for an account.
+     * @dev Claims a specific amount of cashback for an account.
      *
      * Transfers the specified amount of tokens from the vault to the account
      * and decreases the account's cashback balance.
@@ -126,7 +126,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
     function claim(address account, uint64 amount) external;
 
     /**
-     * @notice Claims all available cashback for an account.
+     * @dev Claims all available cashback for an account.
      *
      * Transfers all available cashback tokens from the vault to the account
      * and sets the account's cashback balance to zero.
@@ -141,33 +141,33 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
     // ------------------ View functions -------------------------- //
 
     /**
-     * @notice Returns the cashback balance of a specific account.
+     * @dev Returns the cashback balance of a specific account.
      * @param account The account to check the cashback balance of.
      * @return The current cashback balance of the account.
      */
     function getAccountCashbackBalance(address account) external view returns (uint256);
 
     /**
-     * @notice Returns the total cashback balance of the vault.
+     * @dev Returns the total cashback balance of the vault.
      * @return The total cashback balance of the vault.
      */
     function getTotalCashbackBalance() external view returns (uint256);
 
     /**
-     * @notice Returns the complete cashback state of an account.
+     * @dev Returns the complete cashback state of an account.
      * @param account The account to get the cashback state of.
      * @return result The complete cashback state of the account.
      */
     function getAccountCashbackState(address account) external view returns (AccountCashbackStateView memory);
 
-    /// @notice Returns the address of the underlying token contract.
+    /// @dev Returns the address of the underlying token contract.
     function underlyingToken() external view returns (address);
 }
 
 /**
  * @title ICashbackVaultConfiguration interface
  * @author CloudWalk Inc. (See https://www.cloudwalk.io)
- * @notice The configuration part of the cashback vault smart contract interface.
+ * @dev The configuration part of the cashback vault smart contract interface.
  */
 interface ICashbackVaultConfiguration {
 
@@ -176,29 +176,29 @@ interface ICashbackVaultConfiguration {
 /**
  * @title ICashbackVaultErrors interface
  * @author CloudWalk Inc. (See https://www.cloudwalk.io)
- * @notice Defines the custom errors used in the cashback vault contract.
+ * @dev Defines the custom errors used in the cashback vault contract.
  */
 interface ICashbackVaultErrors {
-    /// @notice Thrown if the provided account address is zero.
+    /// @dev Thrown if the provided account address is zero.
     error CashbackVault_AccountAddressZero();
 
-    /// @notice Thrown if the provided amount is zero.
+    /// @dev Thrown if the provided amount is zero.
     error CashbackVault_AmountZero();
 
-    /// @notice Thrown if the account’s cashback balance is insufficient for the operation.
+    /// @dev Thrown if the account’s cashback balance is insufficient for the operation.
     error CashbackVault_CashbackBalanceInsufficient();
 
-    /// @notice Thrown if the provided new implementation address is not of a cashback vault contract.
+    /// @dev Thrown if the provided new implementation address is not of a cashback vault contract.
     error CashbackVault_ImplementationAddressInvalid();
 
-    /// @notice Thrown if the provided token address is zero during initialization.
+    /// @dev Thrown if the provided token address is zero during initialization.
     error CashbackVault_TokenAddressZero();
 }
 
 /**
  * @title ICashbackVault interface
  * @author CloudWalk Inc. (See https://www.cloudwalk.io)
- * @notice The full interface of the cashback vault smart contract.
+ * @dev The full interface of the cashback vault smart contract.
  *
  * The smart contract manages cashback balances for accounts and allows:
  * - Accounts with CASHBACK_OPERATOR_ROLE to increase/decrease cashback balances
@@ -212,7 +212,7 @@ interface ICashbackVaultErrors {
  */
 interface ICashbackVault is ICashbackVaultPrimary, ICashbackVaultConfiguration, ICashbackVaultErrors {
     /**
-     * @notice Proves the contract is the cashback vault one. A marker function.
+     * @dev Proves the contract is the cashback vault one. A marker function.
      *
      * It is used for simple contract compliance checks, e.g. during an upgrade.
      * This avoids situations where a wrong contract address is specified by mistake.
