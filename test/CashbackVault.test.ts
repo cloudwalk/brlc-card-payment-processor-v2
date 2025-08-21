@@ -32,7 +32,7 @@ let account: HardhatEthersSigner; // has no roles
 let stranger: HardhatEthersSigner; // has no roles
 let pauser: HardhatEthersSigner; // has PAUSER_ROLE
 
-async function deployContracts() {
+async function deployAndConfigureContracts() {
   const name = "ERC20 Test";
   const symbol = "TEST";
 
@@ -71,7 +71,7 @@ describe("CashbackVault contract", async () => {
 
   let cashBackVaultAddress: string;
   beforeEach(async () => {
-    const contracts = await setUpFixture(deployContracts);
+    const contracts = await setUpFixture(deployAndConfigureContracts);
     cashbackVaultFromOwner = contracts.cashbackVault;
     tokenMock = contracts.tokenMock;
     cashBackVaultAddress = await cashbackVaultFromOwner.getAddress();
@@ -101,7 +101,7 @@ describe("CashbackVault contract", async () => {
     });
   });
 
-  describe("method initialize()", async () => {
+  describe("Method 'initialize()'", async () => {
     it("should expose correct role hashes", async () => {
       expect(await cashbackVaultFromOwner.OWNER_ROLE()).to.equal(OWNER_ROLE);
       expect(await cashbackVaultFromOwner.GRANTOR_ROLE()).to.equal(GRANTOR_ROLE);
@@ -130,7 +130,7 @@ describe("CashbackVault contract", async () => {
     });
   });
 
-  describe("method grantCashback()", async () => {
+  describe("Method 'grantCashback()'", async () => {
     const amountToGrant = 1000n;
     describe("operator successfully grants cashback to an account", async () => {
       let tx: TransactionResponse;
@@ -207,7 +207,7 @@ describe("CashbackVault contract", async () => {
       });
     });
   });
-  describe("method revokeCashback()", async () => {
+  describe("Method 'revokeCashback()'", async () => {
     const initialCashbackBalance = 1000n;
     const amountToRevoke = 100n;
     beforeEach(async () => {
@@ -282,7 +282,7 @@ describe("CashbackVault contract", async () => {
     });
   });
 
-  describe("method claim(address account, uint64 amount)", async () => {
+  describe("Method 'claim()'", async () => {
     const initialCashbackBalance = 1000n;
     const amountToClaim = 100n;
     beforeEach(async () => {
@@ -360,7 +360,7 @@ describe("CashbackVault contract", async () => {
       });
     });
   });
-  describe("method claimAll(address account)", async () => {
+  describe("Method 'claimAll()'", async () => {
     const initialCashbackBalance = 1000n;
     beforeEach(async () => {
       await cashbackVaultFromOperator.grantCashback(account.address, initialCashbackBalance);
@@ -435,7 +435,7 @@ describe("CashbackVault contract", async () => {
       });
     });
   });
-  describe("method $__VERSION()", async () => {
+  describe("Method '$__VERSION()'", async () => {
     it("should return version", async () => {
       expect(await cashbackVaultFromStranger.$__VERSION()).to.deep.equal([
         EXPECTED_VERSION.major,
@@ -444,12 +444,12 @@ describe("CashbackVault contract", async () => {
       ]);
     });
   });
-  describe("method underlyingToken()", async () => {
+  describe("Method 'underlyingToken()'", async () => {
     it("should return the underlying token address", async () => {
       expect(await cashbackVaultFromStranger.underlyingToken()).to.equal(await tokenMock.getAddress());
     });
   });
-  describe("method proveCashbackVault()", async () => {
+  describe("Method 'proveCashbackVault()'", async () => {
     it("should exist and not revert", async () => {
       await expect(cashbackVaultFromStranger.proveCashbackVault()).to.be.not.reverted;
     });
