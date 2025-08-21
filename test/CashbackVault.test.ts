@@ -2,12 +2,12 @@ import { ethers, upgrades } from "hardhat";
 import { expect } from "chai";
 import { TransactionResponse } from "ethers";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
-import { setUpFixture } from "../test-utils/common";
+import { setUpFixture, maxUintForBits } from "../test-utils/common";
 import * as Contracts from "../typechain-types";
 import { getTxTimestamp } from "../test-utils/eth";
 
 const ADDRESS_ZERO = ethers.ZeroAddress;
-const BALANCE_INITIAL = 1000_000_000_000n;
+const BALANCE_INITIAL = ethers.MaxUint256 / 2n;
 
 const OWNER_ROLE = ethers.id("OWNER_ROLE");
 const GRANTOR_ROLE = ethers.id("GRANTOR_ROLE");
@@ -131,7 +131,7 @@ describe("CashbackVault contract", async () => {
   });
 
   describe("Method 'grantCashback()'", async () => {
-    const amountToGrant = 1000n;
+    const amountToGrant = maxUintForBits(64);
     describe("operator successfully grants cashback to an account", async () => {
       let tx: TransactionResponse;
       beforeEach(async () => {
@@ -208,8 +208,8 @@ describe("CashbackVault contract", async () => {
     });
   });
   describe("Method 'revokeCashback()'", async () => {
-    const initialCashbackBalance = 1000n;
-    const amountToRevoke = 100n;
+    const initialCashbackBalance = maxUintForBits(64) / 2n;
+    const amountToRevoke = initialCashbackBalance / 2n;
     beforeEach(async () => {
       // prepare some existing cashback state
       await cashbackVaultFromOperator.grantCashback(account.address, initialCashbackBalance);
@@ -235,7 +235,7 @@ describe("CashbackVault contract", async () => {
         await expect(tx).to.changeTokenBalances(
           tokenMock,
           [cashBackVaultAddress, operator.address],
-          [-100n, 100n]
+          [-amountToRevoke, amountToRevoke]
         );
       });
 
@@ -283,8 +283,8 @@ describe("CashbackVault contract", async () => {
   });
 
   describe("Method 'claim()'", async () => {
-    const initialCashbackBalance = 1000n;
-    const amountToClaim = 100n;
+    const initialCashbackBalance = maxUintForBits(64) / 2n;
+    const amountToClaim = initialCashbackBalance / 2n;
     beforeEach(async () => {
       // prepare some existing cashback state
       await cashbackVaultFromOperator.grantCashback(account.address, initialCashbackBalance);
@@ -361,7 +361,7 @@ describe("CashbackVault contract", async () => {
     });
   });
   describe("Method 'claimAll()'", async () => {
-    const initialCashbackBalance = 1000n;
+    const initialCashbackBalance = maxUintForBits(64) / 2n;
     beforeEach(async () => {
       await cashbackVaultFromOperator.grantCashback(account.address, initialCashbackBalance);
     });
