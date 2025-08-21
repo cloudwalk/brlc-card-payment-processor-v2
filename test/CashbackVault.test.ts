@@ -163,7 +163,7 @@ describe("CashbackVault contract", async () => {
   describe("Method 'grantCashback()'", async () => {
     const amountToGrant = maxUintForBits(64);
 
-    describe("caller successfully grants cashback to an account", async () => {
+    describe("Should execute as expected when called properly and", async () => {
       let initialState: { balance: bigint; lastGrantTimestamp: bigint };
       let tx: TransactionResponse;
       beforeEach(async () => {
@@ -207,6 +207,22 @@ describe("CashbackVault contract", async () => {
       });
     });
     describe("should revert if", async () => {
+      it("contract is paused", async () => {
+        await cashbackVaultFromPauser.pause();
+        await expect(cashbackVaultFromOperator.grantCashback(account.address, amountToGrant))
+          .to.be.revertedWithCustomError(cashbackVaultFromOperator, "EnforcedPause");
+      });
+      it("caller does not have required role", async () => {
+        await expect(cashbackVaultFromStranger.grantCashback(account.address, amountToGrant))
+          .to.be.revertedWithCustomError(cashbackVaultFromStranger, "AccessControlUnauthorizedAccount")
+          .withArgs(stranger.address, CASHBACK_OPERATOR_ROLE);
+      });
+      it("the caller is owner but does not have the required role", async () => {
+        await expect(cashbackVaultFromOwner.grantCashback(account.address, amountToGrant))
+          .to.be.revertedWithCustomError(cashbackVaultFromOwner, "AccessControlUnauthorizedAccount")
+          .withArgs(deployer.address, CASHBACK_OPERATOR_ROLE);
+      });
+
       it("account is zero address", async () => {
         await expect(cashbackVaultFromOperator.grantCashback(ADDRESS_ZERO, 1000n))
           .to.be.revertedWithCustomError(cashbackVaultFromOperator, "CashbackVault_AccountAddressZero");
@@ -229,24 +245,6 @@ describe("CashbackVault contract", async () => {
           .to.be.revertedWithCustomError(tokenMock, "ERC20InsufficientAllowance");
       });
     });
-
-    describe("guards: should revert if", async () => {
-      it("contract is paused", async () => {
-        await cashbackVaultFromPauser.pause();
-        await expect(cashbackVaultFromOperator.grantCashback(account.address, amountToGrant))
-          .to.be.revertedWithCustomError(cashbackVaultFromOperator, "EnforcedPause");
-      });
-      it("caller does not have required role", async () => {
-        await expect(cashbackVaultFromStranger.grantCashback(account.address, amountToGrant))
-          .to.be.revertedWithCustomError(cashbackVaultFromStranger, "AccessControlUnauthorizedAccount")
-          .withArgs(stranger.address, CASHBACK_OPERATOR_ROLE);
-      });
-      it("the caller is owner but does not have the required role", async () => {
-        await expect(cashbackVaultFromOwner.grantCashback(account.address, amountToGrant))
-          .to.be.revertedWithCustomError(cashbackVaultFromOwner, "AccessControlUnauthorizedAccount")
-          .withArgs(deployer.address, CASHBACK_OPERATOR_ROLE);
-      });
-    });
   });
   describe("Method 'revokeCashback()'", async () => {
     const initialCashbackBalance = maxUintForBits(64) / 2n;
@@ -256,7 +254,7 @@ describe("CashbackVault contract", async () => {
       await cashbackVaultFromOperator.grantCashback(account.address, initialCashbackBalance);
     });
 
-    describe("caller successfully revokes cashback from an account", async () => {
+    describe("Should execute as expected when called properly and", async () => {
       let tx: TransactionResponse;
       let initialState: { balance: bigint };
       beforeEach(async () => {
@@ -297,22 +295,6 @@ describe("CashbackVault contract", async () => {
       });
     });
     describe("should revert if", async () => {
-      it("account is zero address", async () => {
-        await expect(cashbackVaultFromOperator.revokeCashback(ADDRESS_ZERO, amountToRevoke))
-          .to.be.revertedWithCustomError(cashbackVaultFromOperator, "CashbackVault_AccountAddressZero");
-      });
-
-      it("amount is zero", async () => {
-        await expect(cashbackVaultFromOperator.revokeCashback(account.address, 0n))
-          .to.be.revertedWithCustomError(cashbackVaultFromOperator, "CashbackVault_AmountZero");
-      });
-
-      it("revokes more cashback than the account has", async () => {
-        await expect(cashbackVaultFromOperator.revokeCashback(account.address, initialCashbackBalance + 1n))
-          .to.be.revertedWithCustomError(cashbackVaultFromOperator, "CashbackVault_CashbackBalanceInsufficient");
-      });
-    });
-    describe("guards: should revert if", async () => {
       it("contract is paused", async () => {
         await cashbackVaultFromPauser.pause();
         await expect(cashbackVaultFromOperator.revokeCashback(account.address, amountToRevoke))
@@ -330,6 +312,21 @@ describe("CashbackVault contract", async () => {
           .to.be.revertedWithCustomError(cashbackVaultFromOwner, "AccessControlUnauthorizedAccount")
           .withArgs(deployer.address, CASHBACK_OPERATOR_ROLE);
       });
+
+      it("account is zero address", async () => {
+        await expect(cashbackVaultFromOperator.revokeCashback(ADDRESS_ZERO, amountToRevoke))
+          .to.be.revertedWithCustomError(cashbackVaultFromOperator, "CashbackVault_AccountAddressZero");
+      });
+
+      it("amount is zero", async () => {
+        await expect(cashbackVaultFromOperator.revokeCashback(account.address, 0n))
+          .to.be.revertedWithCustomError(cashbackVaultFromOperator, "CashbackVault_AmountZero");
+      });
+
+      it("revokes more cashback than the account has", async () => {
+        await expect(cashbackVaultFromOperator.revokeCashback(account.address, initialCashbackBalance + 1n))
+          .to.be.revertedWithCustomError(cashbackVaultFromOperator, "CashbackVault_CashbackBalanceInsufficient");
+      });
     });
   });
 
@@ -343,7 +340,7 @@ describe("CashbackVault contract", async () => {
       initialState = resultToObject(await cashbackVaultFromManager.getAccountCashbackState(account.address));
     });
 
-    describe("manager successfully claims cashback for an account", async () => {
+    describe("Should execute as expected when called properly and", async () => {
       let tx: TransactionResponse;
       beforeEach(async () => {
         tx = await cashbackVaultFromManager.claim(account.address, amountToClaim);
@@ -384,22 +381,6 @@ describe("CashbackVault contract", async () => {
       });
     });
     describe("should revert if", async () => {
-      it("account is zero address", async () => {
-        await expect(cashbackVaultFromManager.claim(ADDRESS_ZERO, 1000n))
-          .to.be.revertedWithCustomError(cashbackVaultFromManager, "CashbackVault_AccountAddressZero");
-      });
-
-      it("amount is zero", async () => {
-        await expect(cashbackVaultFromManager.claim(account.address, 0n))
-          .to.be.revertedWithCustomError(cashbackVaultFromManager, "CashbackVault_AmountZero");
-      });
-
-      it("account does not have enough cashback balance", async () => {
-        await expect(cashbackVaultFromManager.claim(account.address, initialCashbackBalance + 1n))
-          .to.be.revertedWithCustomError(cashbackVaultFromManager, "CashbackVault_CashbackBalanceInsufficient");
-      });
-    });
-    describe("guards: should revert if", async () => {
       it("contract is paused", async () => {
         await cashbackVaultFromPauser.pause();
         await expect(cashbackVaultFromManager.claim(account.address, amountToClaim))
@@ -417,6 +398,21 @@ describe("CashbackVault contract", async () => {
           .to.be.revertedWithCustomError(cashbackVaultFromOwner, "AccessControlUnauthorizedAccount")
           .withArgs(deployer.address, MANAGER_ROLE);
       });
+
+      it("account is zero address", async () => {
+        await expect(cashbackVaultFromManager.claim(ADDRESS_ZERO, 1000n))
+          .to.be.revertedWithCustomError(cashbackVaultFromManager, "CashbackVault_AccountAddressZero");
+      });
+
+      it("amount is zero", async () => {
+        await expect(cashbackVaultFromManager.claim(account.address, 0n))
+          .to.be.revertedWithCustomError(cashbackVaultFromManager, "CashbackVault_AmountZero");
+      });
+
+      it("account does not have enough cashback balance", async () => {
+        await expect(cashbackVaultFromManager.claim(account.address, initialCashbackBalance + 1n))
+          .to.be.revertedWithCustomError(cashbackVaultFromManager, "CashbackVault_CashbackBalanceInsufficient");
+      });
     });
   });
   describe("Method 'claimAll()'", async () => {
@@ -427,7 +423,7 @@ describe("CashbackVault contract", async () => {
       initialState = resultToObject(await cashbackVaultFromManager.getAccountCashbackState(account.address));
     });
 
-    describe("manager successfully claims all cashback for an account", async () => {
+    describe("Should execute as expected when called properly and", async () => {
       let tx: TransactionResponse;
       beforeEach(async () => {
         tx = await cashbackVaultFromManager.claimAll(account.address);
@@ -468,20 +464,6 @@ describe("CashbackVault contract", async () => {
       });
     });
     describe("should revert if", async () => {
-      it("account has no cashback balance", async () => {
-      // first revoke all cashback
-        await cashbackVaultFromOperator.revokeCashback(account.address, initialCashbackBalance);
-
-        await expect(cashbackVaultFromManager.claimAll(account.address))
-          .to.be.revertedWithCustomError(cashbackVaultFromManager, "CashbackVault_AmountZero");
-      });
-
-      it("account is zero address", async () => {
-        await expect(cashbackVaultFromManager.claimAll(ADDRESS_ZERO))
-          .to.be.revertedWithCustomError(cashbackVaultFromManager, "CashbackVault_AccountAddressZero");
-      });
-    });
-    describe("guards: should revert if", async () => {
       it("contract is paused", async () => {
         await cashbackVaultFromPauser.pause();
         await expect(cashbackVaultFromManager.claimAll(account.address))
@@ -498,6 +480,19 @@ describe("CashbackVault contract", async () => {
         await expect(cashbackVaultFromOwner.claimAll(account.address))
           .to.be.revertedWithCustomError(cashbackVaultFromOwner, "AccessControlUnauthorizedAccount")
           .withArgs(deployer.address, MANAGER_ROLE);
+      });
+
+      it("account has no cashback balance", async () => {
+      // first revoke all cashback
+        await cashbackVaultFromOperator.revokeCashback(account.address, initialCashbackBalance);
+
+        await expect(cashbackVaultFromManager.claimAll(account.address))
+          .to.be.revertedWithCustomError(cashbackVaultFromManager, "CashbackVault_AmountZero");
+      });
+
+      it("account is zero address", async () => {
+        await expect(cashbackVaultFromManager.claimAll(ADDRESS_ZERO))
+          .to.be.revertedWithCustomError(cashbackVaultFromManager, "CashbackVault_AccountAddressZero");
       });
     });
   });
