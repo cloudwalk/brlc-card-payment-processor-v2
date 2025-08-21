@@ -1,8 +1,8 @@
 import { ethers, upgrades } from "hardhat";
 import { expect } from "chai";
-import { TransactionResponse } from "ethers";
+import { Result, TransactionResponse } from "ethers";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
-import { setUpFixture, maxUintForBits } from "../test-utils/common";
+import { setUpFixture, maxUintForBits, resultToObject, checkEquality } from "../test-utils/common";
 import * as Contracts from "../typechain-types";
 import { getTxTimestamp } from "../test-utils/eth";
 
@@ -162,9 +162,12 @@ describe("CashbackVault contract", async () => {
 
   describe("Method 'grantCashback()'", async () => {
     const amountToGrant = maxUintForBits(64);
+
     describe("caller successfully grants cashback to an account", async () => {
+      let initialState: { balance: bigint; lastGrantTimestamp: bigint };
       let tx: TransactionResponse;
       beforeEach(async () => {
+        initialState = resultToObject(await cashbackVaultFromOperator.getAccountCashbackState(account.address));
         tx = await cashbackVaultFromOperator.grantCashback(account.address, amountToGrant);
       });
 
@@ -174,6 +177,19 @@ describe("CashbackVault contract", async () => {
 
       it("should increase total cashback balance", async () => {
         expect(await cashbackVaultFromOperator.getTotalCashbackBalance()).to.equal(amountToGrant);
+      });
+      it("should update last grant timestamp", async () => {
+        expect((await cashbackVaultFromOperator.getAccountCashbackState(account.address)).lastGrantTimestamp)
+          .to.equal(await getTxTimestamp(tx));
+      });
+
+      it("should only update relevant state fields", async () => {
+        const newState = resultToObject(await cashbackVaultFromOperator.getAccountCashbackState(account.address));
+        checkEquality(newState, {
+          ...initialState,
+          balance: initialState.balance + amountToGrant,
+          lastGrantTimestamp: await getTxTimestamp(tx)
+        });
       });
 
       it("should emit event", async () => {
@@ -188,11 +204,6 @@ describe("CashbackVault contract", async () => {
           [operator.address, cashBackVaultAddress],
           [-amountToGrant, amountToGrant]
         );
-      });
-
-      it("should store last cashback grant timestamp in state", async () => {
-        expect((await cashbackVaultFromOperator.getAccountCashbackState(account.address)).lastGrantTimestamp)
-          .to.equal(await getTxTimestamp(Promise.resolve(tx)));
       });
     });
     describe("should revert if", async () => {
@@ -247,7 +258,9 @@ describe("CashbackVault contract", async () => {
 
     describe("caller successfully revokes cashback from an account", async () => {
       let tx: TransactionResponse;
+      let initialState: { balance: bigint };
       beforeEach(async () => {
+        initialState = resultToObject(await cashbackVaultFromOperator.getAccountCashbackState(account.address));
         tx = await cashbackVaultFromOperator.revokeCashback(account.address, amountToRevoke);
       });
 
@@ -267,6 +280,14 @@ describe("CashbackVault contract", async () => {
           [cashBackVaultAddress, operator.address],
           [-amountToRevoke, amountToRevoke]
         );
+      });
+
+      it("should only update relevant state fields", async () => {
+        const newState = resultToObject(await cashbackVaultFromOperator.getAccountCashbackState(account.address));
+        checkEquality(newState, {
+          ...initialState,
+          balance: initialState.balance - amountToRevoke
+        });
       });
 
       it("should emit event", async () => {
@@ -315,10 +336,13 @@ describe("CashbackVault contract", async () => {
   describe("Method 'claim()'", async () => {
     const initialCashbackBalance = maxUintForBits(64) / 2n;
     const amountToClaim = initialCashbackBalance / 2n;
+    let initialState: { balance: bigint; lastClaimTimestamp: bigint; totalClaimed: bigint };
     beforeEach(async () => {
       // prepare some existing cashback state
       await cashbackVaultFromOperator.grantCashback(account.address, initialCashbackBalance);
+      initialState = resultToObject(await cashbackVaultFromManager.getAccountCashbackState(account.address));
     });
+
     describe("manager successfully claims cashback for an account", async () => {
       let tx: TransactionResponse;
       beforeEach(async () => {
@@ -343,15 +367,20 @@ describe("CashbackVault contract", async () => {
         );
       });
 
+      it("should only update relevant state fields", async () => {
+        const newState = resultToObject(await cashbackVaultFromManager.getAccountCashbackState(account.address));
+        checkEquality(newState, {
+          ...initialState,
+          balance: initialState.balance - amountToClaim,
+          lastClaimTimestamp: await getTxTimestamp(tx),
+          totalClaimed: initialState.totalClaimed + amountToClaim
+        });
+      });
+
       it("should emit event", async () => {
         await expect(tx)
           .to.emit(cashbackVaultFromManager, "CashbackClaimed")
           .withArgs(account.address, manager.address, amountToClaim, initialCashbackBalance - amountToClaim);
-      });
-
-      it("should store last cashback claim timestamp in state", async () => {
-        expect((await cashbackVaultFromManager.getAccountCashbackState(account.address)).lastClaimTimestamp)
-          .to.equal(await getTxTimestamp(tx));
       });
     });
     describe("should revert if", async () => {
@@ -392,8 +421,10 @@ describe("CashbackVault contract", async () => {
   });
   describe("Method 'claimAll()'", async () => {
     const initialCashbackBalance = maxUintForBits(64) / 2n;
+    let initialState: { balance: bigint; lastClaimTimestamp: bigint; totalClaimed: bigint };
     beforeEach(async () => {
       await cashbackVaultFromOperator.grantCashback(account.address, initialCashbackBalance);
+      initialState = resultToObject(await cashbackVaultFromManager.getAccountCashbackState(account.address));
     });
 
     describe("manager successfully claims all cashback for an account", async () => {
@@ -420,15 +451,20 @@ describe("CashbackVault contract", async () => {
         );
       });
 
+      it("should only update relevant state fields", async () => {
+        const newState = resultToObject(await cashbackVaultFromManager.getAccountCashbackState(account.address));
+        checkEquality(newState, {
+          ...initialState,
+          balance: 0n,
+          totalClaimed: initialState.totalClaimed + initialCashbackBalance,
+          lastClaimTimestamp: await getTxTimestamp(tx)
+        });
+      });
+
       it("should emit event", async () => {
         await expect(tx)
           .to.emit(cashbackVaultFromManager, "CashbackClaimed")
           .withArgs(account.address, manager.address, initialCashbackBalance, 0n);
-      });
-
-      it("should store last cashback claim timestamp in state", async () => {
-        expect((await cashbackVaultFromManager.getAccountCashbackState(account.address)).lastClaimTimestamp)
-          .to.equal(await getTxTimestamp(tx));
       });
     });
     describe("should revert if", async () => {
