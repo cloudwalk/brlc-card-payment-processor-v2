@@ -1,6 +1,6 @@
 import { ethers, upgrades } from "hardhat";
 import { expect } from "chai";
-import { Result, TransactionResponse } from "ethers";
+import { TransactionResponse } from "ethers";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { setUpFixture, maxUintForBits, resultToObject, checkEquality } from "../test-utils/common";
 import * as Contracts from "../typechain-types";
@@ -507,7 +507,7 @@ describe("Contract 'CashbackVault'", async () => {
       });
 
       it("the provided account has no cashback balance", async () => {
-      // first revoke all cashback
+        // first revoke all cashback
         await cashbackVaultFromOperator.revokeCashback(account.address, initialCashbackBalance);
 
         await expect(cashbackVaultFromManager.claimAll(account.address))
