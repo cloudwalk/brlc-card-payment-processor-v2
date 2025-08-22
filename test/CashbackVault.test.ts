@@ -45,6 +45,7 @@ async function deployContracts() {
 
   return { cashbackVault, tokenMock };
 }
+
 async function configureContracts(cashbackVault: Contracts.CashbackVault, tokenMock: Contracts.ERC20TokenMock) {
   await cashbackVault.grantRole(GRANTOR_ROLE, deployer.address);
   await cashbackVault.grantRole(CASHBACK_OPERATOR_ROLE, operator.address);
@@ -70,6 +71,7 @@ describe("Contract 'CashbackVault'", async () => {
     tokenMockFactory = await ethers.getContractFactory("ERC20TokenMock");
     tokenMockFactory = tokenMockFactory.connect(deployer);
   });
+
   let cashbackVaultFromOwner: Contracts.CashbackVault;
   let tokenMock: Contracts.ERC20TokenMock;
   let cashbackVaultFromOperator: Contracts.CashbackVault;
@@ -78,6 +80,7 @@ describe("Contract 'CashbackVault'", async () => {
   let cashbackVaultFromPauser: Contracts.CashbackVault;
 
   let cashBackVaultAddress: string;
+
   beforeEach(async () => {
     const contracts = await setUpFixture(deployAndConfigureContracts);
     cashbackVaultFromOwner = contracts.cashbackVault;
@@ -88,13 +91,16 @@ describe("Contract 'CashbackVault'", async () => {
     cashbackVaultFromStranger = cashbackVaultFromOwner.connect(stranger);
     cashbackVaultFromPauser = cashbackVaultFromOwner.connect(pauser);
   });
+
   describe("Method 'initialize()'", async () => {
     let deployedContract: Contracts.CashbackVault;
+
     beforeEach(async () => {
       // deploying contract without configuration to test the default state
       const contracts = await setUpFixture(deployContracts);
       deployedContract = contracts.cashbackVault;
     });
+
     it("should expose correct role hashes", async () => {
       expect(await deployedContract.OWNER_ROLE()).to.equal(OWNER_ROLE);
       expect(await deployedContract.GRANTOR_ROLE()).to.equal(GRANTOR_ROLE);
@@ -112,6 +118,7 @@ describe("Contract 'CashbackVault'", async () => {
       expect(await deployedContract.getRoleAdmin(MANAGER_ROLE)).to.equal(GRANTOR_ROLE);
       expect(await deployedContract.getRoleAdmin(CASHBACK_OPERATOR_ROLE)).to.equal(GRANTOR_ROLE);
     });
+
     it("should set correct roles for the deployer", async () => {
       expect(await deployedContract.hasRole(OWNER_ROLE, deployer.address)).to.be.true;
       expect(await deployedContract.hasRole(GRANTOR_ROLE, deployer.address)).to.be.false;
@@ -120,6 +127,7 @@ describe("Contract 'CashbackVault'", async () => {
       expect(await deployedContract.hasRole(MANAGER_ROLE, deployer.address)).to.be.false;
       expect(await deployedContract.hasRole(CASHBACK_OPERATOR_ROLE, deployer.address)).to.be.false;
     });
+
     it("should not pause the contract", async () => {
       expect(await deployedContract.paused()).to.equal(false);
     });
@@ -129,6 +137,7 @@ describe("Contract 'CashbackVault'", async () => {
         await expect(deployedContract.initialize(await tokenMock.getAddress()))
           .to.be.revertedWithCustomError(deployedContract, "InvalidInitialization");
       });
+
       it("the provided token address is zero", async () => {
         const tx = upgrades.deployProxy(cashbackVaultFactory, [ADDRESS_ZERO]);
         await expect(tx)
@@ -136,6 +145,7 @@ describe("Contract 'CashbackVault'", async () => {
       });
     });
   });
+
   describe("Method 'upgradeToAndCall()'", async () => {
     it("should upgrade the contract to a new implementation", async () => {
       const newImplementation = await cashbackVaultFactory.deploy();
@@ -144,6 +154,7 @@ describe("Contract 'CashbackVault'", async () => {
       const tx = cashbackVaultFromOwner.upgradeToAndCall(await newImplementation.getAddress(), "0x");
       await expect(tx).to.emit(cashbackVaultFromOwner, "Upgraded").withArgs(await newImplementation.getAddress());
     });
+
     describe("Should revert if", async () => {
       it("called with the address of an incompatible implementation", async () => {
         const tx = cashbackVaultFromOwner.upgradeToAndCall(tokenMock.getAddress(), "0x");
@@ -166,6 +177,7 @@ describe("Contract 'CashbackVault'", async () => {
     describe("Should execute as expected when called properly and", async () => {
       let initialState: { balance: bigint; lastGrantTimestamp: bigint };
       let tx: TransactionResponse;
+
       beforeEach(async () => {
         initialState = resultToObject(await cashbackVaultFromOperator.getAccountCashbackState(account.address));
         tx = await cashbackVaultFromOperator.grantCashback(account.address, amountToGrant);
@@ -178,6 +190,7 @@ describe("Contract 'CashbackVault'", async () => {
       it("should increase the total cashback balance", async () => {
         expect(await cashbackVaultFromOperator.getTotalCashbackBalance()).to.equal(amountToGrant);
       });
+
       it("should update the last grant timestamp", async () => {
         expect((await cashbackVaultFromOperator.getAccountCashbackState(account.address)).lastGrantTimestamp)
           .to.equal(await getTxTimestamp(tx));
@@ -206,17 +219,20 @@ describe("Contract 'CashbackVault'", async () => {
         );
       });
     });
+
     describe("Should revert if", async () => {
       it("the contract is paused", async () => {
         await cashbackVaultFromPauser.pause();
         await expect(cashbackVaultFromOperator.grantCashback(account.address, amountToGrant))
           .to.be.revertedWithCustomError(cashbackVaultFromOperator, "EnforcedPause");
       });
+
       it("the caller does not have the required role", async () => {
         await expect(cashbackVaultFromStranger.grantCashback(account.address, amountToGrant))
           .to.be.revertedWithCustomError(cashbackVaultFromStranger, "AccessControlUnauthorizedAccount")
           .withArgs(stranger.address, CASHBACK_OPERATOR_ROLE);
       });
+
       it("the caller is owner but does not have the required role", async () => {
         await expect(cashbackVaultFromOwner.grantCashback(account.address, amountToGrant))
           .to.be.revertedWithCustomError(cashbackVaultFromOwner, "AccessControlUnauthorizedAccount")
@@ -246,9 +262,11 @@ describe("Contract 'CashbackVault'", async () => {
       });
     });
   });
+
   describe("Method 'revokeCashback()'", async () => {
     const initialCashbackBalance = maxUintForBits(64) / 2n;
     const amountToRevoke = initialCashbackBalance / 2n;
+
     beforeEach(async () => {
       // prepare some existing cashback state
       await cashbackVaultFromOperator.grantCashback(account.address, initialCashbackBalance);
@@ -257,6 +275,7 @@ describe("Contract 'CashbackVault'", async () => {
     describe("Should execute as expected when called properly and", async () => {
       let tx: TransactionResponse;
       let initialState: { balance: bigint };
+
       beforeEach(async () => {
         initialState = resultToObject(await cashbackVaultFromOperator.getAccountCashbackState(account.address));
         tx = await cashbackVaultFromOperator.revokeCashback(account.address, amountToRevoke);
@@ -294,6 +313,7 @@ describe("Contract 'CashbackVault'", async () => {
           .withArgs(account.address, operator.address, amountToRevoke, initialCashbackBalance - amountToRevoke);
       });
     });
+
     describe("Should revert if", async () => {
       it("the contract is paused", async () => {
         await cashbackVaultFromPauser.pause();
@@ -334,6 +354,7 @@ describe("Contract 'CashbackVault'", async () => {
     const initialCashbackBalance = maxUintForBits(64) / 2n;
     const amountToClaim = initialCashbackBalance / 2n;
     let initialState: { balance: bigint; lastClaimTimestamp: bigint; totalClaimed: bigint };
+
     beforeEach(async () => {
       // prepare some existing cashback state
       await cashbackVaultFromOperator.grantCashback(account.address, initialCashbackBalance);
@@ -342,6 +363,7 @@ describe("Contract 'CashbackVault'", async () => {
 
     describe("Should execute as expected when called properly and", async () => {
       let tx: TransactionResponse;
+
       beforeEach(async () => {
         tx = await cashbackVaultFromManager.claim(account.address, amountToClaim);
       });
@@ -415,9 +437,11 @@ describe("Contract 'CashbackVault'", async () => {
       });
     });
   });
+
   describe("Method 'claimAll()'", async () => {
     const initialCashbackBalance = maxUintForBits(64) / 2n;
     let initialState: { balance: bigint; lastClaimTimestamp: bigint; totalClaimed: bigint };
+
     beforeEach(async () => {
       await cashbackVaultFromOperator.grantCashback(account.address, initialCashbackBalance);
       initialState = resultToObject(await cashbackVaultFromManager.getAccountCashbackState(account.address));
@@ -496,6 +520,7 @@ describe("Contract 'CashbackVault'", async () => {
       });
     });
   });
+
   describe("Method '$__VERSION()'", async () => {
     it("should return the expected version", async () => {
       expect(await cashbackVaultFromStranger.$__VERSION()).to.deep.equal([
@@ -505,11 +530,13 @@ describe("Contract 'CashbackVault'", async () => {
       ]);
     });
   });
+
   describe("Method 'underlyingToken()'", async () => {
     it("should return the underlying token address", async () => {
       expect(await cashbackVaultFromStranger.underlyingToken()).to.equal(await tokenMock.getAddress());
     });
   });
+
   describe("Method 'proveCashbackVault()'", async () => {
     it("should exist and not revert", async () => {
       await expect(cashbackVaultFromStranger.proveCashbackVault()).to.be.not.reverted;
@@ -519,6 +546,7 @@ describe("Contract 'CashbackVault'", async () => {
   describe("BDD scenarios", async () => {
     describe("Granting 1000 tokens as cashback", async () => {
       let tx: TransactionResponse;
+
       beforeEach(async () => {
         tx = await cashbackVaultFromOperator.grantCashback(account.address, 1000n);
       });
@@ -551,6 +579,7 @@ describe("Contract 'CashbackVault'", async () => {
 
       describe("Revoking more than the account has", async () => {
         let tx: Promise<TransactionResponse>;
+
         beforeEach(async () => {
           tx = cashbackVaultFromOperator.revokeCashback(account.address, 1001n);
         });
@@ -560,8 +589,10 @@ describe("Contract 'CashbackVault'", async () => {
             .to.be.revertedWithCustomError(cashbackVaultFromOperator, "CashbackVault_CashbackBalanceInsufficient");
         });
       });
+
       describe("Revoking 100 tokens cashback", async () => {
         let tx: TransactionResponse;
+
         beforeEach(async () => {
           tx = await cashbackVaultFromOperator.revokeCashback(account.address, 100n);
         });
@@ -590,6 +621,7 @@ describe("Contract 'CashbackVault'", async () => {
 
         describe("Claiming more than the account has", async () => {
           let tx: Promise<TransactionResponse>;
+
           beforeEach(async () => {
             tx = cashbackVaultFromManager.claim(account.address, 901n);
           });
@@ -599,8 +631,10 @@ describe("Contract 'CashbackVault'", async () => {
               .to.be.revertedWithCustomError(cashbackVaultFromManager, "CashbackVault_CashbackBalanceInsufficient");
           });
         });
+
         describe("Claiming 100 tokens of cashback", async () => {
           let tx: TransactionResponse;
+
           beforeEach(async () => {
             tx = await cashbackVaultFromManager.claim(account.address, 100n);
           });
@@ -642,6 +676,7 @@ describe("Contract 'CashbackVault'", async () => {
 
           describe("Claiming all remaining cashback tokens", async () => {
             let tx: TransactionResponse;
+
             beforeEach(async () => {
               tx = await cashbackVaultFromManager.claimAll(account.address);
             });
