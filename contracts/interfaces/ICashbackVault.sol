@@ -28,6 +28,7 @@ interface ICashbackVaultTypes {
 
     /**
      * @dev The view of the cashback state for a single account.
+     *
      * This structure is used as a return type for appropriate view functions.
      *
      * Fields:
@@ -199,6 +200,7 @@ interface ICashbackVaultErrors {
  * @dev The full interface of the cashback vault smart contract.
  *
  * The smart contract manages cashback balances for accounts and allows:
+ *
  * - Accounts with CASHBACK_OPERATOR_ROLE to increase/decrease cashback balances
  * - Accounts with MANAGER_ROLE to claim cashback on behalf of accounts
  * - To view account cashback balances
