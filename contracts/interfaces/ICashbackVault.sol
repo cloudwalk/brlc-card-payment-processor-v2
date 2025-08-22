@@ -28,7 +28,7 @@ interface ICashbackVaultTypes {
 
     /**
      * @dev The view of the cashback state for a single account.
-     * This structure is used as a return type for appropriate view functions.  
+     * This structure is used as a return type for appropriate view functions.
      *
      * Fields:
      *
@@ -169,9 +169,7 @@ interface ICashbackVaultPrimary is ICashbackVaultTypes {
  * @author CloudWalk Inc. (See https://www.cloudwalk.io)
  * @dev The configuration part of the cashback vault smart contract interface.
  */
-interface ICashbackVaultConfiguration {
-
-}
+interface ICashbackVaultConfiguration {}
 
 /**
  * @title ICashbackVaultErrors interface
