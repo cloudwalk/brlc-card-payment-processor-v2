@@ -218,8 +218,8 @@ describe("Contract 'CashbackVault'", async () => {
       it("should move tokens from the caller to the contract", async () => {
         await expect(tx).to.changeTokenBalances(
           tokenMock,
-          [operator.address, cashBackVaultAddress],
-          [-amountToGrant, amountToGrant]
+          [cashBackVaultAddress, operator.address, account.address],
+          [amountToGrant, -amountToGrant, 0]
         );
       });
     });
@@ -298,8 +298,8 @@ describe("Contract 'CashbackVault'", async () => {
       it("should move tokens from the contract to the caller", async () => {
         await expect(tx).to.changeTokenBalances(
           tokenMock,
-          [cashBackVaultAddress, operator.address],
-          [-amountToRevoke, amountToRevoke]
+          [cashBackVaultAddress, operator.address, account.address],
+          [-amountToRevoke, amountToRevoke, 0]
         );
       });
 
@@ -385,8 +385,8 @@ describe("Contract 'CashbackVault'", async () => {
       it("should move tokens from the contract to the provided account", async () => {
         await expect(tx).to.changeTokenBalances(
           tokenMock,
-          [cashBackVaultAddress, account.address],
-          [-amountToClaim, amountToClaim]
+          [cashBackVaultAddress, operator.address, account.address],
+          [-amountToClaim, 0, amountToClaim]
         );
       });
 
@@ -470,8 +470,8 @@ describe("Contract 'CashbackVault'", async () => {
       it("should move tokens from the contract to the provided account", async () => {
         await expect(tx).to.changeTokenBalances(
           tokenMock,
-          [cashBackVaultAddress, account.address],
-          [-initialCashbackBalance, initialCashbackBalance]
+          [cashBackVaultAddress, operator.address, account.address],
+          [-initialCashbackBalance, 0, initialCashbackBalance]
         );
       });
 
@@ -558,8 +558,8 @@ describe("Contract 'CashbackVault'", async () => {
       it("should move tokens from the caller to the contract", async () => {
         await expect(tx).to.changeTokenBalances(
           tokenMock,
-          [operator.address, cashBackVaultAddress],
-          [-1000n, 1000n]
+          [cashBackVaultAddress, operator.address, account.address],
+          [1000n, -1000n, 0]
         );
       });
 
@@ -604,8 +604,8 @@ describe("Contract 'CashbackVault'", async () => {
         it("should move tokens from the contract to the caller", async () => {
           await expect(tx).to.changeTokenBalances(
             tokenMock,
-            [cashBackVaultAddress, operator.address],
-            [-100n, 100n]
+            [cashBackVaultAddress, operator.address, account.address],
+            [-100n, 100n, 0]
           );
         });
 
@@ -646,21 +646,13 @@ describe("Contract 'CashbackVault'", async () => {
           it("should move tokens from the contract to the account", async () => {
             await expect(tx).to.changeTokenBalances(
               tokenMock,
-              [cashBackVaultAddress, account.address],
-              [-100n, 100n]
+              [cashBackVaultAddress, operator.address, account.address],
+              [-100n, 0, 100n]
             );
           });
 
           it("should decrease contract's tracked total cashback balance", async () => {
             expect(await cashbackVaultFromOperator.getTotalCashbackBalance()).to.equal(800n);
-          });
-
-          it("the caller's token balance should not change", async () => {
-            await expect(tx).to.changeTokenBalances(
-              tokenMock,
-              [operator.address],
-              [0n]
-            );
           });
 
           it("should decrease the account cashback balance", async () => {
@@ -688,21 +680,13 @@ describe("Contract 'CashbackVault'", async () => {
             it("should move tokens from contract to account", async () => {
               await expect(tx).to.changeTokenBalances(
                 tokenMock,
-                [cashBackVaultAddress, account.address],
-                [-800n, 800n]
+                [cashBackVaultAddress, operator.address, account.address],
+                [-800n, 0, 800n]
               );
             });
 
             it("should decrease contract's tracked total cashback balance", async () => {
               expect(await cashbackVaultFromOperator.getTotalCashbackBalance()).to.equal(0n);
-            });
-
-            it("the caller's token balance should not change", async () => {
-              await expect(tx).to.changeTokenBalances(
-                tokenMock,
-                [operator.address],
-                [0n]
-              );
             });
 
             it("should decrease the account cashback balance", async () => {
