@@ -132,6 +132,10 @@ describe("Contract 'CashbackVault'", async () => {
       expect(await deployedContract.paused()).to.equal(false);
     });
 
+    it("should set correct underlying token address", async () => {
+      expect(await cashbackVaultFromStranger.underlyingToken()).to.equal(await tokenMock.getAddress());
+    });
+
     describe("Should revert if", async () => {
       it("called a second time", async () => {
         await expect(deployedContract.initialize(await tokenMock.getAddress()))
@@ -528,12 +532,6 @@ describe("Contract 'CashbackVault'", async () => {
         EXPECTED_VERSION.minor,
         EXPECTED_VERSION.patch
       ]);
-    });
-  });
-
-  describe("Method 'underlyingToken()'", async () => {
-    it("should return the underlying token address", async () => {
-      expect(await cashbackVaultFromStranger.underlyingToken()).to.equal(await tokenMock.getAddress());
     });
   });
 
