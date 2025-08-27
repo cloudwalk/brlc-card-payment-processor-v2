@@ -17,9 +17,9 @@ const PAUSER_ROLE = ethers.id("PAUSER_ROLE");
 const RESCUER_ROLE = ethers.id("RESCUER_ROLE");
 
 const EXPECTED_VERSION = {
-  major: 1n,
-  minor: 0n,
-  patch: 0n
+  major: 2n,
+  minor: 2n,
+  patch: 1n
 } as const;
 
 let cashbackVaultFactory: Contracts.CashbackVault__factory;

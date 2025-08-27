@@ -7,7 +7,7 @@ import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { AccessControlExtUpgradeable } from "./base/AccessControlExtUpgradeable.sol";
 import { PausableExtUpgradeable } from "./base/PausableExtUpgradeable.sol";
 import { RescuableUpgradeable } from "./base/RescuableUpgradeable.sol";
-import { IVersionable } from "./interfaces/IVersionable.sol";
+import { Versionable } from "./base/Versionable.sol";
 import { UUPSExtUpgradeable } from "./base/UUPSExtUpgradeable.sol";
 
 import { ICashbackVault } from "./interfaces/ICashbackVault.sol";
@@ -26,8 +26,8 @@ contract CashbackVault is
     PausableExtUpgradeable,
     RescuableUpgradeable,
     UUPSExtUpgradeable,
-    IVersionable,
-    ICashbackVault
+    ICashbackVault,
+    Versionable
 {
     // ------------------ Constants ------------------------------- //
 
@@ -218,11 +218,6 @@ contract CashbackVault is
 
     /// @inheritdoc ICashbackVault
     function proveCashbackVault() external pure {}
-
-    /// @dev Returns the version of the contract.
-    function $__VERSION() external pure returns (IVersionable.Version memory) {
-        return IVersionable.Version(1, 0, 0);
-    }
 
     // ------------------ Internal functions ---------------------- //
 
