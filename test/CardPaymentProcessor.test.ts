@@ -1497,8 +1497,8 @@ describe("Contract 'CardPaymentProcessor'", async () => {
   const CASHBACK_RATE_ZERO = 0;
   const EXPECTED_VERSION: Version = {
     major: 2,
-    minor: 2,
-    patch: 1
+    minor: 3,
+    patch: 0
   };
 
   // Errors of the library contracts

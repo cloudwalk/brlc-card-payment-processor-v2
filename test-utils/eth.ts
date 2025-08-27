@@ -26,8 +26,8 @@ export async function checkContractUupsUpgrading(
   expect(actualNewImplementationAddress).not.to.eq(oldImplementationAddress);
 }
 
-export function connect(contract: BaseContract, signer: HardhatEthersSigner): Contract {
-  return contract.connect(signer) as Contract;
+export function connect<T extends BaseContract = BaseContract>(contract: T, signer: HardhatEthersSigner): T {
+  return contract.connect(signer) as T;
 }
 
 export function getAddress(contract: Contract): string {
@@ -47,8 +47,8 @@ export async function getLatestBlockTimestamp(): Promise<number> {
   return getBlockTimestamp("latest");
 }
 
-export async function getTxTimestamp(tx: Promise<TransactionResponse>): Promise<number> {
-  const receipt = await proveTx(tx);
+export async function getTxTimestamp(tx: Promise<TransactionResponse> | TransactionResponse): Promise<number> {
+  const receipt = await proveTx(Promise.resolve(tx));
   const block = await ethers.provider.getBlock(receipt.blockNumber);
   return Number(block?.timestamp ?? 0);
 }
