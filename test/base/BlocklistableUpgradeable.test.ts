@@ -100,10 +100,10 @@ describe("Contract 'BlocklistableUpgradeable'", async () => {
     it("Is reverted if the caller does not have the blocklister role", async () => {
       const { blocklistableMock } = await setUpFixture(deployAndConfigureBlocklistableMock);
       await expect(
-        blocklistableMock.blocklist(user.address)
+        blocklistableMock.blocklist(user.address),
       ).to.be.revertedWithCustomError(
         blocklistableMock,
-        ERROR_NAME_ACCESS_CONTROL_UNAUTHORIZED_ACCOUNT
+        ERROR_NAME_ACCESS_CONTROL_UNAUTHORIZED_ACCOUNT,
       ).withArgs(deployer.address, BLOCKLISTER_ROLE);
     });
   });
@@ -127,10 +127,10 @@ describe("Contract 'BlocklistableUpgradeable'", async () => {
     it("Is reverted if the caller does not have the blocklister role", async () => {
       const { blocklistableMock } = await setUpFixture(deployAndConfigureBlocklistableMock);
       await expect(
-        blocklistableMock.unBlocklist(user.address)
+        blocklistableMock.unBlocklist(user.address),
       ).to.be.revertedWithCustomError(
         blocklistableMock,
-        ERROR_NAME_ACCESS_CONTROL_UNAUTHORIZED_ACCOUNT
+        ERROR_NAME_ACCESS_CONTROL_UNAUTHORIZED_ACCOUNT,
       ).withArgs(deployer.address, BLOCKLISTER_ROLE);
     });
   });

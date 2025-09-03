@@ -19,7 +19,7 @@ const RESCUER_ROLE = ethers.id("RESCUER_ROLE");
 const EXPECTED_VERSION = {
   major: 2n,
   minor: 3n,
-  patch: 0n
+  patch: 0n,
 } as const;
 
 let cashbackVaultFactory: Contracts.CashbackVault__factory;
@@ -120,12 +120,12 @@ describe("Contract 'CashbackVault'", async () => {
     });
 
     it("should set correct roles for the deployer", async () => {
-      expect(await deployedContract.hasRole(OWNER_ROLE, deployer.address)).to.be.true;
-      expect(await deployedContract.hasRole(GRANTOR_ROLE, deployer.address)).to.be.false;
-      expect(await deployedContract.hasRole(PAUSER_ROLE, deployer.address)).to.be.false;
-      expect(await deployedContract.hasRole(RESCUER_ROLE, deployer.address)).to.be.false;
-      expect(await deployedContract.hasRole(MANAGER_ROLE, deployer.address)).to.be.false;
-      expect(await deployedContract.hasRole(CASHBACK_OPERATOR_ROLE, deployer.address)).to.be.false;
+      await expect(await deployedContract.hasRole(OWNER_ROLE, deployer.address)).to.be.true;
+      await expect(await deployedContract.hasRole(GRANTOR_ROLE, deployer.address)).to.be.false;
+      await expect(await deployedContract.hasRole(PAUSER_ROLE, deployer.address)).to.be.false;
+      await expect(await deployedContract.hasRole(RESCUER_ROLE, deployer.address)).to.be.false;
+      await expect(await deployedContract.hasRole(MANAGER_ROLE, deployer.address)).to.be.false;
+      await expect(await deployedContract.hasRole(CASHBACK_OPERATOR_ROLE, deployer.address)).to.be.false;
     });
 
     it("should not pause the contract", async () => {
@@ -205,7 +205,7 @@ describe("Contract 'CashbackVault'", async () => {
         checkEquality(newState, {
           ...initialState,
           balance: initialState.balance + amountToGrant,
-          lastGrantTimestamp: await getTxTimestamp(tx)
+          lastGrantTimestamp: await getTxTimestamp(tx),
         });
       });
 
@@ -219,7 +219,7 @@ describe("Contract 'CashbackVault'", async () => {
         await expect(tx).to.changeTokenBalances(
           tokenMock,
           [cashBackVaultAddress, operator.address, account.address],
-          [amountToGrant, -amountToGrant, 0]
+          [amountToGrant, -amountToGrant, 0],
         );
       });
     });
@@ -299,7 +299,7 @@ describe("Contract 'CashbackVault'", async () => {
         await expect(tx).to.changeTokenBalances(
           tokenMock,
           [cashBackVaultAddress, operator.address, account.address],
-          [-amountToRevoke, amountToRevoke, 0]
+          [-amountToRevoke, amountToRevoke, 0],
         );
       });
 
@@ -307,7 +307,7 @@ describe("Contract 'CashbackVault'", async () => {
         const newState = resultToObject(await cashbackVaultFromOperator.getAccountCashbackState(account.address));
         checkEquality(newState, {
           ...initialState,
-          balance: initialState.balance - amountToRevoke
+          balance: initialState.balance - amountToRevoke,
         });
       });
 
@@ -386,7 +386,7 @@ describe("Contract 'CashbackVault'", async () => {
         await expect(tx).to.changeTokenBalances(
           tokenMock,
           [cashBackVaultAddress, operator.address, account.address],
-          [-amountToClaim, 0, amountToClaim]
+          [-amountToClaim, 0, amountToClaim],
         );
       });
 
@@ -396,7 +396,7 @@ describe("Contract 'CashbackVault'", async () => {
           ...initialState,
           balance: initialState.balance - amountToClaim,
           lastClaimTimestamp: await getTxTimestamp(tx),
-          totalClaimed: initialState.totalClaimed + amountToClaim
+          totalClaimed: initialState.totalClaimed + amountToClaim,
         });
       });
 
@@ -471,7 +471,7 @@ describe("Contract 'CashbackVault'", async () => {
         await expect(tx).to.changeTokenBalances(
           tokenMock,
           [cashBackVaultAddress, operator.address, account.address],
-          [-initialCashbackBalance, 0, initialCashbackBalance]
+          [-initialCashbackBalance, 0, initialCashbackBalance],
         );
       });
 
@@ -481,7 +481,7 @@ describe("Contract 'CashbackVault'", async () => {
           ...initialState,
           balance: 0n,
           totalClaimed: initialState.totalClaimed + initialCashbackBalance,
-          lastClaimTimestamp: await getTxTimestamp(tx)
+          lastClaimTimestamp: await getTxTimestamp(tx),
         });
       });
 
@@ -530,7 +530,7 @@ describe("Contract 'CashbackVault'", async () => {
       expect(await cashbackVaultFromStranger.$__VERSION()).to.deep.equal([
         EXPECTED_VERSION.major,
         EXPECTED_VERSION.minor,
-        EXPECTED_VERSION.patch
+        EXPECTED_VERSION.patch,
       ]);
     });
   });
@@ -559,7 +559,7 @@ describe("Contract 'CashbackVault'", async () => {
         await expect(tx).to.changeTokenBalances(
           tokenMock,
           [cashBackVaultAddress, operator.address, account.address],
-          [1000n, -1000n, 0]
+          [1000n, -1000n, 0],
         );
       });
 
@@ -605,7 +605,7 @@ describe("Contract 'CashbackVault'", async () => {
           await expect(tx).to.changeTokenBalances(
             tokenMock,
             [cashBackVaultAddress, operator.address, account.address],
-            [-100n, 100n, 0]
+            [-100n, 100n, 0],
           );
         });
 
@@ -647,7 +647,7 @@ describe("Contract 'CashbackVault'", async () => {
             await expect(tx).to.changeTokenBalances(
               tokenMock,
               [cashBackVaultAddress, operator.address, account.address],
-              [-100n, 0, 100n]
+              [-100n, 0, 100n],
             );
           });
 
@@ -681,7 +681,7 @@ describe("Contract 'CashbackVault'", async () => {
               await expect(tx).to.changeTokenBalances(
                 tokenMock,
                 [cashBackVaultAddress, operator.address, account.address],
-                [-800n, 0, 800n]
+                [-800n, 0, 800n],
               );
             });
 
