@@ -1,3 +1,4 @@
+/* eslint @typescript-eslint/no-unused-expressions: "off" */
 import { ethers, upgrades } from "hardhat";
 import { expect } from "chai";
 import { TransactionResponse } from "ethers";
@@ -120,12 +121,12 @@ describe("Contract 'CashbackVault'", async () => {
     });
 
     it("should set correct roles for the deployer", async () => {
-      await expect(await deployedContract.hasRole(OWNER_ROLE, deployer.address)).to.be.true;
-      await expect(await deployedContract.hasRole(GRANTOR_ROLE, deployer.address)).to.be.false;
-      await expect(await deployedContract.hasRole(PAUSER_ROLE, deployer.address)).to.be.false;
-      await expect(await deployedContract.hasRole(RESCUER_ROLE, deployer.address)).to.be.false;
-      await expect(await deployedContract.hasRole(MANAGER_ROLE, deployer.address)).to.be.false;
-      await expect(await deployedContract.hasRole(CASHBACK_OPERATOR_ROLE, deployer.address)).to.be.false;
+      expect(await deployedContract.hasRole(OWNER_ROLE, deployer.address)).to.be.true;
+      expect(await deployedContract.hasRole(GRANTOR_ROLE, deployer.address)).to.be.false;
+      expect(await deployedContract.hasRole(PAUSER_ROLE, deployer.address)).to.be.false;
+      expect(await deployedContract.hasRole(RESCUER_ROLE, deployer.address)).to.be.false;
+      expect(await deployedContract.hasRole(MANAGER_ROLE, deployer.address)).to.be.false;
+      expect(await deployedContract.hasRole(CASHBACK_OPERATOR_ROLE, deployer.address)).to.be.false;
     });
 
     it("should not pause the contract", async () => {
