@@ -13,7 +13,7 @@ interface Stringable {
 function checkEventParameter<T extends Stringable>(
   fieldName: string,
   expectedValue: T | string | undefined | null,
-  options: EventParameterCheckingOptions = {}
+  options: EventParameterCheckingOptions = {},
 ): (value: T) => boolean {
   const f = function (value: T | string): boolean {
     if (options.convertToJson) {
@@ -38,7 +38,7 @@ function checkEventParameter<T extends Stringable>(
 function checkEventParameterNotEqual<T extends Stringable>(
   fieldName: string,
   notExpectedValue: T | string | undefined | null,
-  options: EventParameterCheckingOptions = {}
+  options: EventParameterCheckingOptions = {},
 ): (value: T | string) => boolean {
   const f = function (value: T | string): boolean {
     if (options.convertToJson) {
@@ -63,14 +63,14 @@ function checkEventParameterNotEqual<T extends Stringable>(
 
 function checkEquality<T extends Record<string, unknown>>(actualObject: T, expectedObject: T, index?: number) {
   const indexString = !index ? "" : ` with index: ${index}`;
-  Object.keys(expectedObject).forEach(property => {
+  Object.keys(expectedObject).forEach((property) => {
     const value = actualObject[property];
     if (typeof value === "undefined" || typeof value === "function" || typeof value === "object") {
       throw Error(`Property "${property}" is not found in the actual object` + indexString);
     }
     expect(value).to.eq(
       expectedObject[property],
-      `Mismatch in the "${property}" property between the actual object and expected one` + indexString
+      `Mismatch in the "${property}" property between the actual object and expected one` + indexString,
     );
   });
 }
@@ -78,5 +78,5 @@ function checkEquality<T extends Record<string, unknown>>(actualObject: T, expec
 export {
   checkEventParameter,
   checkEventParameterNotEqual,
-  checkEquality
+  checkEquality,
 };
