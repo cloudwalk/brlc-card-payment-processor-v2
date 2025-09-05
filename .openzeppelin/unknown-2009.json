@@ -2981,7 +2981,7 @@
               "contract": "PausableUpgradeable",
               "label": "_paused",
               "type": "t_bool",
-              "src": "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol:21",
+              "src": "@openzeppelin\\contracts-upgradeable\\utils\\PausableUpgradeable.sol:21",
               "offset": 0,
               "slot": "0"
             }
@@ -2991,7 +2991,7 @@
               "contract": "AccessControlUpgradeable",
               "label": "_roles",
               "type": "t_mapping(t_bytes32,t_struct(RoleData)26_storage)",
-              "src": "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol:62",
+              "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:62",
               "offset": 0,
               "slot": "0"
             }
@@ -3001,7 +3001,7 @@
               "contract": "Initializable",
               "label": "_initialized",
               "type": "t_uint64",
-              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:69",
               "offset": 0,
               "slot": "0"
             },
@@ -3009,7 +3009,7 @@
               "contract": "Initializable",
               "label": "_initializing",
               "type": "t_bool",
-              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:73",
               "offset": 8,
               "slot": "0"
             }
@@ -3019,7 +3019,7 @@
               "contract": "CashbackVaultStorageLayout",
               "label": "token",
               "type": "t_address",
-              "src": "contracts/CashbackVaultStorageLayout.sol:35",
+              "src": "contracts\\CashbackVaultStorageLayout.sol:35",
               "offset": 0,
               "slot": "0"
             },
@@ -3027,7 +3027,7 @@
               "contract": "CashbackVaultStorageLayout",
               "label": "totalCashback",
               "type": "t_uint64",
-              "src": "contracts/CashbackVaultStorageLayout.sol:36",
+              "src": "contracts\\CashbackVaultStorageLayout.sol:36",
               "offset": 20,
               "slot": "0"
             },
@@ -3035,7 +3035,7 @@
               "contract": "CashbackVaultStorageLayout",
               "label": "accountCashbackStates",
               "type": "t_mapping(t_address,t_struct(AccountCashbackState)2574_storage)",
-              "src": "contracts/CashbackVaultStorageLayout.sol:40",
+              "src": "contracts\\CashbackVaultStorageLayout.sol:40",
               "offset": 0,
               "slot": "1"
             }
