@@ -45,7 +45,7 @@ interface ICardPaymentProcessorTypes {
      * - reserve2 --------- The reserved field for future changes.
      * - baseAmount ------- The base amount of tokens in the payment.
      * - extraAmount ------ The extra amount of tokens in the payment, without a cashback.
-     * - cashbackAmount --- The cumulative cashback amount that was granted to the payer related to the payment.
+     * - gap_cashbackAmount deprecated.
      * - refundAmount ----- The total amount of all refunds related to the payment.
      *
      *  The following additional payment parameters can be derived from the structure fields:
@@ -89,7 +89,7 @@ interface ICardPaymentProcessorTypes {
         // Slot3
         uint64 baseAmount;
         uint64 extraAmount;
-        uint64 cashbackAmount;
+        uint64 reserve3; // deprecated
         uint64 refundAmount;
         // No reserve until the end of the storage slot
     }
@@ -470,6 +470,13 @@ interface ICardPaymentProcessorConfiguration {
         address newCashOutAccount
     );
 
+    /**
+     * @dev Emitted when the cashback rate is changed.
+     * @param oldRate The value of the old cashback rate.
+     * @param newRate The value of the new cashback rate.
+     */
+    event CashbackRateChanged(uint256 oldRate, uint256 newRate);
+
     // ------------------ Transactional functions ----------------- //
 
     /**
@@ -482,6 +489,19 @@ interface ICardPaymentProcessorConfiguration {
      * @param newCashOutAccount The new cash-out account address.
      */
     function setCashOutAccount(address newCashOutAccount) external;
+
+    /**
+     * @dev Sets a new default cashback rate for new payments.
+     *
+     * Emits a {CashbackRateChanged} event.
+     *
+     * @param newCashbackRate The value of the new cashback rate.
+     */
+    function setCashbackRate(uint256 newCashbackRate) external;
+
+    // ------------------ View functions -------------------------- //
+    /// @dev Returns the current cashback rate.
+    function cashbackRate() external view returns (uint256);
 }
 
 /**
@@ -498,6 +518,12 @@ interface ICardPaymentProcessorErrors is ICardPaymentProcessorTypes {
 
     /// @dev A new cash-out account is the same as the previously set one.
     error CashOutAccountUnchanged();
+
+    /// @dev The provided cashback rate exceeds the allowed maximum.
+    error CashbackRateExcess();
+
+    /// @dev A new cashback rate is the same as previously set one.
+    error CashbackRateUnchanged();
 
     /// @dev Thrown if the provided new implementation address is not of a card payment processor contract.
     error ImplementationAddressInvalid();

@@ -2,14 +2,14 @@
 
 pragma solidity ^0.8.20;
 
+import { EnumerableSet } from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import { ICardPaymentProcessorTypes } from "./interfaces/ICardPaymentProcessor.sol";
-import { ICardPaymentCashbackTypes } from "./interfaces/ICardPaymentCashback.sol";
 
 /**
  * @title CardPaymentProcessor storage version 1
  * @author CloudWalk Inc. (See https://www.cloudwalk.io)
  */
-abstract contract CardPaymentProcessorStorageV1 is ICardPaymentProcessorTypes, ICardPaymentCashbackTypes {
+abstract contract CardPaymentProcessorStorageV1 is ICardPaymentProcessorTypes {
     /// @dev The address of the underlying token.
     address internal _token;
 
@@ -22,17 +22,8 @@ abstract contract CardPaymentProcessorStorageV1 is ICardPaymentProcessorTypes, I
     /// @dev The payment statistics.
     PaymentStatistics internal _paymentStatistics;
 
-    /// @dev The address of the cashback treasury.
-    address internal _cashbackTreasury;
-
-    /// @dev The enabled flag for the cashback operations for new payments. Does not affect the existing payments.
-    bool internal _cashbackEnabled;
-
     /// @dev The default cashback rate for new payments in units of `CASHBACK_FACTOR`.
     uint16 internal _cashbackRate;
-
-    /// @dev The mapping of an account cashback structure for a given account address.
-    mapping(address => AccountCashbackState) internal _accountCashbackStates;
 }
 
 /**
