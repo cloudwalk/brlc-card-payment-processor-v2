@@ -349,6 +349,13 @@ describe("Contract 'CashbackController'", () => {
         cashbackController.afterPaymentCanceled.fragment.selector,
       )).to.equal(true);
     });
+
+    it("should revert if the caller does not have the required role", async () => {
+      await expect(cashbackControllerFromStranger.supportsHookMethod(
+        cashbackController.afterPaymentMade.fragment.selector,
+      )).to.be.revertedWithCustomError(cashbackControllerFromStranger, "AccessControlUnauthorizedAccount")
+        .withArgs(stranger.address, HOOK_TRIGGER_ROLE);
+    });
   });
 
   describe("Method 'proveCashbackController()'", () => {
