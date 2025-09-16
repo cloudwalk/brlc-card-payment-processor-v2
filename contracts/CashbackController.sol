@@ -31,7 +31,11 @@ contract CashbackController is
 {
     // ------------------ Constants ------------------------------- //
 
+    /// @dev The role for hook trigger who are allowed to trigger the hook.
     bytes32 public constant HOOK_TRIGGER_ROLE = keccak256("HOOK_TRIGGER_ROLE");
+
+    /// @dev The role for cashback operators who are allowed to correct the cashback amount for a payment.
+    bytes32 public constant CASHBACK_OPERATOR_ROLE = keccak256("CASHBACK_OPERATOR_ROLE");
 
     /// @dev The number of decimals that is used in the underlying token contract.
     uint256 public constant TOKEN_DECIMALS = 6;
@@ -142,9 +146,6 @@ contract CashbackController is
         if (payment.cashbackRate == 0) {
             return;
         }
-        CashbackControllerStorage storage $ = _getCashbackControllerStorage();
-        CashbackOperation storage cashbackOperation = $.cashbackOperations[paymentId];
-        CashbackOperationStatus status;
         uint256 payerBaseAmount = _definePayerBaseAmount(payment.baseAmount, payment.subsidyLimit);
         uint256 assumedSponsorRefundAmount = (payment.baseAmount > payment.subsidyLimit)
             ? ((payment.refundAmount * payment.subsidyLimit) / payment.baseAmount)
@@ -156,23 +157,7 @@ contract CashbackController is
         uint256 newDesiredCashbackAmount = (payerBaseAmount > payerRefundAmount)
             ? _calculateCashback(payerBaseAmount - payerRefundAmount, payment.cashbackRate)
             : 0;
-        uint256 oldCashbackAmount = cashbackOperation.sentAmount;
-        // Increase cashback ahead of payer token transfers to avoid corner cases with lack of payer balance
-        if (newDesiredCashbackAmount > oldCashbackAmount) {
-            uint256 amount = newDesiredCashbackAmount - oldCashbackAmount;
-            (status, amount) = _increaseCashback(cashbackOperation, amount);
-            emit CashbackIncreased(paymentId, payment.payer, status, oldCashbackAmount, cashbackOperation.sentAmount);
-        } else if (newDesiredCashbackAmount < oldCashbackAmount) {
-            uint256 amount = oldCashbackAmount - newDesiredCashbackAmount;
-            (status, amount) = _revokeCashback(cashbackOperation, amount);
-            emit CashbackRevoked(
-                paymentId, // Tools: prevent Prettier one-liner
-                payment.payer,
-                status,
-                oldCashbackAmount,
-                cashbackOperation.sentAmount
-            );
-        }
+        _updateCashbackAmount(paymentId, newDesiredCashbackAmount);
     }
 
     /**
@@ -208,6 +193,20 @@ contract CashbackController is
     }
 
     // ------------------ Transactional functions ----------------- //
+
+    /**
+     * @inheritdoc ICashbackControllerPrimary
+     *
+     * @dev Requirements:
+     *
+     * - The caller must have the {CASHBACK_OPERATOR_ROLE} role.
+     */
+    function correctCashbackAmount(
+        bytes32 paymentId,
+        uint64 newCashbackAmount
+    ) external onlyRole(CASHBACK_OPERATOR_ROLE) {
+        _updateCashbackAmount(paymentId, newCashbackAmount);
+    }
 
     /**
      * @inheritdoc ICashbackControllerConfiguration
@@ -332,6 +331,26 @@ contract CashbackController is
     function _calculateCashback(uint256 amount, uint256 cashbackRate_) internal pure returns (uint256) {
         uint256 cashback = (amount * cashbackRate_) / CASHBACK_FACTOR;
         return ((cashback + CASHBACK_ROUNDING_COEF / 2) / CASHBACK_ROUNDING_COEF) * CASHBACK_ROUNDING_COEF;
+    }
+
+    // ------------------ Internal functions ---------------------- //
+
+    function _updateCashbackAmount(bytes32 paymentId, uint256 desiredCashbackAmount) internal {
+        CashbackControllerStorage storage $ = _getCashbackControllerStorage();
+        CashbackOperation storage cashbackOperation = $.cashbackOperations[paymentId];
+        CashbackOperationStatus status;
+        uint256 oldCashbackAmount = cashbackOperation.sentAmount;
+        address account = cashbackOperation.account;
+
+        if (desiredCashbackAmount > oldCashbackAmount) {
+            uint256 amount = desiredCashbackAmount - oldCashbackAmount;
+            (status, amount) = _increaseCashback(cashbackOperation, amount);
+            emit CashbackIncreased(paymentId, account, status, oldCashbackAmount, cashbackOperation.sentAmount);
+        } else if (desiredCashbackAmount < oldCashbackAmount) {
+            uint256 amount = oldCashbackAmount - desiredCashbackAmount;
+            (status, amount) = _revokeCashback(cashbackOperation, amount);
+            emit CashbackRevoked(paymentId, account, status, oldCashbackAmount, cashbackOperation.sentAmount);
+        }
     }
 
     /**

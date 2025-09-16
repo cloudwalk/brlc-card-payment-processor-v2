@@ -153,6 +153,15 @@ interface ICashbackControllerPrimary is ICashbackControllerTypes {
         uint256 newCashbackAmount
     );
 
+    // ------------------ Transactional functions ----------------- //
+
+    /**
+     * @dev Corrects the cashback amount for a payment.
+     * @param paymentId The payment ID to correct the cashback amount for.
+     * @param newCashbackAmount The new desired cashback amount for the payment.
+     */
+    function correctCashbackAmount(bytes32 paymentId, uint64 newCashbackAmount) external;
+
     // ------------------ View functions -------------------------- //
 
     /**

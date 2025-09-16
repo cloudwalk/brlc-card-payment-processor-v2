@@ -339,13 +339,13 @@ describe("Contract 'CashbackController'", () => {
 
   describe("Method 'supportsHookMethod()'", () => {
     it("should return the expected value for supported hook methods", async () => {
-      expect(await cashbackController.supportsHookMethod(
+      expect(await cashbackControllerFromHookTrigger.supportsHookMethod(
         cashbackController.afterPaymentMade.fragment.selector,
       )).to.equal(true);
-      expect(await cashbackController.supportsHookMethod(
+      expect(await cashbackControllerFromHookTrigger.supportsHookMethod(
         cashbackController.afterPaymentUpdated.fragment.selector,
       )).to.equal(true);
-      expect(await cashbackController.supportsHookMethod(
+      expect(await cashbackControllerFromHookTrigger.supportsHookMethod(
         cashbackController.afterPaymentCanceled.fragment.selector,
       )).to.equal(true);
     });
