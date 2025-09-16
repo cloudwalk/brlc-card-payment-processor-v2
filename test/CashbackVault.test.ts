@@ -704,10 +704,6 @@ describe("Contract 'CashbackVault'", () => {
     });
 
     it("snapshot scenario test", async () => {
-      if (process.env.CHAINSHOT_ENABLED !== "true") {
-        return;
-      }
-      // TODO wrap this in callback to skip waiting workarounds
       await expect.startScenario({
         accounts: {
           account: account.address,
@@ -730,10 +726,6 @@ describe("Contract 'CashbackVault'", () => {
     });
 
     it("snapshot scenario test 2", async () => {
-      if (process.env.CHAINSHOT_ENABLED !== "true") {
-        return;
-      }
-      // TODO wrap this in callback to skip waiting workarounds
       await expect.startScenario({
         accounts: {
           account: account.address,
