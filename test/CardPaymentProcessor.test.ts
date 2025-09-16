@@ -4776,9 +4776,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
 
       await cardPaymentProcessorShell.makePaymentFor(payment);
       await cardPaymentProcessorShell.refundPayment(payment, 100 * DIGITS_COEF);
-      const cashbackAmount =
-        cardPaymentProcessorShell.model.getCashbackTotalForAccount(payer.address);
-      await cashbackVault.claim(payer.address, cashbackAmount / 2);
+      await cashbackVault.claim(payer.address, 1 * DIGITS_COEF);
       await cardPaymentProcessorShell.revokePayment(payment);
       await expect.endScenario();
     });
