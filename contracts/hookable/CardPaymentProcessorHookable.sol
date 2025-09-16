@@ -78,12 +78,11 @@ abstract contract CardPaymentProcessorHookable is
      * @param oldPayment The old payment.
      * @param newPayment The new payment.
      */
-    // TODO EZ: consider usage of the `PaymentHookData` type for input parameters, it helps to avoid redundant storage in memory for `oldPayment` where the function is called
     function _callHooks(
         bytes4 methodSelector,
         bytes32 paymentId,
-        ICardPaymentProcessorTypes.Payment memory oldPayment,
-        ICardPaymentProcessorTypes.Payment memory newPayment
+        PaymentHookData memory oldPayment,
+        PaymentHookData memory newPayment
     ) internal {
         CardPaymentProcessorHookableStorage storage $ = _getCardPaymentProcessorHookableStorage();
         uint256 length = $.hooks[methodSelector].length();
@@ -91,12 +90,7 @@ abstract contract CardPaymentProcessorHookable is
         for (uint256 i = 0; i < length; i++) {
             address hook = $.hooks[methodSelector].at(i);
             (bool success, bytes memory returnData) = hook.call(
-                abi.encodeWithSelector(
-                    methodSelector,
-                    paymentId,
-                    _convertPaymentToHookData(oldPayment),
-                    _convertPaymentToHookData(newPayment)
-                )
+                abi.encodeWithSelector(methodSelector, paymentId, oldPayment, newPayment)
             );
 
             if (!success) {
@@ -115,23 +109,5 @@ abstract contract CardPaymentProcessorHookable is
         assembly {
             revert(add(returnData, 0x20), mload(returnData))
         }
-    }
-
-    /// @dev Converts a Payment struct to a PaymentHookData struct
-    function _convertPaymentToHookData(
-        ICardPaymentProcessorTypes.Payment memory payment
-    ) internal pure returns (PaymentHookData memory) {
-        return
-            PaymentHookData({
-                status: payment.status,
-                payer: payment.payer,
-                cashbackRate: payment.cashbackRate,
-                confirmedAmount: payment.confirmedAmount,
-                sponsor: payment.sponsor,
-                subsidyLimit: payment.subsidyLimit,
-                baseAmount: payment.baseAmount,
-                extraAmount: payment.extraAmount,
-                refundAmount: payment.refundAmount
-            });
     }
 }

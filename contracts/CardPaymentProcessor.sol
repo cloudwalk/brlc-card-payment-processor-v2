@@ -484,12 +484,12 @@ contract CardPaymentProcessor is
     function _makePayment_hookable(MakingOperation memory operation) internal {
         // before hooks goes here if needed
         _makePayment(operation);
-        Payment memory emptyPayment;
+        PaymentHookData memory emptyPayment;
         _callHooks(
             IAfterPaymentMadeHook.afterPaymentMade.selector,
             operation.paymentId,
             emptyPayment,
-            _payments[operation.paymentId]
+            _convertPaymentToHookData(_payments[operation.paymentId])
         );
     }
 
@@ -499,17 +499,22 @@ contract CardPaymentProcessor is
         uint256 newExtraAmount,
         UpdatingOperationKind kind
     ) internal {
-        Payment memory oldPayment = _payments[paymentId];
+        PaymentHookData memory oldPayment = _convertPaymentToHookData(_payments[paymentId]);
         // before hooks goes here if needed
         _updatePayment(paymentId, newBaseAmount, newExtraAmount, kind);
-        _callHooks(IAfterPaymentUpdatedHook.afterPaymentUpdated.selector, paymentId, oldPayment, _payments[paymentId]);
+        _callHooks(
+            IAfterPaymentUpdatedHook.afterPaymentUpdated.selector,
+            paymentId,
+            oldPayment,
+            _convertPaymentToHookData(_payments[paymentId])
+        );
     }
 
     function _cancelPayment_hookable(
         bytes32 paymentId, // Tools: prevent Prettier one-liner
         PaymentStatus targetStatus
     ) internal {
-        Payment memory oldPayment = _payments[paymentId];
+        PaymentHookData memory oldPayment = _convertPaymentToHookData(_payments[paymentId]);
         // before hooks goes here if needed
         _cancelPayment(paymentId, targetStatus);
 
@@ -517,7 +522,7 @@ contract CardPaymentProcessor is
             IAfterPaymentCanceledHook.afterPaymentCanceled.selector,
             paymentId,
             oldPayment,
-            _payments[paymentId]
+            _convertPaymentToHookData(_payments[paymentId])
         );
     }
 
@@ -525,9 +530,14 @@ contract CardPaymentProcessor is
         bytes32 paymentId, // Tools: prevent Prettier one-liner
         uint256 refundingAmount
     ) internal {
-        Payment memory oldPayment = _payments[paymentId];
+        PaymentHookData memory oldPayment = _convertPaymentToHookData(_payments[paymentId]);
         _refundPayment(paymentId, refundingAmount);
-        _callHooks(IAfterPaymentUpdatedHook.afterPaymentUpdated.selector, paymentId, oldPayment, _payments[paymentId]);
+        _callHooks(
+            IAfterPaymentUpdatedHook.afterPaymentUpdated.selector,
+            paymentId,
+            oldPayment,
+            _convertPaymentToHookData(_payments[paymentId])
+        );
     }
 
     /// @dev Making a payment internally.
@@ -1044,6 +1054,22 @@ contract CardPaymentProcessor is
             eventFlags |= EVENT_ADDENDUM_FLAG_MASK_SPONSORED;
         }
         return eventFlags;
+    }
+
+    /// @dev Converts a Payment struct to a PaymentHookData struct
+    function _convertPaymentToHookData(Payment storage payment) internal view returns (PaymentHookData memory) {
+        return
+            PaymentHookData({
+                status: payment.status,
+                payer: payment.payer,
+                cashbackRate: payment.cashbackRate,
+                confirmedAmount: payment.confirmedAmount,
+                sponsor: payment.sponsor,
+                subsidyLimit: payment.subsidyLimit,
+                baseAmount: payment.baseAmount,
+                extraAmount: payment.extraAmount,
+                refundAmount: payment.refundAmount
+            });
     }
 
     /**
