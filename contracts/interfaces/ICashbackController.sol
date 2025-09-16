@@ -238,6 +238,9 @@ interface ICashbackControllerErrors {
     /// @dev The provided cashback vault address is identical to the current one for the token.
     error CashbackController_CashbackVaultUnchanged();
 
+    /// @dev The account is not allowed to be granted the hook trigger role.
+    error CashbackController_HookTriggerRoleIncompatible();
+
     /// @dev Thrown if the provided new implementation address is not of a cashback vault contract.
     error CashbackController_ImplementationAddressInvalid();
 

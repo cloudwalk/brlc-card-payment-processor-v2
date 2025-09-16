@@ -17,6 +17,7 @@ import { Versionable } from "./base/Versionable.sol";
 import { IAfterPaymentMadeHook } from "./hookable/interfaces/ICardPaymentProcessorHooks.sol";
 import { IAfterPaymentUpdatedHook } from "./hookable/interfaces/ICardPaymentProcessorHooks.sol";
 import { IAfterPaymentCanceledHook } from "./hookable/interfaces/ICardPaymentProcessorHooks.sol";
+import { ICardPaymentProcessor } from "./interfaces/ICardPaymentProcessor.sol";
 import { ICashbackVault } from "./interfaces/ICashbackVault.sol";
 
 contract CashbackController is
@@ -465,6 +466,19 @@ contract CashbackController is
         CashbackControllerStorage storage $ = _getCashbackControllerStorage();
         AccountCashbackState storage state = $.accountCashbackStates[account];
         state.totalAmount = uint72(uint256(state.totalAmount) - amount);
+    }
+
+    function _grantRole(bytes32 role, address account) internal virtual override returns (bool) {
+        if (role == HOOK_TRIGGER_ROLE) {
+            CashbackControllerStorage storage $ = _getCashbackControllerStorage();
+            try ICardPaymentProcessor(account).proveCardPaymentProcessor() {} catch {
+                revert CashbackController_HookTriggerRoleIncompatible();
+            }
+            if (ICardPaymentProcessor(account).token() != $.token) {
+                revert CashbackController_HookTriggerRoleIncompatible();
+            }
+        }
+        return super._grantRole(role, account);
     }
 
     /**
