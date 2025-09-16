@@ -1,0 +1,479 @@
+// SPDX-License-Identifier: MIT
+
+pragma solidity 0.8.24;
+
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { AccessControlUpgradeable } from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+
+import { ICashbackController, ICashbackControllerPrimary } from "./interfaces/ICashbackController.sol";
+import { ICashbackControllerConfiguration } from "./interfaces/ICashbackController.sol";
+import { ICashbackControllerTypes } from "./interfaces/ICashbackController.sol";
+import { ICashbackControllerStorageLayout } from "./CashbackControlllerStorageLayout.sol";
+
+import { AccessControlExtUpgradeable } from "./base/AccessControlExtUpgradeable.sol";
+import { RescuableUpgradeable } from "./base/RescuableUpgradeable.sol";
+import { UUPSExtUpgradeable } from "./base/UUPSExtUpgradeable.sol";
+import { Versionable } from "./base/Versionable.sol";
+import { IAfterPaymentMadeHook } from "./hookable/interfaces/ICardPaymentProcessorHooks.sol";
+import { IAfterPaymentUpdatedHook } from "./hookable/interfaces/ICardPaymentProcessorHooks.sol";
+import { IAfterPaymentCanceledHook } from "./hookable/interfaces/ICardPaymentProcessorHooks.sol";
+import { ICashbackVault } from "./interfaces/ICashbackVault.sol";
+
+contract CashbackController is
+    ICashbackControllerStorageLayout,
+    AccessControlExtUpgradeable,
+    RescuableUpgradeable,
+    UUPSExtUpgradeable,
+    Versionable,
+    ICashbackController
+{
+    // ------------------ Constants ------------------------------- //
+
+    bytes32 public constant HOOK_TRIGGER_ROLE = keccak256("HOOK_TRIGGER_ROLE");
+
+    /// @dev The number of decimals that is used in the underlying token contract.
+    uint256 public constant TOKEN_DECIMALS = 6;
+
+    /**
+     * @dev The factor to represent the cashback rates in the contract, e.g. number 15 means 1.5% cashback rate.
+     *
+     * The formula to calculate cashback by an amount: `cashbackAmount = cashbackRate * amount / CASHBACK_FACTOR`.
+     */
+    uint256 public constant CASHBACK_FACTOR = 1000;
+
+    /**
+     * @dev The coefficient used to round the cashback according to the formula:
+     *      `roundedCashback = ((cashback + coef / 2) / coef) * coef`.
+     *
+     * Currently, it can only be changed by deploying a new implementation of the contract.
+     */
+    uint256 public constant CASHBACK_ROUNDING_COEF = 10 ** (TOKEN_DECIMALS - 2);
+
+    /// @dev The cashback cap reset period.
+    uint256 public constant CASHBACK_CAP_RESET_PERIOD = 30 days;
+
+    /// @dev The maximum cashback for a cap period.
+    uint256 public constant MAX_CASHBACK_FOR_CAP_PERIOD = 300 * 10 ** TOKEN_DECIMALS;
+
+    // ------------------ Constructor ----------------------------- //
+
+    /**
+     * @dev Constructor that prohibits the initialization of the implementation of the upgradeable contract.
+     *
+     * See details:
+     * https://docs.openzeppelin.com/upgrades-plugins/writing-upgradeable#initializing_the_implementation_contract
+     *
+     * @custom:oz-upgrades-unsafe-allow constructor
+     */
+    constructor() {
+        _disableInitializers();
+    }
+
+    // ------------------ Initializers ---------------------------- //
+
+    /**
+     * @dev Initializer of the upgradeable contract.
+     *
+     * See details: https://docs.openzeppelin.com/upgrades-plugins/writing-upgradeable
+     *
+     * @param token_ The address of the token to set as the underlying one.
+     */
+    function initialize(address token_) external initializer {
+        __AccessControlExt_init_unchained();
+        __Rescuable_init_unchained();
+        __UUPSExt_init_unchained(); // This is needed only to avoid errors during coverage assessment
+
+        if (token_ == address(0)) {
+            revert CashbackController_TokenAddressZero();
+        }
+
+        CashbackControllerStorage storage $ = _getCashbackControllerStorage();
+        $.token = token_;
+
+        _setRoleAdmin(HOOK_TRIGGER_ROLE, GRANTOR_ROLE);
+        _grantRole(OWNER_ROLE, _msgSender());
+    }
+
+    // ------------------ Hooks ----------------------------------- //
+
+    /**
+     * @dev The hook function for the afterPaymentMade event in the CardPaymentProcessor contract.
+     *
+     * Creates cashback operation and increases cashback.
+     */
+    function afterPaymentMade(
+        bytes32 paymentId,
+        PaymentHookData calldata,
+        PaymentHookData calldata payment
+    ) external onlyRole(HOOK_TRIGGER_ROLE) {
+        if (payment.cashbackRate == 0) {
+            return;
+        }
+
+        CashbackControllerStorage storage $ = _getCashbackControllerStorage();
+
+        uint256 basePaymentAmount = _definePayerBaseAmount(payment.baseAmount, payment.subsidyLimit);
+        uint256 desiredCashbackAmount = _calculateCashback(basePaymentAmount, payment.cashbackRate);
+        CashbackOperation storage cashbackOperation = $.cashbackOperations[paymentId];
+        cashbackOperation.account = payment.payer;
+
+        CashbackOperationStatus status;
+        (status, ) = _increaseCashback(cashbackOperation, desiredCashbackAmount);
+        emit CashbackSent(
+            paymentId, // Tools: prevent Prettier one-liner
+            payment.payer,
+            CashbackOperationStatus(status),
+            cashbackOperation.sentAmount
+        );
+    }
+
+    /**
+     * @dev The hook function for the afterPaymentUpdated event in the CardPaymentProcessor contract.
+     *
+     * Updates cashback operation and increases or revokes cashback.
+     */
+    function afterPaymentUpdated(
+        bytes32 paymentId,
+        PaymentHookData calldata,
+        PaymentHookData calldata payment
+    ) external onlyRole(HOOK_TRIGGER_ROLE) {
+        if (payment.cashbackRate == 0) {
+            return;
+        }
+        CashbackControllerStorage storage $ = _getCashbackControllerStorage();
+        CashbackOperation storage cashbackOperation = $.cashbackOperations[paymentId];
+        CashbackOperationStatus status;
+        uint256 payerBaseAmount = _definePayerBaseAmount(payment.baseAmount, payment.subsidyLimit);
+        uint256 assumedSponsorRefundAmount = (payment.baseAmount > payment.subsidyLimit)
+            ? ((payment.refundAmount * payment.subsidyLimit) / payment.baseAmount)
+            : payment.refundAmount;
+        uint256 sponsorRefundAmount = (assumedSponsorRefundAmount < payment.subsidyLimit)
+            ? assumedSponsorRefundAmount
+            : payment.subsidyLimit;
+        uint256 payerRefundAmount = payment.refundAmount - sponsorRefundAmount;
+        uint256 newDesiredCashbackAmount = (payerBaseAmount > payerRefundAmount)
+            ? _calculateCashback(payerBaseAmount - payerRefundAmount, payment.cashbackRate)
+            : 0;
+        uint256 oldCashbackAmount = cashbackOperation.sentAmount;
+        // Increase cashback ahead of payer token transfers to avoid corner cases with lack of payer balance
+        if (newDesiredCashbackAmount > oldCashbackAmount) {
+            uint256 amount = newDesiredCashbackAmount - oldCashbackAmount;
+            (status, amount) = _increaseCashback(cashbackOperation, amount);
+            emit CashbackIncreased(paymentId, payment.payer, status, oldCashbackAmount, cashbackOperation.sentAmount);
+        } else if (newDesiredCashbackAmount < oldCashbackAmount) {
+            uint256 amount = oldCashbackAmount - newDesiredCashbackAmount;
+            (status, amount) = _revokeCashback(cashbackOperation, amount);
+            emit CashbackRevoked(
+                paymentId, // Tools: prevent Prettier one-liner
+                payment.payer,
+                status,
+                oldCashbackAmount,
+                cashbackOperation.sentAmount
+            );
+        }
+    }
+
+    /**
+     * @dev The hook function for the afterPaymentCanceled event in the CardPaymentProcessor contract.
+     *
+     * Revokes cashback.
+     */
+    function afterPaymentCanceled(
+        bytes32 paymentId,
+        PaymentHookData calldata oldPayment,
+        PaymentHookData calldata
+    ) external onlyRole(HOOK_TRIGGER_ROLE) {
+        if (oldPayment.cashbackRate == 0) {
+            return;
+        }
+
+        CashbackControllerStorage storage $ = _getCashbackControllerStorage();
+        CashbackOperation storage cashbackOperation = $.cashbackOperations[paymentId];
+        uint256 oldCashbackAmount = cashbackOperation.sentAmount;
+        if (oldCashbackAmount == 0) {
+            return;
+        }
+        CashbackOperationStatus status;
+        (status, ) = _revokeCashback(cashbackOperation, cashbackOperation.sentAmount);
+
+        emit CashbackRevoked(
+            paymentId, // Tools: prevent Prettier one-liner
+            oldPayment.payer,
+            status,
+            oldCashbackAmount,
+            cashbackOperation.sentAmount
+        );
+    }
+
+    // ------------------ Transactional functions ----------------- //
+
+    /**
+     * @inheritdoc ICashbackControllerConfiguration
+     *
+     * @dev Requirements:
+     *
+     * - The caller must have the {OWNER_ROLE} role.
+     * - The new cashback treasury address must not be zero.
+     * - The new cashback treasury address must not be equal to the current set one.
+     */
+    function setCashbackTreasury(address newCashbackTreasury) external onlyRole(OWNER_ROLE) {
+        CashbackControllerStorage storage $ = _getCashbackControllerStorage();
+        address oldCashbackTreasury = $.cashbackTreasury;
+
+        // This is needed to allow cashback changes for any existing active payments.
+        if (newCashbackTreasury == address(0)) {
+            revert CashbackController_TreasuryZeroAddress();
+        }
+        if (oldCashbackTreasury == newCashbackTreasury) {
+            revert CashbackController_TreasuryUnchanged();
+        }
+
+        $.cashbackTreasury = newCashbackTreasury;
+
+        emit CashbackTreasuryChanged(oldCashbackTreasury, newCashbackTreasury);
+    }
+
+    /**
+     * @inheritdoc ICashbackControllerConfiguration
+     *
+     * @dev Requirements:
+     *
+     * - The caller must have the {OWNER_ROLE} role.
+     */
+    function setCashbackVault(address cashbackVault) external onlyRole(OWNER_ROLE) {
+        CashbackControllerStorage storage $ = _getCashbackControllerStorage();
+
+        address oldCashbackVault = $.cashbackVault;
+
+        if (oldCashbackVault == cashbackVault) {
+            revert CashbackController_CashbackVaultUnchanged();
+        }
+        if (cashbackVault != address(0)) {
+            try ICashbackVault(cashbackVault).proveCashbackVault() {} catch {
+                revert CashbackController_CashbackVaultInvalid();
+            }
+            if (ICashbackVault(cashbackVault).underlyingToken() != $.token) {
+                revert CashbackController_CashbackVaultTokenMismatch();
+            }
+
+            IERC20($.token).approve(cashbackVault, type(uint256).max);
+        }
+
+        if (oldCashbackVault != address(0)) {
+            IERC20($.token).approve(oldCashbackVault, 0);
+        }
+        $.cashbackVault = cashbackVault;
+
+        emit CashbackVaultUpdated(cashbackVault);
+    }
+
+    // ------------------ View functions -------------------------- //
+
+    function supportsHookMethod(bytes4 methodSelector) external pure returns (bool) {
+        return
+            methodSelector == IAfterPaymentMadeHook.afterPaymentMade.selector ||
+            methodSelector == IAfterPaymentUpdatedHook.afterPaymentUpdated.selector ||
+            methodSelector == IAfterPaymentCanceledHook.afterPaymentCanceled.selector;
+    }
+
+    /// @inheritdoc ICashbackControllerConfiguration
+    function getCashbackTreasury() external view returns (address) {
+        return _getCashbackControllerStorage().cashbackTreasury;
+    }
+
+    /// @inheritdoc ICashbackControllerConfiguration
+    function underlyingToken() external view returns (address) {
+        return _getCashbackControllerStorage().token;
+    }
+
+    /// @inheritdoc ICashbackControllerConfiguration
+    function getCashbackVault() external view returns (address) {
+        return _getCashbackControllerStorage().cashbackVault;
+    }
+
+    /// @inheritdoc ICashbackControllerPrimary
+    function getAccountCashbackState(address account) external view returns (AccountCashbackStateView memory) {
+        AccountCashbackState storage accountState = _getCashbackControllerStorage().accountCashbackStates[account];
+        return
+            AccountCashbackStateView({
+                totalAmount: accountState.totalAmount,
+                capPeriodStartAmount: accountState.capPeriodStartAmount,
+                capPeriodStartTime: accountState.capPeriodStartTime
+            });
+    }
+
+    /// @inheritdoc ICashbackControllerPrimary
+    function getPaymentCashbackState(bytes32 paymentId) external view returns (CashbackOperationView memory) {
+        CashbackOperation storage cashbackOperation = _getCashbackControllerStorage().cashbackOperations[paymentId];
+        return CashbackOperationView({ sentAmount: cashbackOperation.sentAmount, account: cashbackOperation.account });
+    }
+
+    // ------------------ Pure functions -------------------------- //
+
+    /// @inheritdoc ICashbackController
+    function proveCashbackController() external pure {}
+
+    /// @dev Defines the payer part of a payment base amount according to a subsidy limit.
+    function _definePayerBaseAmount(uint256 paymentBaseAmount, uint256 subsidyLimit) internal pure returns (uint256) {
+        if (paymentBaseAmount > subsidyLimit) {
+            return paymentBaseAmount - subsidyLimit;
+        } else {
+            return 0;
+        }
+    }
+
+    /// @dev Calculates cashback according to the amount and the rate.
+    function _calculateCashback(uint256 amount, uint256 cashbackRate_) internal pure returns (uint256) {
+        uint256 cashback = (amount * cashbackRate_) / CASHBACK_FACTOR;
+        return ((cashback + CASHBACK_ROUNDING_COEF / 2) / CASHBACK_ROUNDING_COEF) * CASHBACK_ROUNDING_COEF;
+    }
+
+    /**
+     * @dev Increases cashback related to a payment and stores current state of operation
+     *
+     * It may increase cashback to amount lower then desiredAmount if cashback cap is reached.
+     * After the operation, cashbackOperation.cashbackAmount will be equal to the actual increased amount.
+     *
+     * @param cashbackOperation The cashback operation to increase.
+     * @param desiredAmount The desired amount of cashback to increase.
+     *
+     * @return status The new status of the cashback operation.
+     * @return increasedAmount The actual amount of cashback that was increased.
+     */
+    function _increaseCashback(
+        CashbackOperation storage cashbackOperation,
+        uint256 desiredAmount
+    ) internal returns (CashbackOperationStatus status, uint256 increasedAmount) {
+        CashbackControllerStorage storage $ = _getCashbackControllerStorage();
+        AccountCashbackState memory oldAccountCashbackState = $.accountCashbackStates[cashbackOperation.account];
+        (status, increasedAmount) = _processAccountCashbackWithCap(cashbackOperation.account, desiredAmount);
+
+        // if it is not capped, we can try to transfer funds
+        if (status != CashbackOperationStatus.Capped) {
+            if (IERC20($.token).balanceOf($.cashbackTreasury) < increasedAmount) {
+                status = CashbackOperationStatus.OutOfFunds;
+                increasedAmount = 0;
+                // restore account cashback state to previous state if we failed to increase cashback
+                $.accountCashbackStates[cashbackOperation.account] = oldAccountCashbackState;
+            } else {
+                IERC20($.token).transferFrom($.cashbackTreasury, address(this), increasedAmount);
+
+                if ($.cashbackVault != address(0)) {
+                    ICashbackVault($.cashbackVault).grantCashback(cashbackOperation.account, uint64(increasedAmount));
+                } else {
+                    IERC20($.token).transfer(cashbackOperation.account, increasedAmount);
+                }
+            }
+        }
+        cashbackOperation.sentAmount += uint64(increasedAmount);
+    }
+
+    /// @dev Revokes partially or fully cashback related to a payment.
+    function _revokeCashback(
+        CashbackOperation storage cashbackOperation,
+        uint256 desiredAmount
+    ) internal returns (CashbackOperationStatus status, uint256 revokedAmount) {
+        CashbackControllerStorage storage $ = _getCashbackControllerStorage();
+        status = CashbackOperationStatus.Success;
+
+        (uint256 vaultRevocationAmount, uint256 accountRevocationAmount) = _calculateRevokationAmounts(
+            cashbackOperation.account,
+            desiredAmount
+        );
+
+        if (vaultRevocationAmount > 0) {
+            ICashbackVault($.cashbackVault).revokeCashback(cashbackOperation.account, uint64(vaultRevocationAmount));
+        }
+        if (accountRevocationAmount > 0) {
+            IERC20($.token).transferFrom(cashbackOperation.account, address(this), accountRevocationAmount);
+        }
+
+        IERC20($.token).transfer($.cashbackTreasury, vaultRevocationAmount + accountRevocationAmount);
+        _reduceTotalCashback(cashbackOperation.account, desiredAmount);
+        revokedAmount = desiredAmount;
+
+        cashbackOperation.sentAmount -= uint64(revokedAmount);
+    }
+
+    /**
+     * @dev Calculates the amounts to revoke from the cashback vault and the account.
+     *
+     * Uses the vault balance first, then the account balance.
+     *
+     * @param recipient The recipient address.
+     * @param amount The cashback amount to revoke.
+     */
+    function _calculateRevokationAmounts(
+        address recipient,
+        uint256 amount
+    ) internal view returns (uint256 vaultRevocationAmount, uint256 accountRevocationAmount) {
+        CashbackControllerStorage storage $ = _getCashbackControllerStorage();
+        accountRevocationAmount = amount;
+        if ($.cashbackVault != address(0)) {
+            uint256 vaultAccountBalance = ICashbackVault($.cashbackVault).getAccountCashbackBalance(recipient);
+            vaultRevocationAmount = vaultAccountBalance >= amount ? amount : vaultAccountBalance;
+            accountRevocationAmount -= vaultRevocationAmount;
+        }
+    }
+
+    /// @dev Processes account cashback with cap enforcement, updating state and bounding amount.
+    function _processAccountCashbackWithCap(
+        address account,
+        uint256 amount
+    ) internal returns (CashbackOperationStatus cashbackStatus, uint256 acceptedAmount) {
+        CashbackControllerStorage storage $ = _getCashbackControllerStorage();
+        AccountCashbackState storage state = $.accountCashbackStates[account];
+
+        uint256 totalAmount = state.totalAmount;
+        uint256 capPeriodStartTime = state.capPeriodStartTime;
+        uint256 capPeriodStartAmount = state.capPeriodStartAmount;
+        uint256 capPeriodCollectedCashback = 0;
+
+        unchecked {
+            uint256 blockTimestamp = uint32(block.timestamp); // take only last 32 bits of the block timestamp
+            if (uint32(blockTimestamp - capPeriodStartTime) > CASHBACK_CAP_RESET_PERIOD) {
+                capPeriodStartTime = blockTimestamp;
+            } else {
+                capPeriodCollectedCashback = totalAmount - capPeriodStartAmount;
+            }
+
+            if (capPeriodCollectedCashback < MAX_CASHBACK_FOR_CAP_PERIOD) {
+                uint256 leftAmount = MAX_CASHBACK_FOR_CAP_PERIOD - capPeriodCollectedCashback;
+                if (leftAmount >= amount) {
+                    acceptedAmount = amount;
+                    cashbackStatus = CashbackOperationStatus.Success;
+                } else {
+                    acceptedAmount = leftAmount;
+                    cashbackStatus = CashbackOperationStatus.Partial;
+                }
+            } else {
+                cashbackStatus = CashbackOperationStatus.Capped;
+            }
+        }
+
+        if (capPeriodCollectedCashback == 0) {
+            capPeriodStartAmount = totalAmount;
+        }
+
+        state.totalAmount = uint72(totalAmount) + uint72(acceptedAmount);
+        state.capPeriodStartAmount = uint72(capPeriodStartAmount);
+        state.capPeriodStartTime = uint32(capPeriodStartTime);
+    }
+
+    /// @dev Reduces the total cashback amount for an account.
+    function _reduceTotalCashback(address account, uint256 amount) internal {
+        CashbackControllerStorage storage $ = _getCashbackControllerStorage();
+        AccountCashbackState storage state = $.accountCashbackStates[account];
+        state.totalAmount = uint72(uint256(state.totalAmount) - amount);
+    }
+
+    /**
+     * @dev The upgrade validation function for the UUPSExtUpgradeable contract.
+     * @param newImplementation The address of the new implementation.
+     */
+    function _validateUpgrade(address newImplementation) internal view override onlyRole(OWNER_ROLE) {
+        try ICashbackController(newImplementation).proveCashbackController() {} catch {
+            revert CashbackController_ImplementationAddressInvalid();
+        }
+    }
+}

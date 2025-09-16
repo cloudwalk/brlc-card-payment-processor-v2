@@ -5,7 +5,7 @@ import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { connect, proveTx } from "../../test-utils/eth";
 import { setUpFixture } from "../../test-utils/common";
 
-describe("Contract 'BlocklistableUpgradeable'", async () => {
+describe("Contract 'BlocklistableUpgradeable'", () => {
   // Events of the contracts under test
   const EVENT_NAME_BLOCKLISTED = "Blocklisted";
   const EVENT_NAME_SELFBLOCKLISTED = "SelfBlocklisted";
@@ -49,7 +49,7 @@ describe("Contract 'BlocklistableUpgradeable'", async () => {
     return { blocklistableMock };
   }
 
-  describe("Initializers", async () => {
+  describe("Initializers", () => {
     it("The external initializer configures the contract as expected", async () => {
       const { blocklistableMock } = await setUpFixture(deployBlocklistableMock);
 
@@ -82,7 +82,7 @@ describe("Contract 'BlocklistableUpgradeable'", async () => {
     });
   });
 
-  describe("Function 'blocklist()'", async () => {
+  describe("Function 'blocklist()'", () => {
     it("Executes as expected and emits the correct event if it is called by a blocklister", async () => {
       const { blocklistableMock } = await setUpFixture(deployAndConfigureBlocklistableMock);
       expect(await blocklistableMock.isBlocklisted(user.address)).to.equal(false);
@@ -108,7 +108,7 @@ describe("Contract 'BlocklistableUpgradeable'", async () => {
     });
   });
 
-  describe("Function 'unBlocklist()'", async () => {
+  describe("Function 'unBlocklist()'", () => {
     it("Executes as expected and emits the correct event if it is called by a blocklister", async () => {
       const { blocklistableMock } = await setUpFixture(deployAndConfigureBlocklistableMock);
       await proveTx(connect(blocklistableMock, blocklister).blocklist(user.address));
@@ -135,7 +135,7 @@ describe("Contract 'BlocklistableUpgradeable'", async () => {
     });
   });
 
-  describe("Function 'selfBlocklist()'", async () => {
+  describe("Function 'selfBlocklist()'", () => {
     it("Executes as expected and emits the correct events if it is called by any account", async () => {
       const { blocklistableMock } = await setUpFixture(deployAndConfigureBlocklistableMock);
       expect(await blocklistableMock.isBlocklisted(user.address)).to.equal(false);
@@ -151,7 +151,7 @@ describe("Contract 'BlocklistableUpgradeable'", async () => {
     });
   });
 
-  describe("Modifier 'notBlocklisted'", async () => {
+  describe("Modifier 'notBlocklisted'", () => {
     it("Reverts the target function if the caller is blocklisted", async () => {
       const { blocklistableMock } = await setUpFixture(deployAndConfigureBlocklistableMock);
 
