@@ -702,5 +702,55 @@ describe("Contract 'CashbackVault'", () => {
         });
       });
     });
+
+    it("snapshot scenario test", async () => {
+      if (process.env.CHAINSHOT_ENABLED !== "true") {
+        return;
+      }
+      // TODO wrap this in callback to skip waiting workarounds
+      await expect.startScenario({
+        accounts: {
+          account: account.address,
+          manager: manager.address,
+          operator: operator.address,
+        },
+        contracts: {
+          cashbackVault: cashbackVaultFromManager,
+        },
+        tokens: {
+          tokenMock,
+        },
+      });
+
+      await cashbackVaultFromOperator.grantCashback(account.address, 1000n);
+      await cashbackVaultFromOperator.revokeCashback(account.address, 100n);
+      await cashbackVaultFromManager.claim(account.address, 100n);
+
+      await expect.endScenario();
+    });
+
+    it("snapshot scenario test 2", async () => {
+      if (process.env.CHAINSHOT_ENABLED !== "true") {
+        return;
+      }
+      // TODO wrap this in callback to skip waiting workarounds
+      await expect.startScenario({
+        accounts: {
+          account: account.address,
+          manager: manager.address,
+          operator: operator.address,
+        },
+        contracts: {
+          cashbackVault: cashbackVaultFromManager,
+        },
+        tokens: {
+          tokenMock,
+        },
+        name: "scenario with custom name",
+      });
+
+      await cashbackVaultFromOperator.grantCashback(account.address, 1000n);
+      await expect.endScenario();
+    });
   });
 });
