@@ -8,6 +8,7 @@ import { BaseContract, TransactionResponse } from "ethers";
 const OWNER_ROLE: string = ethers.id("OWNER_ROLE");
 const GRANTOR_ROLE: string = ethers.id("GRANTOR_ROLE");
 const EXECUTOR_ROLE: string = ethers.id("EXECUTOR_ROLE");
+const HOOK_TRIGGER_ROLE: string = ethers.id("HOOK_TRIGGER_ROLE");
 
 const CASHBACK_RATE_AS_IN_CONTRACT = -1n;
 
@@ -202,6 +203,8 @@ describe("Contract 'CardPaymentProcessorHookable'", () => {
 
     beforeEach(async () => {
       cashbackController = await setUpFixture(deployAndConfigureCashbackController);
+      await cashbackController.grantRole(GRANTOR_ROLE, deployer.address);
+      await cashbackController.grantRole(HOOK_TRIGGER_ROLE, cardPaymentProcessorAddress);
       cashbackControllerAddress = await cashbackController.getAddress();
     });
 
