@@ -4,9 +4,9 @@
 
 | Idx | Caller | Contract | Name | Args |
 | --- | ------ | -------- | ---- | ---- |
-| 1 | operator | cashbackVault |  | [account, 1000] |
-| 2 | operator | cashbackVault |  | [account, 100] |
-| 3 | manager | cashbackVault |  | [account, 100] |
+| 1 | operator | cashbackVault | grantCashback | [account, 1000] |
+| 2 | operator | cashbackVault | revokeCashback | [account, 100] |
+| 3 | manager | cashbackVault | claim | [account, 100] |
 
 ```mermaid
 sequenceDiagram
@@ -126,7 +126,7 @@ sequenceDiagram
 
 | Idx | Caller | Contract | Name | Args |
 | --- | ------ | -------- | ---- | ---- |
-| 1 | operator | cashbackVault |  | [account, 1000] |
+| 1 | operator | cashbackVault | grantCashback | [account, 1000] |
 
 ```mermaid
 sequenceDiagram

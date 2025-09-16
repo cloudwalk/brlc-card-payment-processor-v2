@@ -4738,7 +4738,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
   });
 
   describe("Scenarios", () => {
-    it.only("CC and CV scenarios", async () => {
+    it("CC and CV scenarios", async () => {
       const context = await beforeMakingPayments();
       const cardPaymentProcessorShell = context.cardPaymentProcessorShell;
       const tokenMock = context.tokenMock as unknown as Contracts.ERC20TokenMock;
