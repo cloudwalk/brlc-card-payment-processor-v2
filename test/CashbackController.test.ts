@@ -257,6 +257,7 @@ describe("Contract 'CashbackController'", () => {
         });
     });
   });
+
   describe("Method 'upgradeToAndCall()'", () => {
     it("should upgrade the contract to a new implementation", async () => {
       const newImplementation = await cashbackControllerFactory.deploy();
@@ -281,6 +282,7 @@ describe("Contract 'CashbackController'", () => {
       });
     });
   });
+
   describe("Methods 'setCashbackTreasury()' and 'getCashbackTreasury()'", () => {
     describe("Should execute as expected when called properly and", () => {
       let tx: TransactionResponse;

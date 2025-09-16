@@ -154,10 +154,11 @@ contract CashbackController is
             ? assumedSponsorRefundAmount
             : payment.subsidyLimit;
         uint256 payerRefundAmount = payment.refundAmount - sponsorRefundAmount;
-        uint256 newDesiredCashbackAmount = (payerBaseAmount > payerRefundAmount)
+        uint256 desiredCashbackAmount = (payerBaseAmount > payerRefundAmount)
             ? _calculateCashback(payerBaseAmount - payerRefundAmount, payment.cashbackRate)
             : 0;
-        _updateCashbackAmount(paymentId, newDesiredCashbackAmount);
+
+        _updateCashbackAmount(paymentId, desiredCashbackAmount);
     }
 
     /**
@@ -174,22 +175,7 @@ contract CashbackController is
             return;
         }
 
-        CashbackControllerStorage storage $ = _getCashbackControllerStorage();
-        CashbackOperation storage cashbackOperation = $.cashbackOperations[paymentId];
-        uint256 oldCashbackAmount = cashbackOperation.sentAmount;
-        if (oldCashbackAmount == 0) {
-            return;
-        }
-        CashbackOperationStatus status;
-        (status, ) = _revokeCashback(cashbackOperation, cashbackOperation.sentAmount);
-
-        emit CashbackRevoked(
-            paymentId, // Tools: prevent Prettier one-liner
-            oldPayment.payer,
-            status,
-            oldCashbackAmount,
-            cashbackOperation.sentAmount
-        );
+        _updateCashbackAmount(paymentId, 0);
     }
 
     // ------------------ Transactional functions ----------------- //
