@@ -1,5 +1,5 @@
 {
-  "require": "hardhat/register",
+  "require": ["hardhat/register", "test/hooks.ts"],
   "timeout": 40000,
   "_": ["test/**/*.ts"]
 }

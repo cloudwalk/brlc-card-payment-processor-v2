@@ -4531,6 +4531,22 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
 
     it("Executes as expected", async () => {
       const context = await beforeMakingPayments({ paymentNumber: 2 });
+      await expect.startScenario({
+        accounts: {
+          payer: context.payments[0].payer.address,
+          cashbackTreasury: context.cashbackTreasury.address,
+          cashOutAccount: context.cashOutAccount.address,
+          deployer: deployer.address,
+          executor: context.cardPaymentProcessorShell.executor.address,
+        },
+        contracts: {
+          cpp: context.cardPaymentProcessorShell.contract,
+          cc: context.cardPaymentProcessorShell.cashbackControllerContract,
+        },
+        tokens: {
+          tokenMock: context.tokenMock,
+        },
+      });
       const { cardPaymentProcessorShell } = context;
       const payment: TestPayment = { ...context.payments[0] };
 
@@ -4573,6 +4589,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
       payment.id = context.payments[0].id;
       await cardPaymentProcessorShell.revokePayment(payment);
       await checkAccountCashbackState(context, expectedCapPeriodStartTime2);
+      await expect.endScenario();
     });
   });
 
