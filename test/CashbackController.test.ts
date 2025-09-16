@@ -42,6 +42,7 @@ describe("Contract 'CashbackController'", () => {
   let cashbackControllerFromOwner: Contracts.CashbackController;
   let cashbackControllerFromHookTrigger: Contracts.CashbackController;
   let cashbackControllerFromStranger: Contracts.CashbackController;
+  let cashbackControllerFromCashbackOperator: Contracts.CashbackController;
 
   let tokenMock: Contracts.ERC20TokenMock;
 
@@ -53,6 +54,7 @@ describe("Contract 'CashbackController'", () => {
   let payer: HardhatEthersSigner;
   let treasury: HardhatEthersSigner;
   let sponsor: HardhatEthersSigner;
+  let cashbackOperator: HardhatEthersSigner;
 
   type Payment = Exclude<Parameters<typeof cashbackControllerFromOwner.afterPaymentMade>[1], Typed>;
 
@@ -128,6 +130,7 @@ describe("Contract 'CashbackController'", () => {
   ) {
     await cashbackController.grantRole(GRANTOR_ROLE, deployer.address);
     await cashbackController.forceHookTriggerRole(hookTrigger.address);
+    await cashbackController.grantRole(CASHBACK_OPERATOR_ROLE, cashbackOperator.address);
 
     await tokenMock.mint(treasury.address, INITIAL_TREASURY_BALANCE);
     await tokenMock.connect(treasury).approve(await cashbackController.getAddress(), ethers.MaxUint256);
@@ -141,7 +144,7 @@ describe("Contract 'CashbackController'", () => {
   }
 
   before(async () => {
-    [deployer, hookTrigger, stranger, treasury, payer, sponsor] = await ethers.getSigners();
+    [deployer, hookTrigger, stranger, treasury, payer, sponsor, cashbackOperator] = await ethers.getSigners();
 
     // Contract factories with the explicitly specified deployer account
     cashbackControllerFactory = await ethers.getContractFactory("CashbackController");
@@ -162,6 +165,7 @@ describe("Contract 'CashbackController'", () => {
     cashbackControllerAddress = await cashbackControllerFromOwner.getAddress();
     cashbackControllerFromHookTrigger = cashbackControllerFromOwner.connect(hookTrigger);
     cashbackControllerFromStranger = cashbackControllerFromOwner.connect(stranger);
+    cashbackControllerFromCashbackOperator = cashbackControllerFromOwner.connect(cashbackOperator);
   });
 
   describe("Method 'initialize()'", () => {
@@ -177,18 +181,21 @@ describe("Contract 'CashbackController'", () => {
       expect(await deployedContract.OWNER_ROLE()).to.equal(OWNER_ROLE);
       expect(await deployedContract.GRANTOR_ROLE()).to.equal(GRANTOR_ROLE);
       expect(await deployedContract.HOOK_TRIGGER_ROLE()).to.equal(HOOK_TRIGGER_ROLE);
+      expect(await deployedContract.CASHBACK_OPERATOR_ROLE()).to.equal(CASHBACK_OPERATOR_ROLE);
     });
 
     it("should set correct role admins", async () => {
       expect(await deployedContract.getRoleAdmin(OWNER_ROLE)).to.equal(OWNER_ROLE);
       expect(await deployedContract.getRoleAdmin(GRANTOR_ROLE)).to.equal(OWNER_ROLE);
       expect(await deployedContract.getRoleAdmin(HOOK_TRIGGER_ROLE)).to.equal(GRANTOR_ROLE);
+      expect(await deployedContract.getRoleAdmin(CASHBACK_OPERATOR_ROLE)).to.equal(OWNER_ROLE);
     });
 
     it("should set correct roles for the deployer", async () => {
       expect(await deployedContract.hasRole(OWNER_ROLE, deployer.address)).to.eq(true);
       expect(await deployedContract.hasRole(GRANTOR_ROLE, deployer.address)).to.eq(false);
       expect(await deployedContract.hasRole(HOOK_TRIGGER_ROLE, deployer.address)).to.eq(false);
+      expect(await deployedContract.hasRole(CASHBACK_OPERATOR_ROLE, deployer.address)).to.eq(false);
     });
 
     it("should set correct underlying token address", async () => {
@@ -476,6 +483,128 @@ describe("Contract 'CashbackController'", () => {
 
         await expect(cashbackControllerFromOwner.setCashbackVault(await defaultTokenCashbackVaults[0].getAddress()))
           .to.be.revertedWithCustomError(cashbackController, "CashbackController_CashbackVaultUnchanged");
+      });
+    });
+  });
+
+  describe("Method 'correctCashbackAmount()'", () => {
+    const baseAmount = 100n * DIGITS_COEF;
+    const cashbackRate = 100n;
+    const cashbackAmount = cashbackRate * baseAmount / CASHBACK_FACTOR;
+    beforeEach(async () => {
+      await setUpFixture(async function setUpTreasury() {
+        await cashbackControllerFromOwner.setCashbackTreasury(treasury.address);
+      });
+      const paymentHookData: Payment = {
+        baseAmount,
+        subsidyLimit: 100n,
+        status: 1n,
+        payer: payer.address,
+        cashbackRate,
+        confirmedAmount: 0n,
+        sponsor: ethers.ZeroAddress,
+        extraAmount: 0n,
+        refundAmount: 0n,
+      };
+      await cashbackControllerFromHookTrigger.afterPaymentMade(
+        paymentId("id1"),
+        EMPTY_PAYMENT,
+        paymentHookData,
+      );
+    });
+    describe("Should revert if", () => {
+      it("the caller does not have the required role", async () => {
+        await expect(cashbackControllerFromStranger.correctCashbackAmount(paymentId("id1"), cashbackAmount))
+          .to.be.revertedWithCustomError(cashbackControllerFromStranger, "AccessControlUnauthorizedAccount")
+          .withArgs(stranger.address, CASHBACK_OPERATOR_ROLE);
+      });
+    });
+    describe("Should execute as expected when", () => {
+      describe("cashback amount is increased", () => {
+        let tx: TransactionResponse;
+        const newCashbackAmount = cashbackAmount + 10n * DIGITS_COEF;
+        beforeEach(async () => {
+          tx = await cashbackControllerFromCashbackOperator.correctCashbackAmount(paymentId("id1"), newCashbackAmount);
+        });
+
+        it("should emit the required event", async () => {
+          await expect(tx).to.emit(cashbackController, "CashbackIncreased")
+            .withArgs(paymentId("id1"), payer.address, CashbackStatus.Success, cashbackAmount, newCashbackAmount);
+        });
+
+        it("should store the cashback state", async () => {
+          const operationState = resultToObject(await cashbackController
+            .getPaymentCashbackState(paymentId("id1")));
+          checkEquality(operationState, {
+            sentAmount: newCashbackAmount,
+            account: payer.address,
+          });
+        });
+      });
+
+      describe("cashback amount is decreased", () => {
+        let tx: TransactionResponse;
+        const newCashbackAmount = cashbackAmount - 10n * DIGITS_COEF;
+        beforeEach(async () => {
+          tx = await cashbackControllerFromCashbackOperator.correctCashbackAmount(paymentId("id1"), newCashbackAmount);
+        });
+
+        it("should emit the required event", async () => {
+          await expect(tx).to.emit(cashbackController, "CashbackRevoked")
+            .withArgs(paymentId("id1"), payer.address, CashbackStatus.Success, cashbackAmount, newCashbackAmount);
+        });
+
+        it("should store the cashback state", async () => {
+          const operationState = resultToObject(await cashbackController
+            .getPaymentCashbackState(paymentId("id1")));
+          checkEquality(operationState, {
+            sentAmount: newCashbackAmount,
+            account: payer.address,
+          });
+        });
+      });
+
+      describe("cashback amount is set to zero", () => {
+        let tx: TransactionResponse;
+        const newCashbackAmount = 0n;
+        beforeEach(async () => {
+          tx = await cashbackControllerFromCashbackOperator.correctCashbackAmount(paymentId("id1"), newCashbackAmount);
+        });
+
+        it("should emit the required event", async () => {
+          await expect(tx).to.emit(cashbackController, "CashbackRevoked")
+            .withArgs(paymentId("id1"), payer.address, CashbackStatus.Success, cashbackAmount, newCashbackAmount);
+        });
+
+        it("should store the cashback state", async () => {
+          const operationState = resultToObject(await cashbackController
+            .getPaymentCashbackState(paymentId("id1")));
+          checkEquality(operationState, {
+            sentAmount: newCashbackAmount,
+            account: payer.address,
+          });
+        });
+      });
+
+      describe("cashback amount is same as the current amount", () => {
+        let tx: TransactionResponse;
+        beforeEach(async () => {
+          tx = await cashbackControllerFromCashbackOperator.correctCashbackAmount(paymentId("id1"), cashbackAmount);
+        });
+
+        it("should not emit the required event", async () => {
+          await expect(tx).to.not.emit(cashbackController, "CashbackRevoked");
+          await expect(tx).to.not.emit(cashbackController, "CashbackIncreased");
+        });
+
+        it("should store the cashback state", async () => {
+          const operationState = resultToObject(await cashbackController
+            .getPaymentCashbackState(paymentId("id1")));
+          checkEquality(operationState, {
+            sentAmount: cashbackAmount,
+            account: payer.address,
+          });
+        });
       });
     });
   });

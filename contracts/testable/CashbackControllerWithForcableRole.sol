@@ -15,6 +15,7 @@ contract CashbackControllerWithForcableRole is CashbackController {
         $.token = token_;
 
         _setRoleAdmin(HOOK_TRIGGER_ROLE, GRANTOR_ROLE);
+        _setRoleAdmin(CASHBACK_OPERATOR_ROLE, OWNER_ROLE);
         _grantRole(OWNER_ROLE, _msgSender());
     }
     function forceHookTriggerRole(address account) public {
