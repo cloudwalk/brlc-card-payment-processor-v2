@@ -19,6 +19,7 @@ import { IAfterPaymentUpdatedHook } from "./hookable/interfaces/ICardPaymentProc
 import { IAfterPaymentCanceledHook } from "./hookable/interfaces/ICardPaymentProcessorHooks.sol";
 import { ICardPaymentProcessor } from "./interfaces/ICardPaymentProcessor.sol";
 import { ICashbackVault } from "./interfaces/ICashbackVault.sol";
+import { ICardPaymentProcessorHook } from "./hookable/interfaces/ICardPaymentProcessorHooks.sol";
 
 contract CashbackController is
     ICashbackControllerStorageLayout,
@@ -270,7 +271,11 @@ contract CashbackController is
 
     // ------------------ View functions -------------------------- //
 
-    function supportsHookMethod(bytes4 methodSelector) external pure returns (bool) {
+    /**
+     * @inheritdoc ICardPaymentProcessorHook
+     * @dev Restricted to {HOOK_TRIGGER_ROLE} so only validated CPP contracts can register this hook.
+     */
+    function supportsHookMethod(bytes4 methodSelector) external view onlyRole(HOOK_TRIGGER_ROLE) returns (bool) {
         return
             methodSelector == IAfterPaymentMadeHook.afterPaymentMade.selector ||
             methodSelector == IAfterPaymentUpdatedHook.afterPaymentUpdated.selector ||
@@ -468,6 +473,9 @@ contract CashbackController is
         state.totalAmount = uint72(uint256(state.totalAmount) - amount);
     }
 
+    /**
+     * @dev Adds extra validation for {HOOK_TRIGGER_ROLE}; only compatible CPP contracts with the same token are allowed.
+     */
     function _grantRole(bytes32 role, address account) internal virtual override returns (bool) {
         if (role == HOOK_TRIGGER_ROLE) {
             CashbackControllerStorage storage $ = _getCashbackControllerStorage();
