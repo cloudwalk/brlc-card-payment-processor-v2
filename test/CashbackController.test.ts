@@ -2,7 +2,7 @@
 
 import { ethers, upgrades } from "hardhat";
 import { expect } from "chai";
-import { Typed } from "ethers";
+import { Contract, Typed } from "ethers";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 
 import { TransactionResponse } from "ethers";
@@ -33,8 +33,10 @@ describe("Contract 'CashbackController'", () => {
   const MANAGER_ROLE = ethers.id("MANAGER_ROLE");
 
   let cashbackControllerFactory: Contracts.CashbackController__factory;
+  let cashbackControllerFactoryWithForcableRole: Contracts.CashbackControllerWithForcableRole__factory;
   let tokenMockFactory: Contracts.ERC20TokenMock__factory;
   let cashbackVaultFactory: Contracts.CashbackVault__factory;
+  let cardPaymentProcessorFactory: Contracts.CardPaymentProcessor__factory;
 
   let cashbackController: Contracts.CashbackController;
   let cashbackControllerFromOwner: Contracts.CashbackController;
@@ -85,8 +87,17 @@ describe("Contract 'CashbackController'", () => {
     return tokenMockDeployment;
   }
 
-  async function deployCashbackController(tokenMock: Contracts.ERC20TokenMock) {
+  async function deployRegularCashbackController(tokenMock: Contracts.ERC20TokenMock) {
     const cashbackController = await upgrades.deployProxy(cashbackControllerFactory, [await tokenMock.getAddress()]);
+    await cashbackController.waitForDeployment();
+    return cashbackController;
+  }
+
+  async function deployCashbackControllerWithForcableRole(tokenMock: Contracts.ERC20TokenMock) {
+    const cashbackController = await upgrades.deployProxy(
+      cashbackControllerFactoryWithForcableRole,
+      [await tokenMock.getAddress()],
+    );
     await cashbackController.waitForDeployment();
     return cashbackController;
   }
@@ -97,18 +108,26 @@ describe("Contract 'CashbackController'", () => {
     return cashbackVault;
   }
 
-  async function deployContracts() {
+  async function deployTestableContracts() {
     const tokenMock = await deployTokenMock();
-    const cashbackController = await deployCashbackController(tokenMock);
+    const cashbackController = await deployCashbackControllerWithForcableRole(tokenMock);
 
     return { cashbackController, tokenMock };
   }
-  async function configureContracts(
-    cashbackController: Contracts.CashbackController,
+
+  async function deployContractsWithRegularCashbackController() {
+    const tokenMock = await deployTokenMock();
+    const cashbackController = await deployRegularCashbackController(tokenMock);
+
+    return { cashbackController, tokenMock };
+  }
+
+  async function configureTestableContracts(
+    cashbackController: Contracts.CashbackControllerWithForcableRole,
     tokenMock: Contracts.ERC20TokenMock,
   ) {
     await cashbackController.grantRole(GRANTOR_ROLE, deployer.address);
-    await cashbackController.grantRole(HOOK_TRIGGER_ROLE, hookTrigger.address);
+    await cashbackController.forceHookTriggerRole(hookTrigger.address);
 
     await tokenMock.mint(treasury.address, INITIAL_TREASURY_BALANCE);
     await tokenMock.connect(treasury).approve(await cashbackController.getAddress(), ethers.MaxUint256);
@@ -116,8 +135,8 @@ describe("Contract 'CashbackController'", () => {
   }
 
   async function deployAndConfigureContracts() {
-    const contracts = await deployContracts();
-    await configureContracts(contracts.cashbackController, contracts.tokenMock);
+    const contracts = await deployTestableContracts();
+    await configureTestableContracts(contracts.cashbackController, contracts.tokenMock);
     return contracts;
   }
 
@@ -127,6 +146,10 @@ describe("Contract 'CashbackController'", () => {
     // Contract factories with the explicitly specified deployer account
     cashbackControllerFactory = await ethers.getContractFactory("CashbackController");
     cashbackControllerFactory = cashbackControllerFactory.connect(deployer);
+    cashbackControllerFactoryWithForcableRole = await ethers.getContractFactory("CashbackControllerWithForcableRole");
+    cashbackControllerFactoryWithForcableRole = cashbackControllerFactoryWithForcableRole.connect(deployer);
+    cardPaymentProcessorFactory = await ethers.getContractFactory("CardPaymentProcessor");
+    cardPaymentProcessorFactory = cardPaymentProcessorFactory.connect(deployer);
     tokenMockFactory = await ethers.getContractFactory("ERC20TokenMock");
     tokenMockFactory = tokenMockFactory.connect(deployer);
     cashbackVaultFactory = await ethers.getContractFactory("CashbackVault");
@@ -146,7 +169,7 @@ describe("Contract 'CashbackController'", () => {
 
     beforeEach(async () => {
       // deploying contract without configuration to test the default state
-      const contracts = await setUpFixture(deployContracts);
+      const contracts = await setUpFixture(deployContractsWithRegularCashbackController);
       deployedContract = contracts.cashbackController;
     });
 
@@ -191,6 +214,47 @@ describe("Contract 'CashbackController'", () => {
         await expect(tx)
           .to.be.revertedWithCustomError(cashbackControllerFactory, "CashbackController_TokenAddressZero");
       });
+    });
+  });
+
+  describe("Method 'grantRole()' with HOOK_TRIGGER_ROLE role", () => {
+    let deployedContract: Contracts.CashbackController;
+    let specificTokenMock: Contracts.ERC20TokenMock;
+
+    beforeEach(async () => {
+      // deploying contract without configuration to test the default state
+      const contracts = await setUpFixture(deployContractsWithRegularCashbackController);
+      deployedContract = contracts.cashbackController;
+      specificTokenMock = contracts.tokenMock;
+      await deployedContract.grantRole(GRANTOR_ROLE, deployer.address);
+    });
+
+    it("should grant the role to the CardPaymentProcessor with the correct underlying token", async () => {
+      const cardPaymentProcessor =
+        await upgrades.deployProxy(cardPaymentProcessorFactory, [await specificTokenMock.getAddress()]);
+
+      await expect(deployedContract.grantRole(HOOK_TRIGGER_ROLE, await cardPaymentProcessor.getAddress()))
+        .to.emit(deployedContract, "RoleGranted")
+        .withArgs(HOOK_TRIGGER_ROLE, await cardPaymentProcessor.getAddress(), deployer.address);
+    });
+    describe("Should revert if", async () => {
+      it("provided account is EOA", async () => {
+        await expect(deployedContract.grantRole(HOOK_TRIGGER_ROLE, stranger.address))
+          .to.be.revertedWithCustomError(deployedContract, "CashbackController_HookTriggerRoleIncompatible");
+      });
+
+      it("provided account is contract but not a CardPaymentProcessor", async () => {
+        await expect(deployedContract.grantRole(HOOK_TRIGGER_ROLE, tokenMock.getAddress()))
+          .to.be.revertedWithCustomError(deployedContract, "CashbackController_HookTriggerRoleIncompatible");
+      });
+
+      it("provided account is CardPaymentProcessor but the underlying token mismatches the controller token",
+        async () => {
+          const cardPaymentProcessor =
+            await upgrades.deployProxy(cardPaymentProcessorFactory, [await tokenMock.getAddress()]);
+          await expect(deployedContract.grantRole(HOOK_TRIGGER_ROLE, await cardPaymentProcessor.getAddress()))
+            .to.be.revertedWithCustomError(deployedContract, "CashbackController_HookTriggerRoleIncompatible");
+        });
     });
   });
   describe("Method 'upgradeToAndCall()'", () => {

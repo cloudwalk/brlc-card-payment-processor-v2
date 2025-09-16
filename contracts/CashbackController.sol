@@ -79,7 +79,7 @@ contract CashbackController is
      *
      * @param token_ The address of the token to set as the underlying one.
      */
-    function initialize(address token_) external initializer {
+    function initialize(address token_) external virtual initializer {
         __AccessControlExt_init_unchained();
         __Rescuable_init_unchained();
         __UUPSExt_init_unchained(); // This is needed only to avoid errors during coverage assessment
@@ -471,6 +471,9 @@ contract CashbackController is
     function _grantRole(bytes32 role, address account) internal virtual override returns (bool) {
         if (role == HOOK_TRIGGER_ROLE) {
             CashbackControllerStorage storage $ = _getCashbackControllerStorage();
+            if (account.code.length == 0) {
+                revert CashbackController_HookTriggerRoleIncompatible();
+            }
             try ICardPaymentProcessor(account).proveCardPaymentProcessor() {} catch {
                 revert CashbackController_HookTriggerRoleIncompatible();
             }
