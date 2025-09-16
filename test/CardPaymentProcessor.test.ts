@@ -4771,7 +4771,12 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
       );
       await cashbackVault.grantRole(MANAGER_ROLE, deployer.address);
       await cardPaymentProcessorShell.cashbackControllerContract.setCashbackVault(await cashbackVault.getAddress());
-      const payment = { ...context.payments[0] };
+      const payment = {
+        ...context.payments[0],
+        baseAmount: 10000 * DIGITS_COEF,
+        extraAmount: 4000 * DIGITS_COEF,
+        cashbackRate: 100,
+      };
       const payer = payment.payer;
 
       await cardPaymentProcessorShell.makePaymentFor(payment);

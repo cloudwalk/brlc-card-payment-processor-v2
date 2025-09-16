@@ -8,7 +8,7 @@
 | 2 | deployer | cashbackVault | grantRole | [0xb9c949ce..0c572ffcc2, cashbackController] |
 | 3 | deployer | cashbackVault | grantRole | [0x241ecf16..7caa831b08, deployer] |
 | 4 | deployer | cashbackController | setCashbackVault | [cashbackVault] |
-| 5 | executor | cpp | makePaymentFor | [0x00000000..0000000001, payer, 123456789, 132456788, ZERO_ADDR, 0, -1, 0] |
+| 5 | executor | cpp | makePaymentFor | [0x00000000..0000000001, payer, 10000000000, 4000000000, ZERO_ADDR, 0, -1, 0] |
 | 6 | executor | cpp | refundPayment | [0x00000000..0000000001, 100000000] |
 | 7 | deployer | cashbackVault | claim | [payer, 1000000] |
 | 8 | executor | cpp | revokePayment | [0x00000000..0000000001] |
@@ -41,10 +41,10 @@ sequenceDiagram
   end
   rect rgb(230,255,230)
     executor->>cpp: executor calls cpp.makePaymentFor
-    payer-->>cpp: brlc.Transfer: payer -> cpp (255913577)
+    payer-->>cpp: brlc.Transfer: payer -> cpp (14000000000)
     Note over cpp: cpp.PaymentMade
-    cashbackTreasury-->>cashbackController: brlc.Transfer: cashbackTreasury -> cashbackController (12350000)
-    cashbackController-->>cashbackVault: brlc.Transfer: cashbackController -> cashbackVault (12350000)
+    cashbackTreasury-->>cashbackController: brlc.Transfer: cashbackTreasury -> cashbackController (300000000)
+    cashbackController-->>cashbackVault: brlc.Transfer: cashbackController -> cashbackVault (300000000)
     Note over cashbackVault: cashbackVault.CashbackGranted
     Note over cashbackController: cashbackController.CashbackSent
   end
@@ -52,10 +52,7 @@ sequenceDiagram
     executor->>cpp: executor calls cpp.refundPayment
     cpp-->>payer: brlc.Transfer: cpp -> payer (100000000)
     Note over cpp: cpp.PaymentRefunded
-    cashbackVault-->>cashbackController: brlc.Transfer: cashbackVault -> cashbackController (10000000)
-    Note over cashbackVault: cashbackVault.CashbackRevoked
-    cashbackController-->>cashbackTreasury: brlc.Transfer: cashbackController -> cashbackTreasury (10000000)
-    Note over cashbackController: cashbackController.CashbackRevoked
+    Note over cashbackController: cashbackController.CashbackIncreased
   end
   rect rgb(230,255,230)
     deployer->>cashbackVault: deployer calls cashbackVault.claim
@@ -64,12 +61,12 @@ sequenceDiagram
   end
   rect rgb(230,255,230)
     executor->>cpp: executor calls cpp.revokePayment
-    cpp-->>payer: brlc.Transfer: cpp -> payer (155913577)
+    cpp-->>payer: brlc.Transfer: cpp -> payer (13900000000)
     Note over cpp: cpp.PaymentRevoked
-    cashbackVault-->>cashbackController: brlc.Transfer: cashbackVault -> cashbackController (1350000)
+    cashbackVault-->>cashbackController: brlc.Transfer: cashbackVault -> cashbackController (299000000)
     Note over cashbackVault: cashbackVault.CashbackRevoked
     payer-->>cashbackController: brlc.Transfer: payer -> cashbackController (1000000)
-    cashbackController-->>cashbackTreasury: brlc.Transfer: cashbackController -> cashbackTreasury (2350000)
+    cashbackController-->>cashbackTreasury: brlc.Transfer: cashbackController -> cashbackTreasury (300000000)
     Note over cashbackController: cashbackController.CashbackRevoked
   end
 ```
@@ -218,8 +215,8 @@ sequenceDiagram
 - **args**: `{
   "paymentId": "0x00000000..0000000001",
   "payer": "payer",
-  "baseAmount": "123456789",
-  "extraAmount": "132456788",
+  "baseAmount": "10000000000",
+  "extraAmount": "4000000000",
   "sponsor": "ZERO_ADDR",
   "subsidyLimit": "0",
   "cashbackRate_": "-1",
@@ -230,27 +227,27 @@ sequenceDiagram
 
 | # | Contract | Event | Args |
 | - | -------- | ----- | ---- |
-| 1 | brlc | Transfer | `[payer, cpp, 255913577]` |
-| 2 | cpp | PaymentMade | `[0x00000000..0000000001, payer, 0x01000000..000f40ee69]` |
-| 3 | brlc | Transfer | `[cashbackTreasury, cashbackController, 12350000]` |
-| 4 | brlc | Transfer | `[cashbackController, cashbackVault, 12350000]` |
-| 5 | cashbackVault | CashbackGranted | `[payer, cashbackController, 12350000, 12350000]` |
-| 6 | cashbackController | CashbackSent | `[0x00000000..0000000001, payer, 1, 12350000]` |
+| 1 | brlc | Transfer | `[payer, cpp, 14000000000]` |
+| 2 | cpp | PaymentMade | `[0x00000000..0000000001, payer, 0x01000000..0342770c00]` |
+| 3 | brlc | Transfer | `[cashbackTreasury, cashbackController, 300000000]` |
+| 4 | brlc | Transfer | `[cashbackController, cashbackVault, 300000000]` |
+| 5 | cashbackVault | CashbackGranted | `[payer, cashbackController, 300000000, 300000000]` |
+| 6 | cashbackController | CashbackSent | `[0x00000000..0000000001, payer, 2, 300000000]` |
 
 **Balances**
 
 **Token:** brlc
 | Holder | Balance |
 | ------ | ------- |
-| cpp | 255913577 |
-| cashbackVault | 12350000 |
+| cpp | 14000000000 |
+| cashbackVault | 300000000 |
 | cashbackController | 0 |
 | brlc | 0 |
-| payer | 999744086423 |
+| payer | 986000000000 |
 | deployer | 0 |
 | executor | 0 |
 | sponsor | 2000000000000 |
-| cashbackTreasury | 57896044618658097711785492504343953926634992332820282019728792003956552469967 |
+| cashbackTreasury | 57896044618658097711785492504343953926634992332820282019728792003956264819967 |
 | cashOutAccount | 0 |
 
 
@@ -271,25 +268,22 @@ sequenceDiagram
 | - | -------- | ----- | ---- |
 | 1 | brlc | Transfer | `[cpp, payer, 100000000]` |
 | 2 | cpp | PaymentRefunded | `[0x00000000..0000000001, payer, 0x01000000..0005f5e100]` |
-| 3 | brlc | Transfer | `[cashbackVault, cashbackController, 10000000]` |
-| 4 | cashbackVault | CashbackRevoked | `[payer, cashbackController, 10000000, 2350000]` |
-| 5 | brlc | Transfer | `[cashbackController, cashbackTreasury, 10000000]` |
-| 6 | cashbackController | CashbackRevoked | `[0x00000000..0000000001, payer, 1, 12350000, 2350000]` |
+| 3 | cashbackController | CashbackIncreased | `[0x00000000..0000000001, payer, 3, 300000000, 300000000]` |
 
 **Balances**
 
 **Token:** brlc
 | Holder | Balance |
 | ------ | ------- |
-| cpp | 155913577 |
-| cashbackVault | 2350000 |
+| cpp | 13900000000 |
+| cashbackVault | 300000000 |
 | cashbackController | 0 |
 | brlc | 0 |
-| payer | 999844086423 |
+| payer | 986100000000 |
 | deployer | 0 |
 | executor | 0 |
 | sponsor | 2000000000000 |
-| cashbackTreasury | 57896044618658097711785492504343953926634992332820282019728792003956562469967 |
+| cashbackTreasury | 57896044618658097711785492504343953926634992332820282019728792003956264819967 |
 | cashOutAccount | 0 |
 
 
@@ -309,22 +303,22 @@ sequenceDiagram
 | # | Contract | Event | Args |
 | - | -------- | ----- | ---- |
 | 1 | brlc | Transfer | `[cashbackVault, payer, 1000000]` |
-| 2 | cashbackVault | CashbackClaimed | `[payer, deployer, 1000000, 1350000]` |
+| 2 | cashbackVault | CashbackClaimed | `[payer, deployer, 1000000, 299000000]` |
 
 **Balances**
 
 **Token:** brlc
 | Holder | Balance |
 | ------ | ------- |
-| cpp | 155913577 |
-| cashbackVault | 1350000 |
+| cpp | 13900000000 |
+| cashbackVault | 299000000 |
 | cashbackController | 0 |
 | brlc | 0 |
-| payer | 999845086423 |
+| payer | 986101000000 |
 | deployer | 0 |
 | executor | 0 |
 | sponsor | 2000000000000 |
-| cashbackTreasury | 57896044618658097711785492504343953926634992332820282019728792003956562469967 |
+| cashbackTreasury | 57896044618658097711785492504343953926634992332820282019728792003956264819967 |
 | cashOutAccount | 0 |
 
 
@@ -342,13 +336,13 @@ sequenceDiagram
 
 | # | Contract | Event | Args |
 | - | -------- | ----- | ---- |
-| 1 | brlc | Transfer | `[cpp, payer, 155913577]` |
-| 2 | cpp | PaymentRevoked | `[0x00000000..0000000001, payer, 0x01000000..00094b0d69]` |
-| 3 | brlc | Transfer | `[cashbackVault, cashbackController, 1350000]` |
-| 4 | cashbackVault | CashbackRevoked | `[payer, cashbackController, 1350000, 0]` |
+| 1 | brlc | Transfer | `[cpp, payer, 13900000000]` |
+| 2 | cpp | PaymentRevoked | `[0x00000000..0000000001, payer, 0x01000000..033c812b00]` |
+| 3 | brlc | Transfer | `[cashbackVault, cashbackController, 299000000]` |
+| 4 | cashbackVault | CashbackRevoked | `[payer, cashbackController, 299000000, 0]` |
 | 5 | brlc | Transfer | `[payer, cashbackController, 1000000]` |
-| 6 | brlc | Transfer | `[cashbackController, cashbackTreasury, 2350000]` |
-| 7 | cashbackController | CashbackRevoked | `[0x00000000..0000000001, payer, 1, 2350000, 0]` |
+| 6 | brlc | Transfer | `[cashbackController, cashbackTreasury, 300000000]` |
+| 7 | cashbackController | CashbackRevoked | `[0x00000000..0000000001, payer, 1, 300000000, 0]` |
 
 **Balances**
 
