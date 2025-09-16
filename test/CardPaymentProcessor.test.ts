@@ -4736,4 +4736,51 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
       });
     });
   });
+
+  describe("Scenarios", () => {
+    it.only("CC and CV scenarios", async () => {
+      const context = await beforeMakingPayments();
+      const cardPaymentProcessorShell = context.cardPaymentProcessorShell;
+      const tokenMock = context.tokenMock as unknown as Contracts.ERC20TokenMock;
+
+      const cashbackVaultFactory = await ethers.getContractFactory("CashbackVault");
+      const cashbackVault = await upgrades.deployProxy(cashbackVaultFactory, [getAddress(context.tokenMock)]);
+      await cashbackVault.waitForDeployment();
+      await expect.startScenario({
+        accounts: {
+          payer: context.payments[0].payer.address,
+          deployer: deployer.address,
+          executor: executor.address,
+          sponsor: sponsor.address,
+          cashbackTreasury: context.cashbackTreasury.address,
+          cashOutAccount: context.cashOutAccount.address,
+        },
+        contracts: {
+          cpp: cardPaymentProcessorShell.contract,
+          cashbackVault,
+          cashbackController: cardPaymentProcessorShell.cashbackControllerContract,
+        },
+        tokens: {
+          brlc: tokenMock,
+        },
+      });
+      await cashbackVault.grantRole(GRANTOR_ROLE, deployer.address);
+      await cashbackVault.grantRole(
+        CASHBACK_OPERATOR_ROLE,
+        await cardPaymentProcessorShell.cashbackControllerContract.getAddress(),
+      );
+      await cashbackVault.grantRole(MANAGER_ROLE, deployer.address);
+      await cardPaymentProcessorShell.cashbackControllerContract.setCashbackVault(await cashbackVault.getAddress());
+      const payment = { ...context.payments[0] };
+      const payer = payment.payer;
+
+      await cardPaymentProcessorShell.makePaymentFor(payment);
+      await cardPaymentProcessorShell.refundPayment(payment, 100 * DIGITS_COEF);
+      const cashbackAmount =
+        cardPaymentProcessorShell.model.getCashbackTotalForAccount(payer.address);
+      await cashbackVault.claim(payer.address, cashbackAmount / 2);
+      await cardPaymentProcessorShell.revokePayment(payment);
+      await expect.endScenario();
+    });
+  });
 });
