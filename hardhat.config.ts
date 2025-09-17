@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 import { HardhatUserConfig } from "hardhat/config";
 import type { HardhatRuntimeEnvironment } from "hardhat/types";
-import { expect } from "chai";
+import { expect, use } from "chai";
 import "@nomicfoundation/hardhat-toolbox";
 import "@openzeppelin/hardhat-upgrades";
 import "hardhat-contract-sizer";
@@ -62,13 +62,12 @@ const config: HardhatUserConfig = {
         // we need that function because "@cloudwalk/chainshot" is an optional dependency
         // and we want to avoid errors if it's not installed
         try {
-          const { chainShotHardhatPlugin } = require("@cloudwalk/chainshot") as typeof import("@cloudwalk/chainshot");
-          chainShotHardhatPlugin(require("hardhat") as HardhatRuntimeEnvironment);
+          const { chainShotChaiPlugin } = require("@cloudwalk/chainshot") as typeof import("@cloudwalk/chainshot");
+          use(chainShotChaiPlugin(require("hardhat") as HardhatRuntimeEnvironment));
         } catch {
           async function noop() {
             return;
           }
-          console.log("chainShotHardhatPlugin not installed");
           expect.startScenario = noop;
           expect.endScenario = noop;
         }
