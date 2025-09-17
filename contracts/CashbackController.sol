@@ -369,20 +369,22 @@ contract CashbackController is
         (status, increasedAmount) = _processAccountCashbackWithCap(paymentCashback.account, desiredAmount);
 
         // if it is not capped, we can try to transfer funds
-        if (status != PaymentCashbackStatus.Capped) {
-            if (IERC20($.token).balanceOf($.cashbackTreasury) < increasedAmount) {
-                status = PaymentCashbackStatus.OutOfFunds;
-                increasedAmount = 0;
-                // restore account cashback state to previous state if we failed to increase cashback
-                $.accountCashbackStates[paymentCashback.account] = oldAccountCashbackState;
-            } else {
-                IERC20($.token).transferFrom($.cashbackTreasury, address(this), increasedAmount);
+        if (status == PaymentCashbackStatus.Capped) {
+            return (status, increasedAmount);
+        }
 
-                if ($.cashbackVault != address(0)) {
-                    ICashbackVault($.cashbackVault).grantCashback(paymentCashback.account, uint64(increasedAmount));
-                } else {
-                    IERC20($.token).transfer(paymentCashback.account, increasedAmount);
-                }
+        if (IERC20($.token).balanceOf($.cashbackTreasury) < increasedAmount) {
+            status = PaymentCashbackStatus.OutOfFunds;
+            increasedAmount = 0;
+            // restore account cashback state to previous state if we failed to increase cashback
+            $.accountCashbackStates[paymentCashback.account] = oldAccountCashbackState;
+        } else {
+            IERC20($.token).transferFrom($.cashbackTreasury, address(this), increasedAmount);
+
+            if ($.cashbackVault != address(0)) {
+                ICashbackVault($.cashbackVault).grantCashback(paymentCashback.account, uint64(increasedAmount));
+            } else {
+                IERC20($.token).transfer(paymentCashback.account, increasedAmount);
             }
         }
         paymentCashback.sentAmount += uint64(increasedAmount);
@@ -408,7 +410,7 @@ contract CashbackController is
             IERC20($.token).transferFrom(paymentCashback.account, address(this), accountRevocationAmount);
         }
 
-        IERC20($.token).transfer($.cashbackTreasury, vaultRevocationAmount + accountRevocationAmount);
+        IERC20($.token).transfer($.cashbackTreasury, desiredAmount);
         _reduceTotalCashback(paymentCashback.account, desiredAmount);
         revokedAmount = desiredAmount;
 
@@ -475,8 +477,8 @@ contract CashbackController is
             capPeriodStartAmount = totalAmount;
         }
 
-        state.totalAmount = uint72(totalAmount) + uint72(acceptedAmount);
-        state.capPeriodStartAmount = uint72(capPeriodStartAmount);
+        state.totalAmount = uint64(totalAmount) + uint64(acceptedAmount);
+        state.capPeriodStartAmount = uint64(capPeriodStartAmount);
         state.capPeriodStartTime = uint32(capPeriodStartTime);
     }
 
@@ -484,7 +486,7 @@ contract CashbackController is
     function _reduceTotalCashback(address account, uint256 amount) internal {
         CashbackControllerStorage storage $ = _getCashbackControllerStorage();
         AccountCashbackState storage state = $.accountCashbackStates[account];
-        state.totalAmount = uint72(uint256(state.totalAmount) - amount);
+        state.totalAmount = uint64(uint256(state.totalAmount) - amount);
     }
 
     /**

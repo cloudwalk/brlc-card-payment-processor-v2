@@ -47,10 +47,10 @@ interface ICashbackControllerTypes {
      */
     struct AccountCashbackState {
         // Slot 1
-        uint72 totalAmount;
-        uint72 capPeriodStartAmount;
+        uint64 totalAmount;
+        uint64 capPeriodStartAmount;
         uint32 capPeriodStartTime;
-        // uint80 __reserved; // Reserved until the end of the storage slot
+        // uint96 __reserved; // Reserved until the end of the storage slot
     }
     /** @dev The cashback-related data of a single payment.
      *
