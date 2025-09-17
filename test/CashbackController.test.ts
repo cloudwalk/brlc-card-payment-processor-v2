@@ -188,7 +188,7 @@ describe("Contract 'CashbackController'", () => {
       expect(await deployedContract.getRoleAdmin(OWNER_ROLE)).to.equal(OWNER_ROLE);
       expect(await deployedContract.getRoleAdmin(GRANTOR_ROLE)).to.equal(OWNER_ROLE);
       expect(await deployedContract.getRoleAdmin(HOOK_TRIGGER_ROLE)).to.equal(GRANTOR_ROLE);
-      expect(await deployedContract.getRoleAdmin(CASHBACK_OPERATOR_ROLE)).to.equal(OWNER_ROLE);
+      expect(await deployedContract.getRoleAdmin(CASHBACK_OPERATOR_ROLE)).to.equal(GRANTOR_ROLE);
     });
 
     it("should set correct roles for the deployer", async () => {

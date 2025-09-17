@@ -101,7 +101,7 @@ contract CashbackController is
         $.token = token_;
 
         _setRoleAdmin(HOOK_TRIGGER_ROLE, GRANTOR_ROLE);
-        _setRoleAdmin(CASHBACK_OPERATOR_ROLE, OWNER_ROLE);
+        _setRoleAdmin(CASHBACK_OPERATOR_ROLE, GRANTOR_ROLE);
         _grantRole(OWNER_ROLE, _msgSender());
     }
 
