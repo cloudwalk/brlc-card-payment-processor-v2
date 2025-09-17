@@ -2,7 +2,7 @@
 
 import { ethers, upgrades } from "hardhat";
 import { expect } from "chai";
-import { Contract, Typed } from "ethers";
+import { Typed } from "ethers";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 
 import { TransactionResponse } from "ethers";
