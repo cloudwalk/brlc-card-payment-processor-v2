@@ -45,7 +45,7 @@ interface ICardPaymentProcessorTypes {
      * - reserve2 --------- The reserved field for future changes.
      * - baseAmount ------- The base amount of tokens in the payment.
      * - extraAmount ------ The extra amount of tokens in the payment, without a cashback.
-     * - gap_cashbackAmount deprecated.
+     * - reserve3 --------- The deprecated field.
      * - refundAmount ----- The total amount of all refunds related to the payment.
      *
      *  The following additional payment parameters can be derived from the structure fields:

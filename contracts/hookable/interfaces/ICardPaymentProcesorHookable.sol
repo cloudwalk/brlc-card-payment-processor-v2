@@ -53,21 +53,4 @@ interface ICardPaymentProcessorHookable is ICardPaymentProcessorHookTypes {
      * @param proof The proof of the unregistration.
      */
     function unregisterHook(address hookAddress, bytes32 proof) external;
-
-    // ------------------ View functions -------------------------- //
-
-    // /**
-    //  * @dev Returns all hooks registered for afterPaymentMade capability.
-    //  */
-    // function getAfterPaymentMadeHooks() external view returns (address[] memory);
-
-    // /**
-    //  * @dev Returns all hooks registered for afterPaymentUpdated capability.
-    //  */
-    // function getAfterPaymentUpdatedHooks() external view returns (address[] memory);
-
-    // /**
-    //  * @dev Returns all hooks registered for afterPaymentCanceled capability.
-    //  */
-    // function getAfterPaymentCanceledHooks() external view returns (address[] memory);
 }

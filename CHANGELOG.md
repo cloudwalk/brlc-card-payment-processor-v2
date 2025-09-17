@@ -35,9 +35,9 @@ Claimable cashback:  CashbackTreasury <=> CashbackController <=> CashbackVault <
 - `HookUnregistered(address hookAddress, bytes4 hookMethod)`
 - `CashbackVaultUpdated(address cashbackVault)`
 - `CashbackTreasuryChanged(address oldTreasury, address newTreasury)`
-- `CashbackSent(bytes32 indexed paymentId, address indexed recipient, CashbackOperationStatus indexed status, uint256 amount)`
-- `CashbackIncreased(bytes32 indexed paymentId, address indexed recipient, CashbackOperationStatus indexed status, uint256 oldCashbackAmount, uint256 newCashbackAmount)`
-- `CashbackRevoked(bytes32 indexed paymentId, address indexed recipient, CashbackOperationStatus indexed status, uint256 oldCashbackAmount, uint256 newCashbackAmount)`
+- `CashbackSent(bytes32 indexed paymentId, address indexed recipient, PaymentCashbackStatus indexed status, uint256 amount)`
+- `CashbackIncreased(bytes32 indexed paymentId, address indexed recipient, PaymentCashbackStatus indexed status, uint256 oldCashbackAmount, uint256 newCashbackAmount)`
+- `CashbackRevoked(bytes32 indexed paymentId, address indexed recipient, PaymentCashbackStatus indexed status, uint256 oldCashbackAmount, uint256 newCashbackAmount)`
 
 ## Roles & Permissions
 - `HOOK_TRIGGER_ROLE` (admin `GRANTOR_ROLE`): must be granted to CPP so it can invoke controller hooks.
