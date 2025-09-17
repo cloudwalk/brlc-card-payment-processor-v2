@@ -238,6 +238,9 @@ interface ICashbackControllerConfiguration is ICashbackControllerTypes {
  * @dev The custom errors used in the wrapper contract for the cashback controller operations.
  */
 interface ICashbackControllerErrors {
+    /// @dev The payment cashback does not exist.
+    error CashbackController_CashbackDoesNotExist();
+
     /// @dev The provided cashback vault contract is not a valid one.
     error CashbackController_CashbackVaultInvalid();
 

@@ -25,7 +25,6 @@ import { ICardPaymentProcessorHook } from "./hookable/interfaces/ICardPaymentPro
     q remove cashback sent event in favor to increase 
     q correct cashback has no validaton on paymentid and account
 
-    check existace of PaymentCashback (using address) and revert with custom error
     CasbackSent -> remove
     CashbackIncreaased -> CashbackGranted
 */
@@ -336,6 +335,10 @@ contract CashbackController is
         PaymentCashbackStatus status;
         uint256 oldCashbackAmount = paymentCashback.sentAmount;
         address account = paymentCashback.account;
+
+        if (account == address(0)) {
+            revert CashbackController_CashbackDoesNotExist();
+        }
 
         if (desiredCashbackAmount > oldCashbackAmount) {
             uint256 amount = desiredCashbackAmount - oldCashbackAmount;

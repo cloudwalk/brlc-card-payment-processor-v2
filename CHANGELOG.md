@@ -1,5 +1,3 @@
-# 2.4
-
 ## Highlights
 
 - **Hooks for CardPaymentProcessor (CPP)**: Introduced a flexible hooks architecture via `CardPaymentProcessorHookable` to run external logic at key points in the payment lifecycle.
@@ -45,6 +43,9 @@ Claimable cashback:  CashbackTreasury <=> CashbackController <=> CashbackVault <
 - `HOOK_TRIGGER_ROLE` (admin `GRANTOR_ROLE`): must be granted to CPP so it can invoke controller hooks.
 - `OWNER_ROLE`: required for configuration functions.
 - `CASHBACK_OPERATOR_ROLE`: required to call `correctCashbackAmount()`.
+ - CashbackVault roles when claimable mode is enabled:
+   - `CASHBACK_OPERATOR_ROLE` on CV: grant to `CashbackController` so it can `grantCashback`/`revokeCashback`.
+   - `MANAGER_ROLE` on CV: grant to the account/service that will call `claim`/`claimAll`.
 
 ## Breaking Changes
 - Removed `ICardPaymentCashback.*` and all cashback logic from CPP.
@@ -55,11 +56,13 @@ Claimable cashback:  CashbackTreasury <=> CashbackController <=> CashbackVault <
 2. If existing cashback payments exist on a CPP: deploy a new CPP and route payments to it.
 3. Deploy `CashbackController` (CC) with the same token as the CPP.
 4. Call `setCashbackTreasury()` on CC to configure the treasury.
-5. Grant `HOOK_TRIGGER_ROLE` on CC to the CPP.
-6. Connect CC as a hook on CPP via `registerHook()`.
-7. (Optional) Enable claimable mode by calling `setCashbackVault()` on CC.
-8. (Optional) Configure default cashback rate on CPP via `setCashbackRate(uint256)`.
-9. Execute payments with cashback on CPP.
+5. From the treasury account, approve CC to spend the token (max allowance recommended).
+6. Grant `HOOK_TRIGGER_ROLE` on CC to the CPP.
+7. Connect CC as a hook on CPP via `registerHook()`.
+8. (Optional) Enable claimable mode by calling `setCashbackVault()` on CC.
+9. (Claimable mode) On CV, grant `CASHBACK_OPERATOR_ROLE` to CC and `MANAGER_ROLE` to your manager.
+10. (Optional) Configure default cashback rate on CPP via `setCashbackRate(uint256)`.
+11. Execute payments with cashback on CPP.
 
 # 2.3
 older changes

@@ -518,6 +518,11 @@ describe("Contract 'CashbackController'", () => {
           .to.be.revertedWithCustomError(cashbackControllerFromStranger, "AccessControlUnauthorizedAccount")
           .withArgs(stranger.address, CASHBACK_OPERATOR_ROLE);
       });
+
+      it("the payment cashback does not exist", async () => {
+        await expect(cashbackControllerFromCashbackOperator.correctCashbackAmount(paymentId("nothing"), cashbackAmount))
+          .to.be.revertedWithCustomError(cashbackController, "CashbackController_CashbackDoesNotExist");
+      });
     });
     describe("Should execute as expected when", () => {
       describe("cashback amount is increased", () => {
