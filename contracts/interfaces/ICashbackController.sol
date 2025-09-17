@@ -28,7 +28,7 @@ interface ICashbackControllerTypes {
      * 1. All other cases (allowance problems or some transfer issues) result in a revert.
      * 2. If there are insufficient funds in the user's account during cashback revocation, this results in a revert, because that case should be impossible to happen.
      */
-    enum CashbackOperationStatus {
+    enum PaymentCashbackStatus {
         Undefined,
         Success,
         Partial,
@@ -52,14 +52,14 @@ interface ICashbackControllerTypes {
         uint32 capPeriodStartTime;
         // uint80 __reserved; // Reserved until the end of the storage slot
     }
-    /** @dev The data of a single payment for retention in the contract storage.
+    /** @dev The cashback-related data of a single payment.
      *
      * Fields:
      *
      * - sentAmount --- The cumulative cashback amount that was successfully granted related to the payment.
      * - account ------ The address of the account that received the cashback.
      */
-    struct CashbackOperation {
+    struct PaymentCashback {
         // Slot 1
         uint64 sentAmount;
         address account;
@@ -67,7 +67,7 @@ interface ICashbackControllerTypes {
     }
 
     /**
-     * @dev The view of the cashback operation data.
+     * @dev The view of the payment cashback data.
      *
      * This structure is used as a return type for appropriate view functions.
      *
@@ -76,7 +76,7 @@ interface ICashbackControllerTypes {
      * - sentAmount --- The cumulative cashback amount that was successfully granted related to the payment.
      * - account ------ The address of the account that received the cashback.
      */
-    struct CashbackOperationView {
+    struct PaymentCashbackView {
         uint256 sentAmount;
         address account;
     }
@@ -116,7 +116,7 @@ interface ICashbackControllerPrimary is ICashbackControllerTypes {
     event CashbackSent(
         bytes32 indexed paymentId,
         address indexed recipient,
-        CashbackOperationStatus indexed status,
+        PaymentCashbackStatus indexed status,
         uint256 amount
     );
 
@@ -132,7 +132,7 @@ interface ICashbackControllerPrimary is ICashbackControllerTypes {
     event CashbackRevoked(
         bytes32 indexed paymentId,
         address indexed recipient,
-        CashbackOperationStatus indexed status,
+        PaymentCashbackStatus indexed status,
         uint256 oldCashbackAmount,
         uint256 newCashbackAmount
     );
@@ -148,7 +148,7 @@ interface ICashbackControllerPrimary is ICashbackControllerTypes {
     event CashbackIncreased(
         bytes32 indexed paymentId,
         address indexed recipient,
-        CashbackOperationStatus indexed status,
+        PaymentCashbackStatus indexed status,
         uint256 oldCashbackAmount,
         uint256 newCashbackAmount
     );
@@ -174,7 +174,7 @@ interface ICashbackControllerPrimary is ICashbackControllerTypes {
      * @dev Returns the cashback state for a single payment.
      * @param paymentId The payment ID to get the cashback state for.
      */
-    function getPaymentCashbackState(bytes32 paymentId) external view returns (CashbackOperationView memory);
+    function getPaymentCashbackState(bytes32 paymentId) external view returns (PaymentCashbackView memory);
 }
 
 /**
