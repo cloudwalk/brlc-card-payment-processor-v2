@@ -2509,12 +2509,6 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
         await context.presetCashbackForAccount(payment.payer, presetCashbackAmount);
         cardPaymentProcessorShell.model.setCashbackIncreaseAmountResult(actualCashbackChange);
       }
-      // TODO: looks like impossibe scenario because we always first give user revoke amount
-      // if (
-      //   cashbackCondition === CashbackConditionType.CashbackEnabledPayerHasInsufficientBalance
-      // ) {
-      //   cardPaymentProcessorShell.model.setCashbackRevocationStatus(CashbackOperationStatus.OutOfFunds);
-      // }
       if (
         cashbackCondition === CashbackConditionType.CashbackEnabledButTreasuryHasInsufficientBalance
       ) {
@@ -2528,14 +2522,6 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
         newBaseAmount,
         newExtraAmount,
       );
-      // TODO: looks like impossibe scenario because we always first give user revoke amount
-      // if (
-      //   cashbackCondition === CashbackConditionType.CashbackEnabledPayerHasInsufficientBalance
-      // ) {
-      //   await proveTx(connect(tokenMock, payment.payer)
-      //     .transfer(sponsor.address, await tokenMock.balanceOf(payment.payer.address)));
-      // }
-
       if (
         cashbackCondition === CashbackConditionType.CashbackEnabledButTreasuryHasInsufficientBalance
       ) {

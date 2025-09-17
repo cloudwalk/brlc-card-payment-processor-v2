@@ -787,7 +787,6 @@ describe("Contract 'CashbackController'", () => {
             });
           });
           describe("cashback rate is not zero and sponsor covers all base amount", () => {
-            // TODO: ??????????
             let tx: TransactionResponse;
             const baseAmount = 100n * DIGITS_COEF;
             const cashbackRate = 100n;
@@ -835,7 +834,6 @@ describe("Contract 'CashbackController'", () => {
             });
           });
           describe("cashback rate is not zero and sponsor covers part of base amount", () => {
-            // TODO: ??????????
             let tx: TransactionResponse;
             const baseAmount = 100n * DIGITS_COEF;
             const subsidyLimit = baseAmount / 2n;

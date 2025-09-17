@@ -21,13 +21,10 @@ import { ICardPaymentProcessor } from "./interfaces/ICardPaymentProcessor.sol";
 import { ICashbackVault } from "./interfaces/ICashbackVault.sol";
 import { ICardPaymentProcessorHook } from "./hookable/interfaces/ICardPaymentProcessorHooks.sol";
 
-/*
-    q remove cashback sent event in favor to increase 
-    q correct cashback has no validaton on paymentid and account
-
-    CasbackSent -> remove
-    CashbackIncreaased -> CashbackGranted
-*/
+/**
+ * @title CashbackController contract
+ * @author CloudWalk Inc. (See https://www.cloudwalk.io)
+ */
 contract CashbackController is
     ICashbackControllerStorageLayout,
     AccessControlExtUpgradeable,
