@@ -24,7 +24,7 @@ interface ICardPaymentProcessorHook is ICardPaymentProcessorHookTypes {
 /**
  * @title IAfterPaymentMadeHook
  * @author CloudWalk Inc. (See https://www.cloudwalk.io)
- * @dev The interface for the afterPaymentMade hook.
+ * @dev The interface for the 'afterPaymentMade' hook.
  */
 interface IAfterPaymentMadeHook is ICardPaymentProcessorHook {
     function afterPaymentMade(
@@ -37,7 +37,7 @@ interface IAfterPaymentMadeHook is ICardPaymentProcessorHook {
 /**
  * @title IAfterPaymentUpdatedHook
  * @author CloudWalk Inc. (See https://www.cloudwalk.io)
- * @dev The interface for the afterPaymentUpdated hook.
+ * @dev The interface for the 'afterPaymentUpdated' hook.
  */
 interface IAfterPaymentUpdatedHook is ICardPaymentProcessorHook {
     function afterPaymentUpdated(
@@ -50,7 +50,7 @@ interface IAfterPaymentUpdatedHook is ICardPaymentProcessorHook {
 /**
  * @title IAfterPaymentCanceledHook
  * @author CloudWalk Inc. (See https://www.cloudwalk.io)
- * @dev The interface for the afterPaymentCanceled hook.
+ * @dev The interface for the 'afterPaymentCanceled' hook.
  */
 interface IAfterPaymentCanceledHook is ICardPaymentProcessorHook {
     function afterPaymentCanceled(
