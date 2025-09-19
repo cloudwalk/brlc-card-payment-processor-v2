@@ -9,7 +9,7 @@ import { ICashbackControllerTypes } from "./interfaces/ICashbackController.sol";
  * @author CloudWalk Inc. (See https://www.cloudwalk.io)
  * @dev Defines the storage layout for the cashback controller smart contract.
  */
-abstract contract ICashbackControllerStorageLayout is ICashbackControllerTypes {
+abstract contract CashbackControllerStorageLayout is ICashbackControllerTypes {
     // ------------------ Storage layout -------------------------- //
 
     /*

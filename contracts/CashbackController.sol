@@ -10,7 +10,7 @@ import { RescuableUpgradeable } from "./base/RescuableUpgradeable.sol";
 import { UUPSExtUpgradeable } from "./base/UUPSExtUpgradeable.sol";
 import { Versionable } from "./base/Versionable.sol";
 
-import { ICashbackControllerStorageLayout } from "./CashbackControlllerStorageLayout.sol";
+import { CashbackControllerStorageLayout } from "./CashbackControlllerStorageLayout.sol";
 
 import { IAfterPaymentMadeHook } from "./hookable/interfaces/ICardPaymentProcessorHooks.sol";
 import { IAfterPaymentUpdatedHook } from "./hookable/interfaces/ICardPaymentProcessorHooks.sol";
@@ -28,7 +28,7 @@ import { ICardPaymentProcessorHook } from "./hookable/interfaces/ICardPaymentPro
  * @author CloudWalk Inc. (See https://www.cloudwalk.io)
  */
 contract CashbackController is
-    ICashbackControllerStorageLayout,
+    CashbackControllerStorageLayout,
     AccessControlExtUpgradeable,
     RescuableUpgradeable,
     UUPSExtUpgradeable,
