@@ -1,4 +1,4 @@
-## Highlights
+## Main changes
 
 - **Hooks for CardPaymentProcessor (CPP)**: Introduced a flexible hooks architecture via `CardPaymentProcessorHookable` to run external logic at key points in the payment lifecycle.
 - **Cashback moved to `CashbackController`**: CPP now only keeps cashback rate logic. All calculation, capping, transfers, and storage moved to `CashbackController` for better modularity.
@@ -27,8 +27,8 @@ Claimable cashback:  CashbackTreasury <=> CashbackController <=> CashbackVault <
   - `getCashbackVault()`
   - `getCashbackTreasury()`
   - `underlyingToken()`
-  - `getAccountCashbackState(address)`
-  - `getPaymentCashbackState(bytes32)`
+  - `getAccountCashback(address)`
+  - `getPaymentCashback(bytes32)`
 
 ## Events
 - `HookRegistered(address hookAddress, bytes4 hookMethod)`
