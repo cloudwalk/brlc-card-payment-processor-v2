@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.24;
 
 import { ICardPaymentProcessorHookable } from "./interfaces/ICardPaymentProcesorHookable.sol";
 import { CardPaymentProcessorHookableStorageLayout } from "./CardPaymentProcessorHookableStorageLayout.sol";

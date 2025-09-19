@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.24;
 
 import { IAfterPaymentMadeHook } from "../hookable/interfaces/ICardPaymentProcessorHooks.sol";
 import { IAfterPaymentUpdatedHook } from "../hookable/interfaces/ICardPaymentProcessorHooks.sol";
