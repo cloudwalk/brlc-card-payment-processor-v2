@@ -10,11 +10,11 @@ import { RescuableUpgradeable } from "./base/RescuableUpgradeable.sol";
 import { Versionable } from "./base/Versionable.sol";
 import { UUPSExtUpgradeable } from "./base/UUPSExtUpgradeable.sol";
 
+import { CashbackVaultStorageLayout } from "./CashbackVaultStorageLayout.sol";
+
 import { ICashbackVault } from "./interfaces/ICashbackVault.sol";
 import { ICashbackVaultPrimary } from "./interfaces/ICashbackVault.sol";
 import { ICashbackVaultConfiguration } from "./interfaces/ICashbackVault.sol";
-
-import { CashbackVaultStorageLayout } from "./CashbackVaultStorageLayout.sol";
 
 /**
  * @title CashbackVault contract

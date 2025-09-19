@@ -2,15 +2,18 @@
 
 pragma solidity ^0.8.24;
 
-import { ICardPaymentProcessorHookable } from "./interfaces/ICardPaymentProcesorHookable.sol";
-import { CardPaymentProcessorHookableStorageLayout } from "./CardPaymentProcessorHookableStorageLayout.sol";
 import { EnumerableSet } from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+
+import { AccessControlExtUpgradeable } from "../base/AccessControlExtUpgradeable.sol";
+
+import { CardPaymentProcessorHookableStorageLayout } from "./CardPaymentProcessorHookableStorageLayout.sol";
+
 import { IAfterPaymentMadeHook } from "./interfaces/ICardPaymentProcessorHooks.sol";
 import { IAfterPaymentUpdatedHook } from "./interfaces/ICardPaymentProcessorHooks.sol";
 import { IAfterPaymentCanceledHook } from "./interfaces/ICardPaymentProcessorHooks.sol";
 import { ICardPaymentProcessorHook } from "./interfaces/ICardPaymentProcessorHooks.sol";
+import { ICardPaymentProcessorHookable } from "./interfaces/ICardPaymentProcesorHookable.sol";
 import { ICardPaymentProcessorTypes } from "../interfaces/ICardPaymentProcessor.sol";
-import { AccessControlExtUpgradeable } from "../base/AccessControlExtUpgradeable.sol";
 
 /**
  * @title CardPaymentProcessorHookable base contract
