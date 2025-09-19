@@ -24,7 +24,7 @@ let user1: HardhatEthersSigner;
 
 let cardPaymentProcessorFactory: Contracts.CardPaymentProcessor__factory;
 let tokenMockFactory: Contracts.ERC20TokenMock__factory;
-let hookContractFactory: Contracts.HookContract__factory;
+let hookContractMockFactory: Contracts.HookContractMock__factory;
 let cashbackControllerFactory: Contracts.CashbackController__factory;
 
 async function unregisterProof(hookContract: BaseContract, cardPaymentProcessor: BaseContract) {
@@ -47,7 +47,7 @@ async function deployContracts() {
   const cardPaymentProcessor = await upgrades.deployProxy(cardPaymentProcessorFactory, [await tokenMock.getAddress()]);
   await cardPaymentProcessor.waitForDeployment();
 
-  const hookContract = await hookContractFactory.deploy();
+  const hookContract = await hookContractMockFactory.deploy();
 
   return { cardPaymentProcessor, tokenMock, hookContract };
 }
@@ -80,7 +80,7 @@ describe("Contract 'CardPaymentProcessorHookable'", () => {
   }
 
   async function deployHookContract() {
-    const hookContract = await hookContractFactory.deploy();
+    const hookContract = await hookContractMockFactory.deploy();
     return hookContract;
   }
   before(async () => {
@@ -90,7 +90,7 @@ describe("Contract 'CardPaymentProcessorHookable'", () => {
       .then(factory => factory.connect(deployer));
     tokenMockFactory = await ethers.getContractFactory("ERC20TokenMock")
       .then(factory => factory.connect(deployer));
-    hookContractFactory = await ethers.getContractFactory("HookContract")
+    hookContractMockFactory = await ethers.getContractFactory("HookContractMock")
       .then(factory => factory.connect(deployer));
     cashbackControllerFactory = await ethers.getContractFactory("CashbackController")
       .then(factory => factory.connect(deployer));
@@ -102,7 +102,7 @@ describe("Contract 'CardPaymentProcessorHookable'", () => {
     tokenMockAddress = await tokenMock.getAddress();
   });
   describe("Hook with only one method implemented", () => {
-    let hookContract: Contracts.HookContract;
+    let hookContract: Contracts.HookContractMock;
     let hookContractAddress: string;
 
     beforeEach(async () => {

@@ -9,7 +9,7 @@ import { IAfterPaymentMadeHook } from "../hookable/interfaces/ICardPaymentProces
  * @author CloudWalk Inc. (See https://www.cloudwalk.io)
  * @dev Test hook that implements afterPaymentMade and emits LogAfterPaymentMade.
  */
-contract HookContract is IAfterPaymentMadeHook {
+contract HookContractMock is IAfterPaymentMadeHook {
     event LogAfterPaymentMade(bytes32 paymentId, PaymentHookData oldPayment, PaymentHookData newPayment);
     error RevertFromAfterPaymentMade();
 
