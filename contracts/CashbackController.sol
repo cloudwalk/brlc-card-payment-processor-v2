@@ -26,6 +26,7 @@ import { ICardPaymentProcessor } from "./interfaces/ICardPaymentProcessor.sol";
 /**
  * @title CashbackController contract
  * @author CloudWalk Inc. (See https://www.cloudwalk.io)
+ * @dev The contract for the cashback operations for card payments.
  */
 contract CashbackController is
     CashbackControllerStorageLayout,
