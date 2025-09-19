@@ -342,11 +342,11 @@ contract CashbackController is
         if (desiredCashbackAmount > oldCashbackAmount) {
             uint256 amount = desiredCashbackAmount - oldCashbackAmount;
             (status, amount) = _increaseCashback(paymentCashback, amount);
-            emit CashbackIncreased(paymentId, recipient, status, oldCashbackAmount, paymentCashback.balance);
+            emit CashbackIncreased(paymentId, recipient, status, amount, paymentCashback.balance);
         } else if (desiredCashbackAmount < oldCashbackAmount) {
             uint256 amount = oldCashbackAmount - desiredCashbackAmount;
             (status, amount) = _revokeCashback(paymentCashback, amount);
-            emit CashbackRevoked(paymentId, recipient, status, oldCashbackAmount, paymentCashback.balance);
+            emit CashbackDecreased(paymentId, recipient, status, amount, paymentCashback.balance);
         }
     }
 

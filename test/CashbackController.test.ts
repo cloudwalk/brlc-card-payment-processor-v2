@@ -528,13 +528,14 @@ describe("Contract 'CashbackController'", () => {
       describe("cashback amount is increased", () => {
         let tx: TransactionResponse;
         const newCashbackAmount = cashbackAmount + 10n * DIGITS_COEF;
+        const increasedAmount = newCashbackAmount - cashbackAmount;
         beforeEach(async () => {
           tx = await cashbackControllerFromCashbackOperator.correctCashbackAmount(paymentId("id1"), newCashbackAmount);
         });
 
         it("should emit the required event", async () => {
           await expect(tx).to.emit(cashbackController, "CashbackIncreased")
-            .withArgs(paymentId("id1"), payer.address, CashbackStatus.Success, cashbackAmount, newCashbackAmount);
+            .withArgs(paymentId("id1"), payer.address, CashbackStatus.Success, increasedAmount, newCashbackAmount);
         });
 
         it("should store the cashback state", async () => {
@@ -550,13 +551,14 @@ describe("Contract 'CashbackController'", () => {
       describe("cashback amount is decreased", () => {
         let tx: TransactionResponse;
         const newCashbackAmount = cashbackAmount - 10n * DIGITS_COEF;
+        const decreasedAmount = cashbackAmount - newCashbackAmount;
         beforeEach(async () => {
           tx = await cashbackControllerFromCashbackOperator.correctCashbackAmount(paymentId("id1"), newCashbackAmount);
         });
 
         it("should emit the required event", async () => {
-          await expect(tx).to.emit(cashbackController, "CashbackRevoked")
-            .withArgs(paymentId("id1"), payer.address, CashbackStatus.Success, cashbackAmount, newCashbackAmount);
+          await expect(tx).to.emit(cashbackController, "CashbackDecreased")
+            .withArgs(paymentId("id1"), payer.address, CashbackStatus.Success, decreasedAmount, newCashbackAmount);
         });
 
         it("should store the cashback state", async () => {
@@ -572,13 +574,14 @@ describe("Contract 'CashbackController'", () => {
       describe("cashback amount is set to zero", () => {
         let tx: TransactionResponse;
         const newCashbackAmount = 0n;
+        const decreasedAmount = cashbackAmount - newCashbackAmount;
         beforeEach(async () => {
           tx = await cashbackControllerFromCashbackOperator.correctCashbackAmount(paymentId("id1"), newCashbackAmount);
         });
 
         it("should emit the required event", async () => {
-          await expect(tx).to.emit(cashbackController, "CashbackRevoked")
-            .withArgs(paymentId("id1"), payer.address, CashbackStatus.Success, cashbackAmount, newCashbackAmount);
+          await expect(tx).to.emit(cashbackController, "CashbackDecreased")
+            .withArgs(paymentId("id1"), payer.address, CashbackStatus.Success, decreasedAmount, newCashbackAmount);
         });
 
         it("should store the cashback state", async () => {
@@ -598,7 +601,7 @@ describe("Contract 'CashbackController'", () => {
         });
 
         it("should not emit the required event", async () => {
-          await expect(tx).to.not.emit(cashbackController, "CashbackRevoked");
+          await expect(tx).to.not.emit(cashbackController, "CashbackDecreased");
           await expect(tx).to.not.emit(cashbackController, "CashbackIncreased");
         });
 
@@ -944,7 +947,13 @@ describe("Contract 'CashbackController'", () => {
 
               it("should emit the required event", async () => {
                 await expect(tx).to.emit(cashbackController, "CashbackIncreased")
-                  .withArgs(paymentId("id1"), payer.address, CashbackStatus.Success, cashbackAmount, newCashbackAmount);
+                  .withArgs(
+                    paymentId("id1"),
+                    payer.address,
+                    CashbackStatus.Success,
+                    increasedAmount,
+                    newCashbackAmount,
+                  );
               });
 
               it("should store the cashback state", async () => {
@@ -994,8 +1003,14 @@ describe("Contract 'CashbackController'", () => {
               });
 
               it("should emit the required event", async () => {
-                await expect(tx).to.emit(cashbackController, "CashbackRevoked")
-                  .withArgs(paymentId("id1"), payer.address, CashbackStatus.Success, cashbackAmount, newCashbackAmount);
+                await expect(tx).to.emit(cashbackController, "CashbackDecreased")
+                  .withArgs(
+                    paymentId("id1"),
+                    payer.address,
+                    CashbackStatus.Success,
+                    decreasedAmount,
+                    newCashbackAmount,
+                  );
               });
 
               it("should store the cashback state", async () => {
@@ -1041,7 +1056,7 @@ describe("Contract 'CashbackController'", () => {
               });
 
               it("should not emit events", async () => {
-                await expect(tx).to.not.emit(cashbackController, "CashbackRevoked");
+                await expect(tx).to.not.emit(cashbackController, "CashbackDecreased");
                 await expect(tx).to.not.emit(cashbackController, "CashbackIncreased");
               });
 
@@ -1109,7 +1124,7 @@ describe("Contract 'CashbackController'", () => {
                   baseAmount: initialPayment.baseAmount as bigint + 50n * DIGITS_COEF,
                 },
               );
-              await expect(tx).to.not.emit(cashbackController, "CashbackRevoked");
+              await expect(tx).to.not.emit(cashbackController, "CashbackDecreased");
               await expect(tx).to.not.emit(cashbackController, "CashbackIncreased");
               await expect(tx).to.changeTokenBalances(tokenMock,
                 [treasury.address, payer.address, cashbackControllerAddress],
@@ -1182,7 +1197,7 @@ describe("Contract 'CashbackController'", () => {
                       paymentId("id1"),
                       payer.address,
                       CashbackStatus.Success,
-                      cashbackAmount,
+                      increasedAmount,
                       newCashbackAmount,
                     );
                 });
@@ -1237,12 +1252,13 @@ describe("Contract 'CashbackController'", () => {
                 });
 
                 it("should emit the required event", async () => {
-                  await expect(tx).to.emit(cashbackController, "CashbackRevoked")
+                  await expect(tx).to.emit(cashbackController, "CashbackDecreased")
                     .withArgs(
                       paymentId("id1"),
                       payer.address,
                       CashbackStatus.Success,
-                      cashbackAmount, newCashbackAmount,
+                      decreasedAmount,
+                      newCashbackAmount,
                     );
                 });
 
@@ -1297,8 +1313,14 @@ describe("Contract 'CashbackController'", () => {
                 });
 
                 it("should emit the required event", async () => {
-                  await expect(tx).to.emit(cashbackController, "CashbackRevoked")
-                    .withArgs(paymentId("id1"), payer.address, CashbackStatus.Success, cashbackAmount, 0n);
+                  await expect(tx).to.emit(cashbackController, "CashbackDecreased")
+                    .withArgs(
+                      paymentId("id1"),
+                      payer.address,
+                      CashbackStatus.Success,
+                      decreasedAmount,
+                      newCashbackAmount,
+                    );
                 });
 
                 it("should store the cashback state", async () => {
@@ -1425,7 +1447,12 @@ describe("Contract 'CashbackController'", () => {
 
                 it("should emit the required event", async () => {
                   await expect(tx).to.emit(cashbackController, "CashbackIncreased")
-                    .withArgs(paymentId("id1"), payer.address, CashbackStatus.Success, 0n, newCashbackAmount);
+                    .withArgs(paymentId("id1"),
+                      payer.address,
+                      CashbackStatus.Success,
+                      newCashbackAmount,
+                      newCashbackAmount,
+                    );
                 });
 
                 it("should store the cashback state", async () => {
@@ -1505,8 +1532,14 @@ describe("Contract 'CashbackController'", () => {
             });
 
             it("should emit the required event", async () => {
-              await expect(tx).to.emit(cashbackController, "CashbackRevoked")
-                .withArgs(paymentId("id1"), payer.address, CashbackStatus.Success, cashbackAmount, 0n);
+              await expect(tx).to.emit(cashbackController, "CashbackDecreased")
+                .withArgs(
+                  paymentId("id1"),
+                  payer.address,
+                  CashbackStatus.Success,
+                  cashbackAmount,
+                  0n,
+                );
             });
 
             it("should store the cashback state", async () => {
@@ -1585,7 +1618,7 @@ describe("Contract 'CashbackController'", () => {
               );
             });
             it("should not emit the event", async () => {
-              await expect(tx).to.not.emit(cashbackController, "CashbackRevoked");
+              await expect(tx).to.not.emit(cashbackController, "CashbackDecreased");
             });
             it("should not change the cashback state", async () => {
               const operationState = resultToObject(await cashbackController
@@ -1646,7 +1679,7 @@ describe("Contract 'CashbackController'", () => {
               );
             });
             it("should do nothing", async () => {
-              await expect(tx).to.not.emit(cashbackController, "CashbackRevoked");
+              await expect(tx).to.not.emit(cashbackController, "CashbackDecreased");
               await expect(tx).to.not.emit(cashbackController, "CashbackIncreased");
               await expect(tx).to.changeTokenBalances(tokenMock,
                 [treasury.address, payer.address, cashbackControllerAddress],

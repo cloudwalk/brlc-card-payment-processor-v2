@@ -52,10 +52,10 @@ const eventAddendumCheckingOptions: EventParameterCheckingOptions = {
 // Events of the contracts under test
 const EVENT_NAME_ACCOUNT_REFUNDED = "AccountRefunded";
 const EVENT_NAME_CASH_OUT_ACCOUNT_CHANGED = "CashOutAccountChanged";
-const EVENT_NAME_CASHBACK_INCREASED = "CashbackIncreased";
-const EVENT_NAME_DEFAULT_CASHBACK_RATE_CHANGED = "DefaultCashbackRateChanged";
-const EVENT_NAME_CASHBACK_REVOKED = "CashbackRevoked";
 const EVENT_NAME_CASHBACK_SENT = "CashbackSent";
+const EVENT_NAME_CASHBACK_INCREASED = "CashbackIncreased";
+const EVENT_NAME_CASHBACK_DECREASED = "CashbackDecreased";
+const EVENT_NAME_DEFAULT_CASHBACK_RATE_CHANGED = "DefaultCashbackRateChanged";
 const EVENT_NAME_PAYMENT_CONFIRMED_AMOUNT_CHANGED = "PaymentConfirmedAmountChanged";
 const EVENT_NAME_PAYMENT_MADE = "PaymentMade";
 const EVENT_NAME_PAYMENT_REFUNDED = "PaymentRefunded";
@@ -1203,13 +1203,13 @@ class TestContext {
     if (operation.cashbackOperationKind === CashbackOperationKind.Revocation) {
       await expect(tx).to.emit(
         this.cardPaymentProcessorShell.cashbackControllerContract,
-        EVENT_NAME_CASHBACK_REVOKED,
+        EVENT_NAME_CASHBACK_DECREASED,
       ).withArgs(
         checkEventParameter("paymentId", operation.paymentId),
         checkEventParameter("recipient", operation.payer.address),
         checkEventParameter("status", operation.cashbackOperationStatus),
-        checkEventParameter("oldCashbackAmount", operation.oldCashbackAmount),
-        checkEventParameter("oldCashbackAmount", operation.oldCashbackAmount + operation.cashbackActualChange),
+        checkEventParameter("delta", -operation.cashbackActualChange),
+        checkEventParameter("balance", operation.oldCashbackAmount + operation.cashbackActualChange),
       );
     }
 
@@ -1219,8 +1219,8 @@ class TestContext {
           checkEventParameter("paymentId", operation.paymentId),
           checkEventParameter("recipient", operation.payer.address),
           checkEventParameter("status", operation.cashbackOperationStatus),
-          checkEventParameter("oldCashbackAmount", operation.oldCashbackAmount),
-          checkEventParameter("oldCashbackAmount", operation.oldCashbackAmount + operation.cashbackActualChange),
+          checkEventParameter("delta", operation.cashbackActualChange),
+          checkEventParameter("balance", operation.oldCashbackAmount + operation.cashbackActualChange),
         );
     }
 
@@ -1236,7 +1236,7 @@ class TestContext {
 
     if (!operationConditions.cashbackRevocationRequestedInAnyOperation) {
       await expect(tx)
-        .not.to.emit(this.cardPaymentProcessorShell.cashbackControllerContract, EVENT_NAME_CASHBACK_REVOKED);
+        .not.to.emit(this.cardPaymentProcessorShell.cashbackControllerContract, EVENT_NAME_CASHBACK_DECREASED);
     }
   }
 
@@ -4653,12 +4653,12 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
               cashbackRemaining,
             );
 
-          await expect(tx).to.emit(cardPaymentProcessorShell.cashbackControllerContract, EVENT_NAME_CASHBACK_REVOKED)
+          await expect(tx).to.emit(cardPaymentProcessorShell.cashbackControllerContract, EVENT_NAME_CASHBACK_DECREASED)
             .withArgs(
               payment.id,
               payer.address,
               CashbackOperationStatus.Success,
-              cashbackAmount,
+              cashbackRefunded,
               cashbackRemaining,
             );
         });

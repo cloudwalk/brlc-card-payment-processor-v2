@@ -109,7 +109,7 @@ interface ICashbackControllerPrimary is ICashbackControllerTypes {
     // ------------------ Events ---------------------------------- //
 
     /**
-     * @dev Emitted when a cashback sending request is executed, successfully or not.
+     * @dev Emitted when cashback related to a payment is initially sent
      * @param paymentId The associated card transaction payment ID from the off-chain card processing backend.
      * @param recipient The address of the cashback recipient.
      * @param status The status of the cashback operation.
@@ -123,36 +123,36 @@ interface ICashbackControllerPrimary is ICashbackControllerTypes {
     );
 
     /**
-     * @dev Emitted when a cashback revocation request is executed, successfully or not.
+     * @dev Emitted when cashback related to a payment is decreased.
      * @param paymentId The associated card transaction payment ID from the off-chain card processing backend.
      * @param recipient The address of the cashback recipient.
      * @param status The status of the cashback operation.
-     * @param oldCashbackAmount The cashback amount before the operation.
-     * @param newCashbackAmount The cashback amount after the operation.
+     * @param delta The actual amount by which the cashback was decreased.
+     * @param balance The cashback balance after the operation.
      *
      */
-    event CashbackRevoked(
+    event CashbackDecreased(
         bytes32 indexed paymentId,
         address indexed recipient,
         PaymentCashbackStatus indexed status,
-        uint256 oldCashbackAmount,
-        uint256 newCashbackAmount
+        uint256 delta,
+        uint256 balance
     );
 
     /**
-     * @dev Emitted when a cashback increase request is executed, successfully or not.
+     * @dev Emitted when cashback related to a payment is increased.
      * @param paymentId The associated card transaction payment ID from the off-chain card processing backend.
      * @param recipient The address of the cashback recipient.
      * @param status The status of the cashback operation.
-     * @param oldCashbackAmount The cashback amount before the operation.
-     * @param newCashbackAmount The cashback amount after the operation.
+     * @param delta The actual amount by which the cashback was increased.
+     * @param balance The cashback balance after the operation.
      */
     event CashbackIncreased(
         bytes32 indexed paymentId,
         address indexed recipient,
         PaymentCashbackStatus indexed status,
-        uint256 oldCashbackAmount,
-        uint256 newCashbackAmount
+        uint256 delta,
+        uint256 balance
     );
 
     // ------------------ Transactional functions ----------------- //

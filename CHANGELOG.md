@@ -14,8 +14,12 @@ Claimable cashback:  CashbackTreasury <=> CashbackController <=> CashbackVault <
 ## New API
 
 ### CPP via `CardPaymentProcessorHookable`
-- `registerHook(address hookAddress)` — register a hook for all supported hook methods.
-- `unregisterHook(address hookAddress, bytes32 proof)` — unregister a hook with a security proof.
+- Configuration
+  - `registerHook(address hookAddress)` — register a hook for all supported hook methods.
+  - `unregisterHook(address hookAddress, bytes32 proof)` — unregister a hook with a security proof.
+- Events
+  - `HookRegistered(address hookAddress, bytes4 hookMethod)`
+  - `HookUnregistered(address hookAddress, bytes4 hookMethod)`
 
 ### CashbackController
 - Operations
@@ -29,15 +33,13 @@ Claimable cashback:  CashbackTreasury <=> CashbackController <=> CashbackVault <
   - `underlyingToken()`
   - `getAccountCashback(address)`
   - `getPaymentCashback(bytes32)`
+- Events
+  - `CashbackVaultUpdated(address cashbackVault)`
+  - `CashbackTreasuryChanged(address oldTreasury, address newTreasury)`
+  - `CashbackSent(bytes32 indexed paymentId, address indexed recipient, PaymentCashbackStatus indexed status, uint256 amount)`
+  - `CashbackIncreased(bytes32 indexed paymentId, address indexed recipient, PaymentCashbackStatus indexed status, uint256 delta, uint256 balance)`
+  - `CashbackDecreased(bytes32 indexed paymentId, address indexed recipient, PaymentCashbackStatus indexed status, uint256 delta, uint256 balance)`
 
-## Events
-- `HookRegistered(address hookAddress, bytes4 hookMethod)`
-- `HookUnregistered(address hookAddress, bytes4 hookMethod)`
-- `CashbackVaultUpdated(address cashbackVault)`
-- `CashbackTreasuryChanged(address oldTreasury, address newTreasury)`
-- `CashbackSent(bytes32 indexed paymentId, address indexed recipient, PaymentCashbackStatus indexed status, uint256 amount)`
-- `CashbackIncreased(bytes32 indexed paymentId, address indexed recipient, PaymentCashbackStatus indexed status, uint256 oldCashbackAmount, uint256 newCashbackAmount)`
-- `CashbackRevoked(bytes32 indexed paymentId, address indexed recipient, PaymentCashbackStatus indexed status, uint256 oldCashbackAmount, uint256 newCashbackAmount)`
 
 ## Roles & Permissions
 - `HOOK_TRIGGER_ROLE` (admin `GRANTOR_ROLE`): must be granted to CPP so it can invoke controller hooks.
