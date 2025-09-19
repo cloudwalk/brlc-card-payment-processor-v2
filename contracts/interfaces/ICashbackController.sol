@@ -42,11 +42,11 @@ interface ICashbackControllerTypes {
      *
      * Fields:
      *
-     * - totalAmount ----------- The total amount of cashback that has been sent to the account.
-     * - capPeriodStartAmount -- The amount of cashback that has been sent to the account during the current cap period.
+     * - totalAmount ----------- The total amount of cashback that has been granted to the account over all payments.
+     * - capPeriodStartAmount -- The amount of cashback that granted to the account during the current cap period.
      * - capPeriodStartTime ---- The timestamp of the start of the current cap period.
      */
-    struct AccountCashbackState {
+    struct AccountCashback {
         // Slot 1
         uint64 totalAmount;
         uint64 capPeriodStartAmount;
@@ -93,7 +93,7 @@ interface ICashbackControllerTypes {
      * - capPeriodStartAmount -- The amount of cashback that has been sent to the account during the current cap period.
      * - capPeriodStartTime ---- The timestamp of the start of the current cap period.
      */
-    struct AccountCashbackStateView {
+    struct AccountCashbackView {
         uint256 totalAmount;
         uint256 capPeriodStartAmount;
         uint256 capPeriodStartTime;
@@ -169,13 +169,13 @@ interface ICashbackControllerPrimary is ICashbackControllerTypes {
      * @dev Returns a structure with cashback-related data for a single account.
      * @param account The account address to get the cashback state for.
      */
-    function getAccountCashbackState(address account) external view returns (AccountCashbackStateView memory);
+    function getAccountCashback(address account) external view returns (AccountCashbackView memory);
 
     /**
      * @dev Returns the cashback state for a single payment.
      * @param paymentId The payment ID to get the cashback state for.
      */
-    function getPaymentCashbackState(bytes32 paymentId) external view returns (PaymentCashbackView memory);
+    function getPaymentCashback(bytes32 paymentId) external view returns (PaymentCashbackView memory);
 }
 
 /**

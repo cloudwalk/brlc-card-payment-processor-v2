@@ -1369,7 +1369,7 @@ class TestContext {
 
   async presetCashbackForAccount(account: HardhatEthersSigner, cashbackAmount: number): Promise<OperationResult> {
     const accountCashbackOld: AccountCashbackState =
-      await this.cardPaymentProcessorShell.cashbackControllerContract.getAccountCashbackState(account.address);
+      await this.cardPaymentProcessorShell.cashbackControllerContract.getAccountCashback(account.address);
     const cashbackAmountDiff = Number(BigInt(cashbackAmount) - accountCashbackOld.totalAmount);
     if (cashbackAmountDiff < 0) {
       throw new Error("Cannot set the expected cashback for account because current cashback is already higher");
@@ -1386,7 +1386,7 @@ class TestContext {
 
     const operationResult = await this.cardPaymentProcessorShell.makePaymentFor(payment);
     const accountCashbackNew: AccountCashbackState =
-      await this.cardPaymentProcessorShell.cashbackControllerContract.getAccountCashbackState(account.address);
+      await this.cardPaymentProcessorShell.cashbackControllerContract.getAccountCashback(account.address);
     expect(accountCashbackNew.totalAmount).to.equal(cashbackAmount);
 
     return operationResult;
@@ -1405,13 +1405,13 @@ class TestContext {
       const actualPayment = await this.cardPaymentProcessorShell.contract.getPayment(expectedPayment.paymentId);
       const actualCashbackState =
         await this.cardPaymentProcessorShell.cashbackControllerContract
-          .getPaymentCashbackState(expectedPayment.paymentId);
+          .getPaymentCashback(expectedPayment.paymentId);
       this.#checkPaymentsEquality(actualPayment, actualCashbackState, expectedPayment, i);
       const expectedTotalCashback =
         this.cardPaymentProcessorShell.model.getCashbackTotalForAccount(expectedPayment.payer.address);
       const actualAccountCashbackState: AccountCashbackState =
         await this.cardPaymentProcessorShell.cashbackControllerContract
-          .getAccountCashbackState(expectedPayment.payer.address);
+          .getAccountCashback(expectedPayment.payer.address);
       expect(actualAccountCashbackState.totalAmount).to.equal(expectedTotalCashback);
       expect(actualAccountCashbackState.capPeriodStartAmount)
         .to.equal(this.cardPaymentProcessorShell.model.capPeriodStartAmount);
@@ -4507,7 +4507,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
     ) {
       const { cardPaymentProcessorShell, payments: [payment] } = context;
       const actualAccountCashbackState: AccountCashbackState =
-        await cardPaymentProcessorShell.cashbackControllerContract.getAccountCashbackState(payment.payer.address);
+        await cardPaymentProcessorShell.cashbackControllerContract.getAccountCashback(payment.payer.address);
       const expectedTotalCashback = cardPaymentProcessorShell.model.getCashbackTotalForAccount(payment.payer.address);
       const expectedCapPeriodStartAmount = cardPaymentProcessorShell.model.capPeriodStartAmount;
       expect(actualAccountCashbackState.totalAmount).to.equal(expectedTotalCashback);

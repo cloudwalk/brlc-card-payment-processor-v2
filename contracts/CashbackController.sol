@@ -288,10 +288,10 @@ contract CashbackController is
     }
 
     /// @inheritdoc ICashbackControllerPrimary
-    function getAccountCashbackState(address account) external view returns (AccountCashbackStateView memory) {
-        AccountCashbackState storage accountState = _getCashbackControllerStorage().accountCashbackStates[account];
+    function getAccountCashback(address account) external view returns (AccountCashbackView memory) {
+        AccountCashback storage accountState = _getCashbackControllerStorage().accountCashbacks[account];
         return
-            AccountCashbackStateView({
+            AccountCashbackView({
                 totalAmount: accountState.totalAmount,
                 capPeriodStartAmount: accountState.capPeriodStartAmount,
                 capPeriodStartTime: accountState.capPeriodStartTime
@@ -299,7 +299,7 @@ contract CashbackController is
     }
 
     /// @inheritdoc ICashbackControllerPrimary
-    function getPaymentCashbackState(bytes32 paymentId) external view returns (PaymentCashbackView memory) {
+    function getPaymentCashback(bytes32 paymentId) external view returns (PaymentCashbackView memory) {
         PaymentCashback storage paymentCashback = _getCashbackControllerStorage().paymentCashbacks[paymentId];
         return PaymentCashbackView({ sentAmount: paymentCashback.sentAmount, account: paymentCashback.account });
     }
@@ -365,7 +365,7 @@ contract CashbackController is
         uint256 desiredAmount
     ) internal returns (PaymentCashbackStatus status, uint256 increasedAmount) {
         CashbackControllerStorage storage $ = _getCashbackControllerStorage();
-        AccountCashbackState memory oldAccountCashbackState = $.accountCashbackStates[paymentCashback.account];
+        AccountCashback memory oldAccountCashback = $.accountCashbacks[paymentCashback.account];
         (status, increasedAmount) = _processAccountCashbackWithCap(paymentCashback.account, desiredAmount);
 
         // if it is not capped, we can try to transfer funds
@@ -377,7 +377,7 @@ contract CashbackController is
             status = PaymentCashbackStatus.OutOfFunds;
             increasedAmount = 0;
             // restore account cashback state to previous state if we failed to increase cashback
-            $.accountCashbackStates[paymentCashback.account] = oldAccountCashbackState;
+            $.accountCashbacks[paymentCashback.account] = oldAccountCashback;
         } else {
             IERC20($.token).transferFrom($.cashbackTreasury, address(this), increasedAmount);
 
@@ -444,7 +444,7 @@ contract CashbackController is
         uint256 amount
     ) internal returns (PaymentCashbackStatus cashbackStatus, uint256 acceptedAmount) {
         CashbackControllerStorage storage $ = _getCashbackControllerStorage();
-        AccountCashbackState storage state = $.accountCashbackStates[account];
+        AccountCashback storage state = $.accountCashbacks[account];
 
         uint256 totalAmount = state.totalAmount;
         uint256 capPeriodStartTime = state.capPeriodStartTime;
@@ -485,7 +485,7 @@ contract CashbackController is
     /// @dev Reduces the total cashback amount for an account.
     function _reduceTotalCashback(address account, uint256 amount) internal {
         CashbackControllerStorage storage $ = _getCashbackControllerStorage();
-        AccountCashbackState storage state = $.accountCashbackStates[account];
+        AccountCashback storage state = $.accountCashbacks[account];
         state.totalAmount = uint64(uint256(state.totalAmount) - amount);
     }
 

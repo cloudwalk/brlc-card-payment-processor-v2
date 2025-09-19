@@ -539,7 +539,7 @@ describe("Contract 'CashbackController'", () => {
 
         it("should store the cashback state", async () => {
           const operationState = resultToObject(await cashbackController
-            .getPaymentCashbackState(paymentId("id1")));
+            .getPaymentCashback(paymentId("id1")));
           checkEquality(operationState, {
             sentAmount: newCashbackAmount,
             account: payer.address,
@@ -561,7 +561,7 @@ describe("Contract 'CashbackController'", () => {
 
         it("should store the cashback state", async () => {
           const operationState = resultToObject(await cashbackController
-            .getPaymentCashbackState(paymentId("id1")));
+            .getPaymentCashback(paymentId("id1")));
           checkEquality(operationState, {
             sentAmount: newCashbackAmount,
             account: payer.address,
@@ -583,7 +583,7 @@ describe("Contract 'CashbackController'", () => {
 
         it("should store the cashback state", async () => {
           const operationState = resultToObject(await cashbackController
-            .getPaymentCashbackState(paymentId("id1")));
+            .getPaymentCashback(paymentId("id1")));
           checkEquality(operationState, {
             sentAmount: newCashbackAmount,
             account: payer.address,
@@ -604,7 +604,7 @@ describe("Contract 'CashbackController'", () => {
 
         it("should store the cashback state", async () => {
           const operationState = resultToObject(await cashbackController
-            .getPaymentCashbackState(paymentId("id1")));
+            .getPaymentCashback(paymentId("id1")));
           checkEquality(operationState, {
             sentAmount: cashbackAmount,
             account: payer.address,
@@ -655,7 +655,7 @@ describe("Contract 'CashbackController'", () => {
 
             it("should store the cashback state", async () => {
               const operationState = resultToObject(await cashbackController
-                .getPaymentCashbackState(paymentId("id1")));
+                .getPaymentCashback(paymentId("id1")));
 
               checkEquality(operationState, {
                 sentAmount: cashbackAmount,
@@ -672,7 +672,7 @@ describe("Contract 'CashbackController'", () => {
 
             it("should store the account cashback state", async () => {
               const accountCashbackState = resultToObject(await cashbackController
-                .getAccountCashbackState(payer.address));
+                .getAccountCashback(payer.address));
               checkEquality(accountCashbackState, {
                 totalAmount: cashbackAmount,
                 capPeriodStartAmount: 0n,
@@ -716,7 +716,7 @@ describe("Contract 'CashbackController'", () => {
 
             it("should store the cashback state", async () => {
               const operationState = resultToObject(await cashbackController
-                .getPaymentCashbackState(paymentId("id1")));
+                .getPaymentCashback(paymentId("id1")));
 
               checkEquality(operationState, {
                 sentAmount: 0n,
@@ -733,7 +733,7 @@ describe("Contract 'CashbackController'", () => {
 
             it("should store the account cashback state", async () => {
               const accountCashbackState = resultToObject(await cashbackController
-                .getAccountCashbackState(payer.address));
+                .getAccountCashback(payer.address));
               checkEquality(accountCashbackState, {
                 totalAmount: 0n,
                 capPeriodStartAmount: 0n,
@@ -771,7 +771,7 @@ describe("Contract 'CashbackController'", () => {
 
             it("should not change the cashback state", async () => {
               const operationState = resultToObject(await cashbackController
-                .getPaymentCashbackState(paymentId("id1")));
+                .getPaymentCashback(paymentId("id1")));
 
               checkEquality(operationState, {
                 sentAmount: 0n,
@@ -825,7 +825,7 @@ describe("Contract 'CashbackController'", () => {
 
             it("should store the account cashback state", async () => {
               const accountCashbackState = resultToObject(await cashbackController
-                .getAccountCashbackState(payer.address));
+                .getAccountCashback(payer.address));
               checkEquality(accountCashbackState, {
                 totalAmount: 0n,
                 capPeriodStartAmount: 0n,
@@ -873,7 +873,7 @@ describe("Contract 'CashbackController'", () => {
 
             it("should store the account cashback state", async () => {
               const accountCashbackState = resultToObject(await cashbackController
-                .getAccountCashbackState(payer.address));
+                .getAccountCashback(payer.address));
               checkEquality(accountCashbackState, {
                 totalAmount: cashbackAmount,
                 capPeriodStartAmount: 0n,
@@ -900,8 +900,8 @@ describe("Contract 'CashbackController'", () => {
             const cashbackRate = 100n;
             const cashbackAmount = cashbackRate * baseAmount / CASHBACK_FACTOR;
             let initialPayment: Payment;
-            let initialAccountCashbackState: Awaited<ReturnType<typeof cashbackController.getAccountCashbackState>>;
-            let initialOperationState: Awaited<ReturnType<typeof cashbackController.getPaymentCashbackState>>;
+            let initialAccountCashbackState: Awaited<ReturnType<typeof cashbackController.getAccountCashback>>;
+            let initialOperationState: Awaited<ReturnType<typeof cashbackController.getPaymentCashback>>;
 
             beforeEach(async () => {
               initialPayment = {
@@ -920,8 +920,8 @@ describe("Contract 'CashbackController'", () => {
                 EMPTY_PAYMENT,
                 initialPayment,
               );
-              initialAccountCashbackState = await cashbackController.getAccountCashbackState(payer.address);
-              initialOperationState = await cashbackController.getPaymentCashbackState(paymentId("id1"));
+              initialAccountCashbackState = await cashbackController.getAccountCashback(payer.address);
+              initialOperationState = await cashbackController.getPaymentCashback(paymentId("id1"));
             });
             describe("base amount is increased", () => {
               const newBaseAmount = baseAmount + 50n * DIGITS_COEF;
@@ -949,7 +949,7 @@ describe("Contract 'CashbackController'", () => {
 
               it("should store the cashback state", async () => {
                 const operationState = resultToObject(await cashbackController
-                  .getPaymentCashbackState(paymentId("id1")));
+                  .getPaymentCashback(paymentId("id1")));
                 checkEquality(operationState, {
                   sentAmount: newCashbackAmount,
                   account: payer.address,
@@ -965,7 +965,7 @@ describe("Contract 'CashbackController'", () => {
 
               it("should update the cashback amount in the account cashback state", async () => {
                 const accountCashbackState = resultToObject(await cashbackController
-                  .getAccountCashbackState(payer.address));
+                  .getAccountCashback(payer.address));
                 checkEquality(accountCashbackState, {
                   totalAmount: newCashbackAmount,
                   capPeriodStartAmount: 0n,
@@ -1000,7 +1000,7 @@ describe("Contract 'CashbackController'", () => {
 
               it("should store the cashback state", async () => {
                 const operationState = resultToObject(await cashbackController
-                  .getPaymentCashbackState(paymentId("id1")));
+                  .getPaymentCashback(paymentId("id1")));
                 checkEquality(operationState, {
                   sentAmount: newCashbackAmount,
                   account: payer.address,
@@ -1016,7 +1016,7 @@ describe("Contract 'CashbackController'", () => {
 
               it("should update the cashback amount in the account cashback state", async () => {
                 const accountCashbackState = resultToObject(await cashbackController
-                  .getAccountCashbackState(payer.address));
+                  .getAccountCashback(payer.address));
                 checkEquality(accountCashbackState, {
                   totalAmount: newCashbackAmount,
                   capPeriodStartAmount: 0n,
@@ -1047,7 +1047,7 @@ describe("Contract 'CashbackController'", () => {
 
               it("should store the cashback state", async () => {
                 const operationState = resultToObject(await cashbackController
-                  .getPaymentCashbackState(paymentId("id1")));
+                  .getPaymentCashback(paymentId("id1")));
                 checkEquality(operationState, {
                   sentAmount: cashbackAmount,
                   account: payer.address,
@@ -1063,7 +1063,7 @@ describe("Contract 'CashbackController'", () => {
 
               it("should not update the cashback amount in the account cashback state", async () => {
                 const accountCashbackState = resultToObject(await cashbackController
-                  .getAccountCashbackState(payer.address));
+                  .getAccountCashback(payer.address));
                 checkEquality(accountCashbackState, {
                   totalAmount: initialAccountCashbackState.totalAmount,
                   capPeriodStartAmount: initialAccountCashbackState.capPeriodStartAmount,
@@ -1077,8 +1077,8 @@ describe("Contract 'CashbackController'", () => {
             const baseAmount = 100n * DIGITS_COEF;
             const cashbackRate = 0n;
             let initialPayment: Payment;
-            let initialAccountCashbackState: Awaited<ReturnType<typeof cashbackController.getAccountCashbackState>>;
-            let initialOperationState: Awaited<ReturnType<typeof cashbackController.getPaymentCashbackState>>;
+            let initialAccountCashbackState: Awaited<ReturnType<typeof cashbackController.getAccountCashback>>;
+            let initialOperationState: Awaited<ReturnType<typeof cashbackController.getPaymentCashback>>;
 
             beforeEach(async () => {
               initialPayment = {
@@ -1097,8 +1097,8 @@ describe("Contract 'CashbackController'", () => {
                 EMPTY_PAYMENT,
                 initialPayment,
               );
-              initialAccountCashbackState = await cashbackController.getAccountCashbackState(payer.address);
-              initialOperationState = await cashbackController.getPaymentCashbackState(paymentId("id1"));
+              initialAccountCashbackState = await cashbackController.getAccountCashback(payer.address);
+              initialOperationState = await cashbackController.getPaymentCashback(paymentId("id1"));
             });
             it("should do nothing", async () => {
               const tx = await cashbackControllerFromHookTrigger.afterPaymentUpdated(
@@ -1116,11 +1116,11 @@ describe("Contract 'CashbackController'", () => {
                 [0n, 0n, 0n],
               );
               checkEquality(
-                resultToObject(await cashbackController.getAccountCashbackState(payer.address)),
+                resultToObject(await cashbackController.getAccountCashback(payer.address)),
                 resultToObject(initialAccountCashbackState),
               );
               checkEquality(
-                resultToObject(await cashbackController.getPaymentCashbackState(paymentId("id1"))),
+                resultToObject(await cashbackController.getPaymentCashback(paymentId("id1"))),
                 resultToObject(initialOperationState),
               );
             });
@@ -1133,8 +1133,8 @@ describe("Contract 'CashbackController'", () => {
               const cashbackRate = 100n;
               const cashbackAmount = cashbackRate * (baseAmount - subsidyLimit) / CASHBACK_FACTOR;
               let initialPayment: Payment;
-              let initialAccountCashbackState: Awaited<ReturnType<typeof cashbackController.getAccountCashbackState>>;
-              let initialOperationState: Awaited<ReturnType<typeof cashbackController.getPaymentCashbackState>>;
+              let initialAccountCashbackState: Awaited<ReturnType<typeof cashbackController.getAccountCashback>>;
+              let initialOperationState: Awaited<ReturnType<typeof cashbackController.getPaymentCashback>>;
 
               beforeEach(async () => {
                 initialPayment = {
@@ -1153,8 +1153,8 @@ describe("Contract 'CashbackController'", () => {
                   EMPTY_PAYMENT,
                   initialPayment,
                 );
-                initialAccountCashbackState = await cashbackController.getAccountCashbackState(payer.address);
-                initialOperationState = await cashbackController.getPaymentCashbackState(paymentId("id1"));
+                initialAccountCashbackState = await cashbackController.getAccountCashback(payer.address);
+                initialOperationState = await cashbackController.getPaymentCashback(paymentId("id1"));
               });
 
               describe("base amount is increased", () => {
@@ -1189,7 +1189,7 @@ describe("Contract 'CashbackController'", () => {
 
                 it("should store the cashback state", async () => {
                   const operationState = resultToObject(await cashbackController
-                    .getPaymentCashbackState(paymentId("id1")));
+                    .getPaymentCashback(paymentId("id1")));
                   checkEquality(operationState, {
                     sentAmount: newCashbackAmount,
                     account: payer.address,
@@ -1205,7 +1205,7 @@ describe("Contract 'CashbackController'", () => {
 
                 it("should update the cashback amount in the account cashback state", async () => {
                   const accountCashbackState = resultToObject(await cashbackController
-                    .getAccountCashbackState(payer.address));
+                    .getAccountCashback(payer.address));
                   checkEquality(accountCashbackState, {
                     totalAmount: newCashbackAmount,
                     capPeriodStartAmount: 0n,
@@ -1248,7 +1248,7 @@ describe("Contract 'CashbackController'", () => {
 
                 it("should store the cashback state", async () => {
                   const operationState = resultToObject(await cashbackController
-                    .getPaymentCashbackState(paymentId("id1")));
+                    .getPaymentCashback(paymentId("id1")));
                   checkEquality(operationState, {
                     sentAmount: newCashbackAmount,
                     account: payer.address,
@@ -1264,7 +1264,7 @@ describe("Contract 'CashbackController'", () => {
 
                 it("should update the cashback amount in the account cashback state", async () => {
                   const accountCashbackState = resultToObject(await cashbackController
-                    .getAccountCashbackState(payer.address));
+                    .getAccountCashback(payer.address));
                   checkEquality(accountCashbackState, {
                     totalAmount: newCashbackAmount,
                     capPeriodStartAmount: 0n,
@@ -1303,7 +1303,7 @@ describe("Contract 'CashbackController'", () => {
 
                 it("should store the cashback state", async () => {
                   const operationState = resultToObject(await cashbackController
-                    .getPaymentCashbackState(paymentId("id1")));
+                    .getPaymentCashback(paymentId("id1")));
                   checkEquality(operationState, {
                     sentAmount: 0n,
                     account: payer.address,
@@ -1319,7 +1319,7 @@ describe("Contract 'CashbackController'", () => {
 
                 it("should update the cashback amount in the account cashback state", async () => {
                   const accountCashbackState = resultToObject(await cashbackController
-                    .getAccountCashbackState(payer.address));
+                    .getAccountCashback(payer.address));
                   checkEquality(accountCashbackState, {
                     totalAmount: 0n,
                     capPeriodStartAmount: 0n,
@@ -1334,8 +1334,8 @@ describe("Contract 'CashbackController'", () => {
               const subsidyLimit = baseAmount + 50n * DIGITS_COEF;
               const cashbackRate = 100n;
               let initialPayment: Payment;
-              let initialAccountCashbackState: Awaited<ReturnType<typeof cashbackController.getAccountCashbackState>>;
-              let initialOperationState: Awaited<ReturnType<typeof cashbackController.getPaymentCashbackState>>;
+              let initialAccountCashbackState: Awaited<ReturnType<typeof cashbackController.getAccountCashback>>;
+              let initialOperationState: Awaited<ReturnType<typeof cashbackController.getPaymentCashback>>;
 
               beforeEach(async () => {
                 initialPayment = {
@@ -1354,8 +1354,8 @@ describe("Contract 'CashbackController'", () => {
                   EMPTY_PAYMENT,
                   initialPayment,
                 );
-                initialAccountCashbackState = await cashbackController.getAccountCashbackState(payer.address);
-                initialOperationState = await cashbackController.getPaymentCashbackState(paymentId("id1"));
+                initialAccountCashbackState = await cashbackController.getAccountCashback(payer.address);
+                initialOperationState = await cashbackController.getPaymentCashback(paymentId("id1"));
               });
               describe("base amount is increased but still below subsidy limit", () => {
                 const newBaseAmount = baseAmount + 10n * DIGITS_COEF;
@@ -1381,7 +1381,7 @@ describe("Contract 'CashbackController'", () => {
 
                 it("should not change the cashback state", async () => {
                   const operationState = resultToObject(await cashbackController
-                    .getPaymentCashbackState(paymentId("id1")));
+                    .getPaymentCashback(paymentId("id1")));
                   checkEquality(operationState, {
                     sentAmount: 0n,
                     account: payer.address,
@@ -1397,7 +1397,7 @@ describe("Contract 'CashbackController'", () => {
 
                 it("should not update the cashback amount in the account cashback state", async () => {
                   const accountCashbackState = resultToObject(await cashbackController
-                    .getAccountCashbackState(payer.address));
+                    .getAccountCashback(payer.address));
                   checkEquality(accountCashbackState, {
                     totalAmount: 0n,
                     capPeriodStartAmount: 0n,
@@ -1430,7 +1430,7 @@ describe("Contract 'CashbackController'", () => {
 
                 it("should store the cashback state", async () => {
                   const operationState = resultToObject(await cashbackController
-                    .getPaymentCashbackState(paymentId("id1")));
+                    .getPaymentCashback(paymentId("id1")));
                   checkEquality(operationState, {
                     sentAmount: newCashbackAmount,
                     account: payer.address,
@@ -1446,7 +1446,7 @@ describe("Contract 'CashbackController'", () => {
 
                 it("should update the cashback amount in the account cashback state", async () => {
                   const accountCashbackState = resultToObject(await cashbackController
-                    .getAccountCashbackState(payer.address));
+                    .getAccountCashback(payer.address));
                   checkEquality(accountCashbackState, {
                     totalAmount: newCashbackAmount,
                     capPeriodStartAmount: 0n,
@@ -1474,8 +1474,8 @@ describe("Contract 'CashbackController'", () => {
             const cashbackRate = 100n;
             const cashbackAmount = cashbackRate * baseAmount / CASHBACK_FACTOR;
             let initialPayment: Payment;
-            let initialAccountCashbackState: Awaited<ReturnType<typeof cashbackController.getAccountCashbackState>>;
-            let initialOperationState: Awaited<ReturnType<typeof cashbackController.getPaymentCashbackState>>;
+            let initialAccountCashbackState: Awaited<ReturnType<typeof cashbackController.getAccountCashback>>;
+            let initialOperationState: Awaited<ReturnType<typeof cashbackController.getPaymentCashback>>;
             let tx: TransactionResponse;
 
             beforeEach(async () => {
@@ -1495,8 +1495,8 @@ describe("Contract 'CashbackController'", () => {
                 EMPTY_PAYMENT,
                 initialPayment,
               );
-              initialAccountCashbackState = await cashbackController.getAccountCashbackState(payer.address);
-              initialOperationState = await cashbackController.getPaymentCashbackState(paymentId("id1"));
+              initialAccountCashbackState = await cashbackController.getAccountCashback(payer.address);
+              initialOperationState = await cashbackController.getPaymentCashback(paymentId("id1"));
               tx = await cashbackControllerFromHookTrigger.afterPaymentCanceled(
                 paymentId("id1"),
                 initialPayment,
@@ -1511,7 +1511,7 @@ describe("Contract 'CashbackController'", () => {
 
             it("should store the cashback state", async () => {
               const operationState = resultToObject(await cashbackController
-                .getPaymentCashbackState(paymentId("id1")));
+                .getPaymentCashback(paymentId("id1")));
               checkEquality(operationState, {
                 sentAmount: 0n,
                 account: payer.address,
@@ -1527,7 +1527,7 @@ describe("Contract 'CashbackController'", () => {
 
             it("should update the cashback amount in the account cashback state", async () => {
               const accountCashbackState = resultToObject(await cashbackController
-                .getAccountCashbackState(payer.address));
+                .getAccountCashback(payer.address));
               checkEquality(accountCashbackState, {
                 totalAmount: 0n,
                 capPeriodStartAmount: 0n,
@@ -1538,8 +1538,8 @@ describe("Contract 'CashbackController'", () => {
           describe("cashback rate is not zero but payment had no cashback because it was capped", () => {
             const cashbackRate = 100n;
             let initialPayment: Payment;
-            let initialAccountCashbackState: Awaited<ReturnType<typeof cashbackController.getAccountCashbackState>>;
-            let initialOperationState: Awaited<ReturnType<typeof cashbackController.getPaymentCashbackState>>;
+            let initialAccountCashbackState: Awaited<ReturnType<typeof cashbackController.getAccountCashback>>;
+            let initialOperationState: Awaited<ReturnType<typeof cashbackController.getPaymentCashback>>;
             let tx: TransactionResponse;
             beforeEach(async () => {
               const cappingPayment: Payment = {
@@ -1576,8 +1576,8 @@ describe("Contract 'CashbackController'", () => {
                 EMPTY_PAYMENT,
                 initialPayment,
               );
-              initialAccountCashbackState = await cashbackController.getAccountCashbackState(payer.address);
-              initialOperationState = await cashbackController.getPaymentCashbackState(paymentId("id1"));
+              initialAccountCashbackState = await cashbackController.getAccountCashback(payer.address);
+              initialOperationState = await cashbackController.getPaymentCashback(paymentId("id1"));
               tx = await cashbackControllerFromHookTrigger.afterPaymentCanceled(
                 paymentId("id1"),
                 initialPayment,
@@ -1589,7 +1589,7 @@ describe("Contract 'CashbackController'", () => {
             });
             it("should not change the cashback state", async () => {
               const operationState = resultToObject(await cashbackController
-                .getPaymentCashbackState(paymentId("id1")));
+                .getPaymentCashback(paymentId("id1")));
               checkEquality(operationState, {
                 sentAmount: initialOperationState.sentAmount,
                 account: payer.address,
@@ -1603,7 +1603,7 @@ describe("Contract 'CashbackController'", () => {
             });
             it("should not update the cashback amount in the account cashback state", async () => {
               const accountCashbackState = resultToObject(await cashbackController
-                .getAccountCashbackState(payer.address));
+                .getAccountCashback(payer.address));
               checkEquality(accountCashbackState, {
                 capPeriodStartAmount: initialAccountCashbackState.capPeriodStartAmount,
                 capPeriodStartTime: initialAccountCashbackState.capPeriodStartTime,
@@ -1616,8 +1616,8 @@ describe("Contract 'CashbackController'", () => {
             const baseAmount = 100n * DIGITS_COEF;
             const cashbackRate = 0n;
             let initialPayment: Payment;
-            let initialAccountCashbackState: Awaited<ReturnType<typeof cashbackController.getAccountCashbackState>>;
-            let initialOperationState: Awaited<ReturnType<typeof cashbackController.getPaymentCashbackState>>;
+            let initialAccountCashbackState: Awaited<ReturnType<typeof cashbackController.getAccountCashback>>;
+            let initialOperationState: Awaited<ReturnType<typeof cashbackController.getPaymentCashback>>;
             let tx: TransactionResponse;
 
             beforeEach(async () => {
@@ -1637,8 +1637,8 @@ describe("Contract 'CashbackController'", () => {
                 EMPTY_PAYMENT,
                 initialPayment,
               );
-              initialAccountCashbackState = await cashbackController.getAccountCashbackState(payer.address);
-              initialOperationState = await cashbackController.getPaymentCashbackState(paymentId("id1"));
+              initialAccountCashbackState = await cashbackController.getAccountCashback(payer.address);
+              initialOperationState = await cashbackController.getPaymentCashback(paymentId("id1"));
               tx = await cashbackControllerFromHookTrigger.afterPaymentCanceled(
                 paymentId("id1"),
                 initialPayment,
@@ -1653,11 +1653,11 @@ describe("Contract 'CashbackController'", () => {
                 [0n, 0n, 0n],
               );
               checkEquality(
-                resultToObject(await cashbackController.getAccountCashbackState(payer.address)),
+                resultToObject(await cashbackController.getAccountCashback(payer.address)),
                 resultToObject(initialAccountCashbackState),
               );
               checkEquality(
-                resultToObject(await cashbackController.getPaymentCashbackState(paymentId("id1"))),
+                resultToObject(await cashbackController.getPaymentCashback(paymentId("id1"))),
                 resultToObject(initialOperationState),
               );
             });
@@ -1836,7 +1836,7 @@ describe("Contract 'CashbackController'", () => {
 
       it("should increase the cashback amount in the account cashback state", async () => {
         const accountCashbackState = resultToObject(await cashbackController
-          .getAccountCashbackState(payer.address));
+          .getAccountCashback(payer.address));
         checkEquality(accountCashbackState, {
           capPeriodStartAmount: 0n,
           capPeriodStartTime: capPeriodStartTime,
@@ -1880,7 +1880,7 @@ describe("Contract 'CashbackController'", () => {
 
         it("should cap the cashback amount in the account cashback state", async () => {
           const accountCashbackState = resultToObject(await cashbackController
-            .getAccountCashbackState(payer.address));
+            .getAccountCashback(payer.address));
           checkEquality(accountCashbackState, {
             capPeriodStartAmount: 0n,
             capPeriodStartTime: capPeriodStartTime,
@@ -1926,7 +1926,7 @@ describe("Contract 'CashbackController'", () => {
 
           it("should cap the cashback amount in the account cashback state", async () => {
             const accountCashbackState = resultToObject(await cashbackController
-              .getAccountCashbackState(payer.address));
+              .getAccountCashback(payer.address));
             checkEquality(accountCashbackState, {
               capPeriodStartAmount: 0n,
               capPeriodStartTime: capPeriodStartTime,
@@ -1969,7 +1969,7 @@ describe("Contract 'CashbackController'", () => {
 
             it("should increase the cashback amount in the account cashback state", async () => {
               const accountCashbackState = resultToObject(await cashbackController
-                .getAccountCashbackState(payer.address));
+                .getAccountCashback(payer.address));
               checkEquality(accountCashbackState, {
                 capPeriodStartAmount: MAX_CASHBACK_FOR_CAP_PERIOD,
                 capPeriodStartTime: await getTxTimestamp(tx),

@@ -26,7 +26,7 @@ abstract contract ICashbackControllerStorageLayout is ICashbackControllerTypes {
      * - token ------------------ The address of the underlying token.
      * - cashbackTreasury ------- The address of the cashback treasury.
      * - cashbackVault ---------- The address of the cashback vault.
-     * - accountCashbackStates -- The mapping of cashback state for each account.
+     * - accountCashbacks -- The mapping of cashback state for each account.
      * - paymentCashbacks ----- The mapping of payment cashback for a given payment ID.
      *
      * @custom:storage-location erc7201:cloudwalk.storage.CashbackController
@@ -39,7 +39,7 @@ abstract contract ICashbackControllerStorageLayout is ICashbackControllerTypes {
         // Slot 3
         address cashbackVault;
         // Slot 4
-        mapping(address account => AccountCashbackState) accountCashbackStates;
+        mapping(address account => AccountCashback) accountCashbacks;
         // Slot 5
         mapping(bytes32 paimentId => PaymentCashback) paymentCashbacks;
     }
