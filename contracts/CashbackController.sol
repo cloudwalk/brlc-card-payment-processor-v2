@@ -110,9 +110,9 @@ contract CashbackController is
     // ------------------ Hooks ----------------------------------- //
 
     /**
-     * @dev The hook function for the afterPaymentMade event in the CardPaymentProcessor contract.
+     * @inheritdoc IAfterPaymentMadeHook
      *
-     * Creates cashback operation and increases cashback.
+     * @dev Creates cashback operation and increases cashback.
      */
     function afterPaymentMade(
         bytes32 paymentId,
@@ -133,20 +133,19 @@ contract CashbackController is
         PaymentCashback storage paymentCashback = $.paymentCashbacks[paymentId];
         paymentCashback.recipient = payment.payer;
 
-        PaymentCashbackStatus status;
-        (status, ) = _increaseCashback(paymentCashback, desiredCashbackAmount);
+        (PaymentCashbackStatus status, uint256 delta) = _increaseCashback(paymentCashback, desiredCashbackAmount);
         emit CashbackSent(
             paymentId, // Tools: prevent Prettier one-liner
             payment.payer,
             PaymentCashbackStatus(status),
-            paymentCashback.balance
+            delta
         );
     }
 
     /**
-     * @dev The hook function for the afterPaymentUpdated event in the CardPaymentProcessor contract.
+     * @inheritdoc IAfterPaymentUpdatedHook
      *
-     * Updates cashback operation and increases or revokes cashback.
+     * @dev Updates cashback operation and increases or revokes cashback.
      */
     function afterPaymentUpdated(
         bytes32 paymentId,
@@ -172,9 +171,9 @@ contract CashbackController is
     }
 
     /**
-     * @dev The hook function for the afterPaymentCanceled event in the CardPaymentProcessor contract.
+     * @inheritdoc IAfterPaymentCanceledHook
      *
-     * Revokes cashback.
+     * @dev Revokes cashback.
      */
     function afterPaymentCanceled(
         bytes32 paymentId,
@@ -400,7 +399,7 @@ contract CashbackController is
         status = PaymentCashbackStatus.Success;
         address recipient = paymentCashback.recipient;
 
-        (uint256 vaultRevocationAmount, uint256 accountRevocationAmount) = _calculateRevokationAmounts(
+        (uint256 vaultRevocationAmount, uint256 accountRevocationAmount) = _calculateRevocationAmounts(
             recipient,
             desiredAmount
         );
@@ -427,7 +426,7 @@ contract CashbackController is
      * @param recipient The recipient address.
      * @param amount The cashback amount to revoke.
      */
-    function _calculateRevokationAmounts(
+    function _calculateRevocationAmounts(
         address recipient,
         uint256 amount
     ) internal view returns (uint256 vaultRevocationAmount, uint256 accountRevocationAmount) {
@@ -442,11 +441,11 @@ contract CashbackController is
 
     /// @dev Processes account cashback with cap enforcement, updating state and bounding amount.
     function _processAccountCashbackWithCap(
-        address account,
+        address recipient,
         uint256 amount
     ) internal returns (PaymentCashbackStatus cashbackStatus, uint256 acceptedAmount) {
         CashbackControllerStorage storage $ = _getCashbackControllerStorage();
-        AccountCashback storage state = $.accountCashbacks[account];
+        AccountCashback storage state = $.accountCashbacks[recipient];
 
         uint256 totalAmount = state.totalAmount;
         uint256 capPeriodStartTime = state.capPeriodStartTime;
@@ -455,7 +454,7 @@ contract CashbackController is
 
         unchecked {
             uint256 blockTimestamp = uint32(block.timestamp); // take only last 32 bits of the block timestamp
-            if (uint32(blockTimestamp - capPeriodStartTime) > CASHBACK_CAP_RESET_PERIOD) {
+            if (blockTimestamp - capPeriodStartTime > CASHBACK_CAP_RESET_PERIOD) {
                 capPeriodStartTime = blockTimestamp;
             } else {
                 capPeriodCollectedCashback = totalAmount - capPeriodStartAmount;
@@ -485,9 +484,9 @@ contract CashbackController is
     }
 
     /// @dev Reduces the total cashback amount for an account.
-    function _reduceTotalCashback(address account, uint256 amount) internal {
+    function _reduceTotalCashback(address recipient, uint256 amount) internal {
         CashbackControllerStorage storage $ = _getCashbackControllerStorage();
-        AccountCashback storage state = $.accountCashbacks[account];
+        AccountCashback storage state = $.accountCashbacks[recipient];
         state.totalAmount = uint64(uint256(state.totalAmount) - amount);
     }
 
