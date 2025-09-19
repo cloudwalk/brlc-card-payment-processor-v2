@@ -107,6 +107,7 @@ interface ICashbackControllerTypes {
  */
 interface ICashbackControllerPrimary is ICashbackControllerTypes {
     // ------------------ Events ---------------------------------- //
+
     /**
      * @dev Emitted when a cashback sending request is executed, successfully or not.
      * @param paymentId The associated card transaction payment ID from the off-chain card processing backend.
@@ -158,6 +159,9 @@ interface ICashbackControllerPrimary is ICashbackControllerTypes {
 
     /**
      * @dev Corrects the cashback amount for a payment.
+     *
+     * The cashback record must exist for the provided payment ID.
+     *
      * @param paymentId The payment ID to correct the cashback amount for.
      * @param newCashbackAmount The new desired cashback amount for the payment.
      */
@@ -248,13 +252,13 @@ interface ICashbackControllerErrors {
     /// @dev The token of the provided cashback vault does not match the expected one.
     error CashbackController_CashbackVaultTokenMismatch();
 
-    /// @dev The provided cashback vault address is identical to the current one for the token.
+    /// @dev The provided cashback vault address is identical to the current one.
     error CashbackController_CashbackVaultUnchanged();
 
-    /// @dev The account is not allowed to be granted the hook trigger role.
+    /// @dev The provided account does not meet the requirements to have the hook trigger role.
     error CashbackController_HookTriggerRoleIncompatible();
 
-    /// @dev Thrown if the provided new implementation address is not of a cashback vault contract.
+    /// @dev Thrown if the provided new implementation address is not of a cashback controller contract.
     error CashbackController_ImplementationAddressInvalid();
 
     /// @dev Thrown if the provided token address is zero during initialization.
@@ -263,7 +267,7 @@ interface ICashbackControllerErrors {
     /// @dev The cashback treasury address is not configured.
     error CashbackController_TreasuryNotConfigured();
 
-    /// @dev The cashback treasury address is the same as previously set one.
+    /// @dev The cashback treasury address is the same as the previously set one.
     error CashbackController_TreasuryUnchanged();
 
     /// @dev The zero cashback treasury address has been passed as a function argument.
@@ -276,9 +280,9 @@ interface ICashbackControllerErrors {
  *
  * There are two cashback modes depending on whether the cashback vault is set or not:
  *
- * * Direct mode -- the cashback vault is NOT set for a token. In this case the cashback is sent directly
+ * * Direct mode -- the cashback vault is NOT set. In this case the cashback is sent directly
  *   from or to the recipient. The token flow: Contract <=> Recipient.
- * * Claimable mode -- the cashback vault is set for a token. In this case the cashback is sent from or to the vault
+ * * Claimable mode -- the cashback vault is set. In this case the cashback is sent from or to the vault
  *   and later the recipient can claim the cashback from the vault. The token flow: Contract <=> Vault <=> Recipient.
  */
 interface ICashbackController is
@@ -291,7 +295,7 @@ interface ICashbackController is
     ICashbackControllerErrors
 {
     /**
-     * @dev Proves the contract is the cashback vault one. A marker function.
+     * @dev Proves the contract is the cashback controller one. A marker function.
      *
      * It is used for simple contract compliance checks, e.g. during an upgrade.
      * This avoids situations where a wrong contract address is specified by mistake.

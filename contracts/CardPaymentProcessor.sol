@@ -485,6 +485,7 @@ contract CardPaymentProcessor is
         // before hooks goes here if needed
         _makePayment(operation);
         PaymentHookData memory emptyPayment;
+
         _callHooks(
             IAfterPaymentMadeHook.afterPaymentMade.selector,
             operation.paymentId,
@@ -502,6 +503,7 @@ contract CardPaymentProcessor is
         PaymentHookData memory oldPayment = _convertPaymentToHookData(_payments[paymentId]);
         // before hooks goes here if needed
         _updatePayment(paymentId, newBaseAmount, newExtraAmount, kind);
+
         _callHooks(
             IAfterPaymentUpdatedHook.afterPaymentUpdated.selector,
             paymentId,
@@ -532,6 +534,7 @@ contract CardPaymentProcessor is
     ) internal {
         PaymentHookData memory oldPayment = _convertPaymentToHookData(_payments[paymentId]);
         _refundPayment(paymentId, refundingAmount);
+
         _callHooks(
             IAfterPaymentUpdatedHook.afterPaymentUpdated.selector,
             paymentId,
