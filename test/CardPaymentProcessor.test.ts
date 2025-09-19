@@ -1970,7 +1970,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
               });
             });
             describe("Cashback is disabled, and the base and extra payment amounts are", () => {
-              it.only("Both nonzero", async () => {
+              it("Both nonzero", async () => {
                 const context = await beforeMakingPayments();
                 await checkPaymentMakingFor(context, { cashbackEnabled: false });
               });
