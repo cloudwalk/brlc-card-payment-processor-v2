@@ -21,7 +21,7 @@ interface ICashbackControllerTypes {
      * - Success = 1 ---- The operation has been successfully executed with a full amount transfer.
      * - Partial = 2 ---- The operation has been successfully executed but with a partial amount transfer.
      * - Capped = 3 ----- The operation has been refused because the cap for the period has been reached.
-     * - OutOfFunds = 4 - The operation has been refused because the treasury has no funds.
+     * - OutOfFunds = 4 - The operation has been refused because the treasury has not enough funds.
      *
      * Notes:
      *

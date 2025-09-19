@@ -119,10 +119,6 @@ contract CashbackController is
         PaymentHookData calldata,
         PaymentHookData calldata payment
     ) external onlyRole(HOOK_TRIGGER_ROLE) {
-        if (payment.cashbackRate == 0) {
-            return;
-        }
-
         CashbackControllerStorage storage $ = _getCashbackControllerStorage();
 
         if ($.cashbackTreasury == address(0)) {
@@ -154,9 +150,6 @@ contract CashbackController is
         PaymentHookData calldata,
         PaymentHookData calldata payment
     ) external onlyRole(HOOK_TRIGGER_ROLE) {
-        if (payment.cashbackRate == 0) {
-            return;
-        }
         uint256 payerBaseAmount = _definePayerBaseAmount(payment.baseAmount, payment.subsidyLimit);
         uint256 assumedSponsorRefundAmount = (payment.baseAmount > payment.subsidyLimit)
             ? ((payment.refundAmount * payment.subsidyLimit) / payment.baseAmount)
