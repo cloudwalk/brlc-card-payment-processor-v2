@@ -492,6 +492,11 @@ describe("Contract 'CashbackController'", () => {
         await expect(cashbackControllerFromOwner.setCashbackVault(await defaultTokenCashbackVaults[0].getAddress()))
           .to.be.revertedWithCustomError(cashbackController, "CashbackController_CashbackVaultUnchanged");
       });
+
+      it("the provided cashback vault account has no code", async () => {
+        await expect(cashbackControllerFromOwner.setCashbackVault(CASHBACK_TREASURY_ADDRESS_STUB1))
+          .to.be.revertedWithCustomError(cashbackController, "CashbackController_CashbackVaultInvalid");
+      });
     });
   });
 

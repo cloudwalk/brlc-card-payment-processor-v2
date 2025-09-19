@@ -250,6 +250,9 @@ contract CashbackController is
             revert CashbackController_CashbackVaultUnchanged();
         }
         if (cashbackVault != address(0)) {
+            if (cashbackVault.code.length == 0) {
+                revert CashbackController_CashbackVaultInvalid();
+            }
             try ICashbackVault(cashbackVault).proveCashbackVault() {} catch {
                 revert CashbackController_CashbackVaultInvalid();
             }
