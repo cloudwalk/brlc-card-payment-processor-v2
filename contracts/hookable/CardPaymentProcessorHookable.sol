@@ -27,8 +27,15 @@ abstract contract CardPaymentProcessorHookable is
 {
     using EnumerableSet for EnumerableSet.AddressSet;
 
-    // ------------------ Transaction functions -------------------- //
+    // ------------------ Transactional functions ----------------- //
 
+    /**
+     * @inheritdoc ICardPaymentProcessorHookable
+     *
+     * @dev Requirements:
+     *
+     * - The caller must have the {OWNER_ROLE} role.
+     */
     function registerHook(address hookAddress) external onlyRole(OWNER_ROLE) {
         bytes4[] memory hookMethods = _getHookMethods();
         CardPaymentProcessorHookableStorage storage $ = _getCardPaymentProcessorHookableStorage();
@@ -46,6 +53,13 @@ abstract contract CardPaymentProcessorHookable is
         }
     }
 
+    /**
+     * @inheritdoc ICardPaymentProcessorHookable
+     *
+     * @dev Requirements:
+     *
+     * - The caller must have the {OWNER_ROLE} role.
+     */
     function unregisterHook(address hookAddress, bytes32 proof) external onlyRole(OWNER_ROLE) {
         // ⚠️ IMPORTANT: This proof verifies the caller is fully conscious and aware of what they are doing.
         // 📖 See interface docs before using.
@@ -69,6 +83,7 @@ abstract contract CardPaymentProcessorHookable is
     }
 
     // ------------------ Internal functions -------------------- //
+
     /// @dev Used as replacement for constant array of hook methods
     function _getHookMethods() internal pure returns (bytes4[] memory) {
         bytes4[] memory selectors = new bytes4[](3);
