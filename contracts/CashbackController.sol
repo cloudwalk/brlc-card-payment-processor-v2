@@ -221,8 +221,13 @@ contract CashbackController is
         if (newCashbackTreasury == address(0)) {
             revert CashbackController_TreasuryAddressZero();
         }
+
         if (oldCashbackTreasury == newCashbackTreasury) {
             revert CashbackController_TreasuryUnchanged();
+        }
+
+        if (IERC20($.token).allowance(newCashbackTreasury, address(this)) == 0) {
+            revert CashbackController_TreasuryAllowanceZero();
         }
 
         $.cashbackTreasury = newCashbackTreasury;

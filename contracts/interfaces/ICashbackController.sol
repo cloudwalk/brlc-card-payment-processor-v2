@@ -265,6 +265,9 @@ interface ICashbackControllerErrors {
     /// @dev Thrown if the provided token address is zero during initialization.
     error CashbackController_TokenAddressZero();
 
+    /// @dev Thrown if the cashback treasury address has no allowance for the contract.
+    error CashbackController_TreasuryAllowanceZero();
+
     /// @dev The cashback treasury address is not configured.
     error CashbackController_TreasuryNotConfigured();
 

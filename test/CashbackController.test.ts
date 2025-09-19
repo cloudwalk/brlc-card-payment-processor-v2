@@ -17,7 +17,6 @@ describe("Contract 'CashbackController'", () => {
   const DIGITS_COEF = 10n ** TOKEN_DECIMALS;
   const INITIAL_TREASURY_BALANCE = (10n ** 6n) * DIGITS_COEF;
   const CASHBACK_TREASURY_ADDRESS_STUB1 = "0x0000000000000000000000000000000000000001";
-  const CASHBACK_TREASURY_ADDRESS_STUB2 = "0x0000000000000000000000000000000000000002";
   const CASHBACK_CAP_RESET_PERIOD = 30 * 24 * 60 * 60;
   const MAX_CASHBACK_FOR_CAP_PERIOD = 300n * DIGITS_COEF;
   const EXPECTED_VERSION = {
@@ -53,6 +52,7 @@ describe("Contract 'CashbackController'", () => {
   let stranger: HardhatEthersSigner;
   let payer: HardhatEthersSigner;
   let treasury: HardhatEthersSigner;
+  let treasury2: HardhatEthersSigner;
   let sponsor: HardhatEthersSigner;
   let cashbackOperator: HardhatEthersSigner;
 
@@ -144,7 +144,8 @@ describe("Contract 'CashbackController'", () => {
   }
 
   before(async () => {
-    [deployer, hookTrigger, stranger, treasury, payer, sponsor, cashbackOperator] = await ethers.getSigners();
+    [deployer, hookTrigger, stranger, treasury, treasury2, payer, sponsor, cashbackOperator] =
+      await ethers.getSigners();
 
     // Contract factories with the explicitly specified deployer account
     cashbackControllerFactory = await ethers.getContractFactory("CashbackController");
@@ -295,29 +296,31 @@ describe("Contract 'CashbackController'", () => {
       let tx: TransactionResponse;
 
       beforeEach(async () => {
-        tx = await cashbackControllerFromOwner.setCashbackTreasury(CASHBACK_TREASURY_ADDRESS_STUB1);
+        await tokenMock.connect(treasury).approve(cashbackControllerAddress, ethers.MaxUint256);
+        tx = await cashbackControllerFromOwner.setCashbackTreasury(treasury.address);
       });
       it("should emit the required event", async () => {
         await expect(tx)
           .to.emit(cashbackControllerFromOwner, "CashbackTreasuryUpdated")
-          .withArgs(CASHBACK_TREASURY_ADDRESS_STUB1, ethers.ZeroAddress);
+          .withArgs(treasury.address, ethers.ZeroAddress);
       });
 
       it("should change the cashback treasury address", async () => {
-        expect(await cashbackControllerFromOwner.getCashbackTreasury()).to.equal(CASHBACK_TREASURY_ADDRESS_STUB1);
+        expect(await cashbackControllerFromOwner.getCashbackTreasury()).to.equal(treasury.address);
       });
 
       it("should emit the required event if the cashback treasury is changed again", async () => {
-        tx = await cashbackControllerFromOwner.setCashbackTreasury(CASHBACK_TREASURY_ADDRESS_STUB2);
+        await tokenMock.connect(treasury2).approve(cashbackControllerAddress, ethers.MaxUint256);
+        tx = await cashbackControllerFromOwner.setCashbackTreasury(treasury2.address);
 
         await expect(tx)
           .to.emit(cashbackControllerFromOwner, "CashbackTreasuryUpdated")
-          .withArgs(CASHBACK_TREASURY_ADDRESS_STUB2, CASHBACK_TREASURY_ADDRESS_STUB1);
+          .withArgs(treasury2.address, treasury.address);
       });
     });
     describe("Should revert if", () => {
       it("the caller does not have the required role", async () => {
-        await expect(cashbackControllerFromStranger.setCashbackTreasury(CASHBACK_TREASURY_ADDRESS_STUB1))
+        await expect(cashbackControllerFromStranger.setCashbackTreasury(treasury.address))
           .to.be.revertedWithCustomError(cashbackControllerFromStranger, "AccessControlUnauthorizedAccount")
           .withArgs(stranger.address, OWNER_ROLE);
       });
@@ -328,10 +331,15 @@ describe("Contract 'CashbackController'", () => {
       });
 
       it("if the cashback treasury is not changed", async () => {
-        await cashbackControllerFromOwner.setCashbackTreasury(CASHBACK_TREASURY_ADDRESS_STUB1);
+        await cashbackControllerFromOwner.setCashbackTreasury(treasury.address);
 
-        await expect(cashbackControllerFromOwner.setCashbackTreasury(CASHBACK_TREASURY_ADDRESS_STUB1))
+        await expect(cashbackControllerFromOwner.setCashbackTreasury(treasury.address))
           .to.be.revertedWithCustomError(cashbackControllerFromOwner, "CashbackController_TreasuryUnchanged");
+      });
+
+      it("if the cashback treasury has no allowance for the contract", async () => {
+        await expect(cashbackControllerFromOwner.setCashbackTreasury(CASHBACK_TREASURY_ADDRESS_STUB1))
+          .to.be.revertedWithCustomError(cashbackControllerFromOwner, "CashbackController_TreasuryAllowanceZero");
       });
     });
   });

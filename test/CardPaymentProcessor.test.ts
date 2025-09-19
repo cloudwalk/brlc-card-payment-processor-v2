@@ -1628,8 +1628,8 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
     await proveTx(cardPaymentProcessor.grantRole(PAUSER_ROLE, deployer.address));
     await proveTx(cardPaymentProcessor.grantRole(EXECUTOR_ROLE, executor.address));
 
-    await proveTx(cashbackController.setCashbackTreasury(cashbackTreasury.address));
     await proveTx(connect(tokenMock, cashbackTreasury).approve(getAddress(cashbackController), MAX_UINT256));
+    await proveTx(cashbackController.setCashbackTreasury(cashbackTreasury.address));
     await proveTx(cardPaymentProcessor.setDefaultCashbackRate(CASHBACK_RATE_DEFAULT));
 
     await proveTx(cardPaymentProcessor.setCashOutAccount(cashOutAccount.address));
