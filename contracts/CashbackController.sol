@@ -128,7 +128,7 @@ contract CashbackController is
         uint256 basePaymentAmount = _definePayerBaseAmount(payment.baseAmount, payment.subsidyLimit);
         uint256 desiredCashbackAmount = _calculateCashback(basePaymentAmount, payment.cashbackRate);
         PaymentCashback storage paymentCashback = $.paymentCashbacks[paymentId];
-        paymentCashback.account = payment.payer;
+        paymentCashback.recipient = payment.payer;
 
         PaymentCashbackStatus status;
         (status, ) = _increaseCashback(paymentCashback, desiredCashbackAmount);
@@ -136,7 +136,7 @@ contract CashbackController is
             paymentId, // Tools: prevent Prettier one-liner
             payment.payer,
             PaymentCashbackStatus(status),
-            paymentCashback.sentAmount
+            paymentCashback.balance
         );
     }
 
@@ -303,7 +303,7 @@ contract CashbackController is
     /// @inheritdoc ICashbackControllerPrimary
     function getPaymentCashback(bytes32 paymentId) external view returns (PaymentCashbackView memory) {
         PaymentCashback storage paymentCashback = _getCashbackControllerStorage().paymentCashbacks[paymentId];
-        return PaymentCashbackView({ sentAmount: paymentCashback.sentAmount, account: paymentCashback.account });
+        return PaymentCashbackView({ balance: paymentCashback.balance, recipient: paymentCashback.recipient });
     }
 
     // ------------------ Pure functions -------------------------- //
@@ -332,21 +332,21 @@ contract CashbackController is
         CashbackControllerStorage storage $ = _getCashbackControllerStorage();
         PaymentCashback storage paymentCashback = $.paymentCashbacks[paymentId];
         PaymentCashbackStatus status;
-        uint256 oldCashbackAmount = paymentCashback.sentAmount;
-        address account = paymentCashback.account;
+        uint256 oldCashbackAmount = paymentCashback.balance;
+        address recipient = paymentCashback.recipient;
 
-        if (account == address(0)) {
+        if (recipient == address(0)) {
             revert CashbackController_CashbackDoesNotExist();
         }
 
         if (desiredCashbackAmount > oldCashbackAmount) {
             uint256 amount = desiredCashbackAmount - oldCashbackAmount;
             (status, amount) = _increaseCashback(paymentCashback, amount);
-            emit CashbackIncreased(paymentId, account, status, oldCashbackAmount, paymentCashback.sentAmount);
+            emit CashbackIncreased(paymentId, recipient, status, oldCashbackAmount, paymentCashback.balance);
         } else if (desiredCashbackAmount < oldCashbackAmount) {
             uint256 amount = oldCashbackAmount - desiredCashbackAmount;
             (status, amount) = _revokeCashback(paymentCashback, amount);
-            emit CashbackRevoked(paymentId, account, status, oldCashbackAmount, paymentCashback.sentAmount);
+            emit CashbackRevoked(paymentId, recipient, status, oldCashbackAmount, paymentCashback.balance);
         }
     }
 
@@ -367,8 +367,10 @@ contract CashbackController is
         uint256 desiredAmount
     ) internal returns (PaymentCashbackStatus status, uint256 increasedAmount) {
         CashbackControllerStorage storage $ = _getCashbackControllerStorage();
-        AccountCashback memory oldAccountCashback = $.accountCashbacks[paymentCashback.account];
-        (status, increasedAmount) = _processAccountCashbackWithCap(paymentCashback.account, desiredAmount);
+        AccountCashback memory oldAccountCashback = $.accountCashbacks[paymentCashback.recipient];
+        address recipient = paymentCashback.recipient;
+
+        (status, increasedAmount) = _processAccountCashbackWithCap(recipient, desiredAmount);
 
         // if it is not capped, we can try to transfer funds
         if (status == PaymentCashbackStatus.Capped) {
@@ -379,17 +381,17 @@ contract CashbackController is
             status = PaymentCashbackStatus.OutOfFunds;
             increasedAmount = 0;
             // restore account cashback state to previous state if we failed to increase cashback
-            $.accountCashbacks[paymentCashback.account] = oldAccountCashback;
+            $.accountCashbacks[recipient] = oldAccountCashback;
         } else {
             IERC20($.token).transferFrom($.cashbackTreasury, address(this), increasedAmount);
 
             if ($.cashbackVault != address(0)) {
-                ICashbackVault($.cashbackVault).grantCashback(paymentCashback.account, uint64(increasedAmount));
+                ICashbackVault($.cashbackVault).grantCashback(recipient, uint64(increasedAmount));
             } else {
-                IERC20($.token).transfer(paymentCashback.account, increasedAmount);
+                IERC20($.token).transfer(recipient, increasedAmount);
             }
         }
-        paymentCashback.sentAmount += uint64(increasedAmount);
+        paymentCashback.balance += uint64(increasedAmount);
     }
 
     /// @dev Revokes partially or fully cashback related to a payment.
@@ -399,24 +401,25 @@ contract CashbackController is
     ) internal returns (PaymentCashbackStatus status, uint256 revokedAmount) {
         CashbackControllerStorage storage $ = _getCashbackControllerStorage();
         status = PaymentCashbackStatus.Success;
+        address recipient = paymentCashback.recipient;
 
         (uint256 vaultRevocationAmount, uint256 accountRevocationAmount) = _calculateRevokationAmounts(
-            paymentCashback.account,
+            recipient,
             desiredAmount
         );
 
         if (vaultRevocationAmount > 0) {
-            ICashbackVault($.cashbackVault).revokeCashback(paymentCashback.account, uint64(vaultRevocationAmount));
+            ICashbackVault($.cashbackVault).revokeCashback(recipient, uint64(vaultRevocationAmount));
         }
         if (accountRevocationAmount > 0) {
-            IERC20($.token).transferFrom(paymentCashback.account, address(this), accountRevocationAmount);
+            IERC20($.token).transferFrom(recipient, address(this), accountRevocationAmount);
         }
 
         IERC20($.token).transfer($.cashbackTreasury, desiredAmount);
-        _reduceTotalCashback(paymentCashback.account, desiredAmount);
+        _reduceTotalCashback(recipient, desiredAmount);
         revokedAmount = desiredAmount;
 
-        paymentCashback.sentAmount -= uint64(revokedAmount);
+        paymentCashback.balance -= uint64(revokedAmount);
     }
 
     /**

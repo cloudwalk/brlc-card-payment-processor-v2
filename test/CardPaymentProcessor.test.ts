@@ -1464,7 +1464,7 @@ class TestContext {
       expectedPayment.extraAmount,
       `payment[${paymentIndex}].extraAmount is wrong`,
     );
-    expect(actualCashbackState.sentAmount).to.equal(
+    expect(actualCashbackState.balance).to.equal(
       expectedPayment.cashbackAmount,
       `cashbackState[${paymentIndex}].cashbackAmount is wrong`,
     );

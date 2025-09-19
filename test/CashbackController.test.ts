@@ -541,8 +541,8 @@ describe("Contract 'CashbackController'", () => {
           const operationState = resultToObject(await cashbackController
             .getPaymentCashback(paymentId("id1")));
           checkEquality(operationState, {
-            sentAmount: newCashbackAmount,
-            account: payer.address,
+            balance: newCashbackAmount,
+            recipient: payer.address,
           });
         });
       });
@@ -563,8 +563,8 @@ describe("Contract 'CashbackController'", () => {
           const operationState = resultToObject(await cashbackController
             .getPaymentCashback(paymentId("id1")));
           checkEquality(operationState, {
-            sentAmount: newCashbackAmount,
-            account: payer.address,
+            balance: newCashbackAmount,
+            recipient: payer.address,
           });
         });
       });
@@ -585,8 +585,8 @@ describe("Contract 'CashbackController'", () => {
           const operationState = resultToObject(await cashbackController
             .getPaymentCashback(paymentId("id1")));
           checkEquality(operationState, {
-            sentAmount: newCashbackAmount,
-            account: payer.address,
+            balance: newCashbackAmount,
+            recipient: payer.address,
           });
         });
       });
@@ -606,8 +606,8 @@ describe("Contract 'CashbackController'", () => {
           const operationState = resultToObject(await cashbackController
             .getPaymentCashback(paymentId("id1")));
           checkEquality(operationState, {
-            sentAmount: cashbackAmount,
-            account: payer.address,
+            balance: cashbackAmount,
+            recipient: payer.address,
           });
         });
       });
@@ -658,8 +658,8 @@ describe("Contract 'CashbackController'", () => {
                 .getPaymentCashback(paymentId("id1")));
 
               checkEquality(operationState, {
-                sentAmount: cashbackAmount,
-                account: payer.address,
+                balance: cashbackAmount,
+                recipient: payer.address,
               });
             });
 
@@ -719,8 +719,8 @@ describe("Contract 'CashbackController'", () => {
                 .getPaymentCashback(paymentId("id1")));
 
               checkEquality(operationState, {
-                sentAmount: 0n,
-                account: payer.address,
+                balance: 0n,
+                recipient: payer.address,
               });
             });
 
@@ -774,8 +774,8 @@ describe("Contract 'CashbackController'", () => {
                 .getPaymentCashback(paymentId("id1")));
 
               checkEquality(operationState, {
-                sentAmount: 0n,
-                account: ethers.ZeroAddress,
+                balance: 0n,
+                recipient: ethers.ZeroAddress,
               });
             });
 
@@ -951,8 +951,8 @@ describe("Contract 'CashbackController'", () => {
                 const operationState = resultToObject(await cashbackController
                   .getPaymentCashback(paymentId("id1")));
                 checkEquality(operationState, {
-                  sentAmount: newCashbackAmount,
-                  account: payer.address,
+                  balance: newCashbackAmount,
+                  recipient: payer.address,
                 });
               });
 
@@ -1002,8 +1002,8 @@ describe("Contract 'CashbackController'", () => {
                 const operationState = resultToObject(await cashbackController
                   .getPaymentCashback(paymentId("id1")));
                 checkEquality(operationState, {
-                  sentAmount: newCashbackAmount,
-                  account: payer.address,
+                  balance: newCashbackAmount,
+                  recipient: payer.address,
                 });
               });
 
@@ -1049,8 +1049,8 @@ describe("Contract 'CashbackController'", () => {
                 const operationState = resultToObject(await cashbackController
                   .getPaymentCashback(paymentId("id1")));
                 checkEquality(operationState, {
-                  sentAmount: cashbackAmount,
-                  account: payer.address,
+                  balance: cashbackAmount,
+                  recipient: payer.address,
                 });
               });
 
@@ -1191,8 +1191,8 @@ describe("Contract 'CashbackController'", () => {
                   const operationState = resultToObject(await cashbackController
                     .getPaymentCashback(paymentId("id1")));
                   checkEquality(operationState, {
-                    sentAmount: newCashbackAmount,
-                    account: payer.address,
+                    balance: newCashbackAmount,
+                    recipient: payer.address,
                   });
                 });
 
@@ -1250,8 +1250,8 @@ describe("Contract 'CashbackController'", () => {
                   const operationState = resultToObject(await cashbackController
                     .getPaymentCashback(paymentId("id1")));
                   checkEquality(operationState, {
-                    sentAmount: newCashbackAmount,
-                    account: payer.address,
+                    balance: newCashbackAmount,
+                    recipient: payer.address,
                   });
                 });
 
@@ -1305,8 +1305,8 @@ describe("Contract 'CashbackController'", () => {
                   const operationState = resultToObject(await cashbackController
                     .getPaymentCashback(paymentId("id1")));
                   checkEquality(operationState, {
-                    sentAmount: 0n,
-                    account: payer.address,
+                    balance: 0n,
+                    recipient: payer.address,
                   });
                 });
 
@@ -1383,8 +1383,8 @@ describe("Contract 'CashbackController'", () => {
                   const operationState = resultToObject(await cashbackController
                     .getPaymentCashback(paymentId("id1")));
                   checkEquality(operationState, {
-                    sentAmount: 0n,
-                    account: payer.address,
+                    balance: 0n,
+                    recipient: payer.address,
                   });
                 });
 
@@ -1432,8 +1432,8 @@ describe("Contract 'CashbackController'", () => {
                   const operationState = resultToObject(await cashbackController
                     .getPaymentCashback(paymentId("id1")));
                   checkEquality(operationState, {
-                    sentAmount: newCashbackAmount,
-                    account: payer.address,
+                    balance: newCashbackAmount,
+                    recipient: payer.address,
                   });
                 });
 
@@ -1513,8 +1513,8 @@ describe("Contract 'CashbackController'", () => {
               const operationState = resultToObject(await cashbackController
                 .getPaymentCashback(paymentId("id1")));
               checkEquality(operationState, {
-                sentAmount: 0n,
-                account: payer.address,
+                balance: 0n,
+                recipient: payer.address,
               });
             });
 
@@ -1591,8 +1591,8 @@ describe("Contract 'CashbackController'", () => {
               const operationState = resultToObject(await cashbackController
                 .getPaymentCashback(paymentId("id1")));
               checkEquality(operationState, {
-                sentAmount: initialOperationState.sentAmount,
-                account: payer.address,
+                balance: initialOperationState.balance,
+                recipient: payer.address,
               });
             });
             it("should not transfer tokens", async () => {

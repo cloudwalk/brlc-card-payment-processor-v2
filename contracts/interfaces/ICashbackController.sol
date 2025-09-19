@@ -57,13 +57,13 @@ interface ICashbackControllerTypes {
      *
      * Fields:
      *
-     * - sentAmount --- The cumulative cashback amount that was successfully granted related to the payment.
-     * - account ------ The address of the account that received the cashback.
+     * - balance -------- The cumulative cashback balance that was successfully granted related to the payment.
+     * - recipient ------ The address of the account that received the cashback.
      */
     struct PaymentCashback {
         // Slot 1
-        uint64 sentAmount;
-        address account;
+        uint64 balance;
+        address recipient;
         // uint32 __reserved; // Reserved until the end of the storage slot
     }
 
@@ -74,12 +74,12 @@ interface ICashbackControllerTypes {
      *
      * Fields:
      *
-     * - sentAmount --- The cumulative cashback amount that was successfully granted related to the payment.
-     * - account ------ The address of the account that received the cashback.
+     * - balance -------- The cumulative cashback balance that was successfully granted related to the payment.
+     * - recipient ------ The address of the account that received the cashback.
      */
     struct PaymentCashbackView {
-        uint256 sentAmount;
-        address account;
+        uint256 balance;
+        address recipient;
     }
 
     /**
