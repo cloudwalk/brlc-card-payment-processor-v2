@@ -12,6 +12,11 @@ import { ICardPaymentProcessorHook } from "./interfaces/ICardPaymentProcessorHoo
 import { ICardPaymentProcessorTypes } from "../interfaces/ICardPaymentProcessor.sol";
 import { AccessControlExtUpgradeable } from "../base/AccessControlExtUpgradeable.sol";
 
+/**
+ * @title CardPaymentProcessorHookable base contract
+ * @author CloudWalk Inc. (See https://www.cloudwalk.io)
+ * @dev Provides hook registration and dispatching for payment lifecycle events.
+ */
 abstract contract CardPaymentProcessorHookable is
     AccessControlExtUpgradeable,
     ICardPaymentProcessorHookable,

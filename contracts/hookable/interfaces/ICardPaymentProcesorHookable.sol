@@ -4,7 +4,27 @@ pragma solidity ^0.8.24;
 
 import { ICardPaymentProcessorTypes } from "../../interfaces/ICardPaymentProcessor.sol";
 
+/**
+ * @title ICardPaymentProcessorHookTypes
+ * @author CloudWalk Inc. (See https://www.cloudwalk.io)
+ * @dev Common types shared across payment processor hooks.
+ */
 interface ICardPaymentProcessorHookTypes {
+    /**
+     * @dev The data of a single payment for use in the hook functions.
+     *
+     * Fields:
+     *
+     * - status ----------- The current status of the payment.
+     * - payer ------------ The account that made the payment.
+     * - cashbackRate ----- The cashback rate in per mil.
+     * - confirmedAmount -- The confirmed amount that was transferred to the cash-out account.
+     * - sponsor ---------- The sponsor of the payment if it is subsidized. Otherwise the zero address.
+     * - subsidyLimit ----- The subsidy limit of the payment if it is subsidized. Otherwise zero.
+     * - baseAmount ------- The base amount of tokens in the payment.
+     * - extraAmount ------ The extra amount of tokens in the payment, without a cashback.
+     * - refundAmount ----- The total amount of all refunds related to the payment.
+     */
     struct PaymentHookData {
         ICardPaymentProcessorTypes.PaymentStatus status;
         address payer;
