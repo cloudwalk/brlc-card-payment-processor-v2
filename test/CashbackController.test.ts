@@ -324,7 +324,7 @@ describe("Contract 'CashbackController'", () => {
 
       it("new cashback treasury address is zero", async () => {
         await expect(cashbackControllerFromOwner.setCashbackTreasury(ethers.ZeroAddress))
-          .to.be.revertedWithCustomError(cashbackControllerFromOwner, "CashbackController_TreasuryZeroAddress");
+          .to.be.revertedWithCustomError(cashbackControllerFromOwner, "CashbackController_TreasuryAddressZero");
       });
 
       it("if the cashback treasury is not changed", async () => {

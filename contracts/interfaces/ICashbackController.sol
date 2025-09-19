@@ -272,7 +272,7 @@ interface ICashbackControllerErrors {
     error CashbackController_TreasuryUnchanged();
 
     /// @dev The zero cashback treasury address has been passed as a function argument.
-    error CashbackController_TreasuryZeroAddress();
+    error CashbackController_TreasuryAddressZero();
 }
 
 /**

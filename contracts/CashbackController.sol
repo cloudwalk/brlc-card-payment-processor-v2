@@ -220,7 +220,7 @@ contract CashbackController is
 
         // This is needed to allow cashback changes for any existing active payments.
         if (newCashbackTreasury == address(0)) {
-            revert CashbackController_TreasuryZeroAddress();
+            revert CashbackController_TreasuryAddressZero();
         }
         if (oldCashbackTreasury == newCashbackTreasury) {
             revert CashbackController_TreasuryUnchanged();
