@@ -61,7 +61,7 @@ Claimable cashback:  CashbackTreasury <=> CashbackController <=> CashbackVault <
 7. Connect CC as a hook on CPP via `registerHook()`.
 8. (Optional) Enable claimable mode by calling `setCashbackVault()` on CC.
 9. (Claimable mode) On CV, grant `CASHBACK_OPERATOR_ROLE` to CC and `MANAGER_ROLE` to your manager.
-10. (Optional) Configure default cashback rate on CPP via `setCashbackRate(uint256)`.
+10. (Optional) Configure default cashback rate on CPP via `setDefaultCashbackRate(uint256)`.
 11. Execute payments with cashback on CPP.
 
 # 2.3

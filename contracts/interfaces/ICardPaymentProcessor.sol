@@ -475,7 +475,7 @@ interface ICardPaymentProcessorConfiguration {
      * @param oldRate The value of the old cashback rate.
      * @param newRate The value of the new cashback rate.
      */
-    event CashbackRateChanged(uint256 oldRate, uint256 newRate);
+    event DefaultCashbackRateChanged(uint256 oldRate, uint256 newRate);
 
     // ------------------ Transactional functions ----------------- //
 
@@ -493,15 +493,15 @@ interface ICardPaymentProcessorConfiguration {
     /**
      * @dev Sets a new default cashback rate for new payments.
      *
-     * Emits a {CashbackRateChanged} event.
+     * Emits a {DefaultCashbackRateChanged} event.
      *
      * @param newCashbackRate The value of the new cashback rate.
      */
-    function setCashbackRate(uint256 newCashbackRate) external;
+    function setDefaultCashbackRate(uint256 newCashbackRate) external;
 
     // ------------------ View functions -------------------------- //
     /// @dev Returns the current cashback rate.
-    function cashbackRate() external view returns (uint256);
+    function defaultCashbackRate() external view returns (uint256);
 }
 
 /**

@@ -10,7 +10,7 @@ import { ICashbackControllerTypes } from "./interfaces/ICashbackController.sol";
  * @dev Defines the storage layout for the cashback controller smart contract.
  */
 abstract contract ICashbackControllerStorageLayout is ICashbackControllerTypes {
-    // --- Storage layout ----- //
+    // ------------------ Storage layout -------------------------- //
 
     /*
      * ERC-7201: Namespaced Storage Layout

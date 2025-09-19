@@ -53,7 +53,7 @@ const eventAddendumCheckingOptions: EventParameterCheckingOptions = {
 const EVENT_NAME_ACCOUNT_REFUNDED = "AccountRefunded";
 const EVENT_NAME_CASH_OUT_ACCOUNT_CHANGED = "CashOutAccountChanged";
 const EVENT_NAME_CASHBACK_INCREASED = "CashbackIncreased";
-const EVENT_NAME_CASHBACK_RATE_CHANGED = "CashbackRateChanged";
+const EVENT_NAME_DEFAULT_CASHBACK_RATE_CHANGED = "DefaultCashbackRateChanged";
 const EVENT_NAME_CASHBACK_REVOKED = "CashbackRevoked";
 const EVENT_NAME_CASHBACK_SENT = "CashbackSent";
 const EVENT_NAME_PAYMENT_CONFIRMED_AMOUNT_CHANGED = "PaymentConfirmedAmountChanged";
@@ -364,7 +364,7 @@ class CardPaymentProcessorModel {
     return this.#totalUnconfirmedRemainder;
   }
 
-  get cashbackRate(): number {
+  get defaultCashbackRate(): number {
     return this.#cashbackRate;
   }
 
@@ -845,7 +845,7 @@ class CardPaymentProcessorShell {
 
   async disableCashback() {
     this.model.disableCashback();
-    await proveTx(this.contract.setCashbackRate(0));
+    await proveTx(this.contract.setDefaultCashbackRate(0));
   }
 
   async makeCommonPayments(
@@ -1375,7 +1375,7 @@ class TestContext {
       throw new Error("Cannot set the expected cashback for account because current cashback is already higher");
     }
     const preliminarilyPaymentAmount = Math.floor(
-      cashbackAmountDiff * CASHBACK_FACTOR / this.cardPaymentProcessorShell.model.cashbackRate,
+      cashbackAmountDiff * CASHBACK_FACTOR / this.cardPaymentProcessorShell.model.defaultCashbackRate,
     );
     const payment: TestPayment = {
       id: ethers.id("cashbackPresetPayment"),
@@ -1630,7 +1630,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
 
     await proveTx(cashbackController.setCashbackTreasury(cashbackTreasury.address));
     await proveTx(connect(tokenMock, cashbackTreasury).approve(getAddress(cashbackController), MAX_UINT256));
-    await proveTx(cardPaymentProcessor.setCashbackRate(CASHBACK_RATE_DEFAULT));
+    await proveTx(cardPaymentProcessor.setDefaultCashbackRate(CASHBACK_RATE_DEFAULT));
 
     await proveTx(cardPaymentProcessor.setCashOutAccount(cashOutAccount.address));
     await proveTx(connect(tokenMock, cashOutAccount).approve(getAddress(cardPaymentProcessor), MAX_UINT256));
@@ -1728,7 +1728,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
       expect(await cardPaymentProcessor.paused()).to.equal(false);
 
       // Cashback related values
-      expect(await cardPaymentProcessor.cashbackRate()).to.equal(0);
+      expect(await cardPaymentProcessor.defaultCashbackRate()).to.equal(0);
       expect(await cardPaymentProcessor.MAX_CASHBACK_RATE()).to.equal(CASHBACK_RATE_MAX);
 
       // The cash-out account
@@ -1849,41 +1849,41 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
     });
   });
 
-  describe("Function 'setCashbackRate()'", () => {
+  describe("Function 'setDefaultCashbackRate()'", () => {
     it("Executes as expected and emits the correct event", async () => {
       const { cardPaymentProcessor } = await setUpFixture(deployTokenMockAndCardPaymentProcessor);
 
-      await expect(cardPaymentProcessor.setCashbackRate(CASHBACK_RATE_DEFAULT))
-        .to.emit(cardPaymentProcessor, EVENT_NAME_CASHBACK_RATE_CHANGED)
+      await expect(cardPaymentProcessor.setDefaultCashbackRate(CASHBACK_RATE_DEFAULT))
+        .to.emit(cardPaymentProcessor, EVENT_NAME_DEFAULT_CASHBACK_RATE_CHANGED)
         .withArgs(CASHBACK_RATE_ZERO, CASHBACK_RATE_DEFAULT);
 
-      expect(await cardPaymentProcessor.cashbackRate()).to.equal(CASHBACK_RATE_DEFAULT);
+      expect(await cardPaymentProcessor.defaultCashbackRate()).to.equal(CASHBACK_RATE_DEFAULT);
 
-      await expect(cardPaymentProcessor.setCashbackRate(CASHBACK_RATE_ZERO))
-        .to.emit(cardPaymentProcessor, EVENT_NAME_CASHBACK_RATE_CHANGED)
+      await expect(cardPaymentProcessor.setDefaultCashbackRate(CASHBACK_RATE_ZERO))
+        .to.emit(cardPaymentProcessor, EVENT_NAME_DEFAULT_CASHBACK_RATE_CHANGED)
         .withArgs(CASHBACK_RATE_DEFAULT, CASHBACK_RATE_ZERO);
 
-      expect(await cardPaymentProcessor.cashbackRate()).to.equal(CASHBACK_RATE_ZERO);
+      expect(await cardPaymentProcessor.defaultCashbackRate()).to.equal(CASHBACK_RATE_ZERO);
     });
 
     it("Is reverted if the caller does not have the owner role", async () => {
       const { cardPaymentProcessor } = await setUpFixture(deployTokenMockAndCardPaymentProcessor);
-      await expect(connect(cardPaymentProcessor, user1).setCashbackRate(CASHBACK_RATE_DEFAULT))
+      await expect(connect(cardPaymentProcessor, user1).setDefaultCashbackRate(CASHBACK_RATE_DEFAULT))
         .to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_ACCESS_CONTROL_UNAUTHORIZED_ACCOUNT)
         .withArgs(user1.address, OWNER_ROLE);
     });
 
     it("Is reverted if the new rate exceeds the allowable maximum", async () => {
       const { cardPaymentProcessor } = await setUpFixture(deployTokenMockAndCardPaymentProcessor);
-      await expect(cardPaymentProcessor.setCashbackRate(CASHBACK_RATE_MAX + 1))
+      await expect(cardPaymentProcessor.setDefaultCashbackRate(CASHBACK_RATE_MAX + 1))
         .to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_CASHBACK_RATE_EXCESS);
     });
 
     it("Is reverted if called with the same argument twice", async () => {
       const { cardPaymentProcessor } = await setUpFixture(deployTokenMockAndCardPaymentProcessor);
-      await proveTx(cardPaymentProcessor.setCashbackRate(CASHBACK_RATE_DEFAULT));
+      await proveTx(cardPaymentProcessor.setDefaultCashbackRate(CASHBACK_RATE_DEFAULT));
 
-      await expect(cardPaymentProcessor.setCashbackRate(CASHBACK_RATE_DEFAULT))
+      await expect(cardPaymentProcessor.setDefaultCashbackRate(CASHBACK_RATE_DEFAULT))
         .to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_CASHBACK_RATE_UNCHANGED);
     });
   });

@@ -434,7 +434,7 @@ contract CardPaymentProcessor is
      * - The new rate must differ from the previously set one.
      * - The new rate must not exceed the allowable maximum specified in the {MAX_CASHBACK_RATE} constant.
      */
-    function setCashbackRate(uint256 newCashbackRate) external onlyRole(OWNER_ROLE) {
+    function setDefaultCashbackRate(uint256 newCashbackRate) external onlyRole(OWNER_ROLE) {
         uint256 oldCashbackRate = _cashbackRate;
         if (newCashbackRate == oldCashbackRate) {
             revert CashbackRateUnchanged();
@@ -445,7 +445,7 @@ contract CardPaymentProcessor is
 
         _cashbackRate = uint16(newCashbackRate);
 
-        emit CashbackRateChanged(oldCashbackRate, newCashbackRate);
+        emit DefaultCashbackRateChanged(oldCashbackRate, newCashbackRate);
     }
 
     // ------------------ View functions -------------------------- //
@@ -456,7 +456,7 @@ contract CardPaymentProcessor is
     }
 
     /// @inheritdoc ICardPaymentProcessorConfiguration
-    function cashbackRate() external view returns (uint256) {
+    function defaultCashbackRate() external view returns (uint256) {
         return _cashbackRate;
     }
 
