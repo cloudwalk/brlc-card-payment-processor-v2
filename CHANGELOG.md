@@ -34,8 +34,8 @@ Claimable cashback:  CashbackTreasury <=> CashbackController <=> CashbackVault <
   - `getAccountCashback(address)`
   - `getPaymentCashback(bytes32)`
 - Events
-  - `CashbackVaultUpdated(address cashbackVault)`
-  - `CashbackTreasuryChanged(address oldTreasury, address newTreasury)`
+  - `CashbackVaultUpdated(address newCashbackVault, address oldCashbackVault)`
+  - `CashbackTreasuryUpdated(address newTreasury, address oldTreasury)`
   - `CashbackSent(bytes32 indexed paymentId, address indexed recipient, PaymentCashbackStatus indexed status, uint256 amount)`
   - `CashbackIncreased(bytes32 indexed paymentId, address indexed recipient, PaymentCashbackStatus indexed status, uint256 delta, uint256 balance)`
   - `CashbackDecreased(bytes32 indexed paymentId, address indexed recipient, PaymentCashbackStatus indexed status, uint256 delta, uint256 balance)`
