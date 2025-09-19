@@ -191,26 +191,27 @@ interface ICashbackControllerConfiguration is ICashbackControllerTypes {
     // ------------------ Events ---------------------------------- //
     /**
      * @dev Emitted when the cashback treasury address is changed.
-     * @param oldTreasury The address of the old cashback treasury.
      * @param newTreasury The address of the new cashback treasury.
+     * @param oldTreasury The address of the old cashback treasury.
      */
-    event CashbackTreasuryChanged(address oldTreasury, address newTreasury);
+    event CashbackTreasuryUpdated(address newTreasury, address oldTreasury);
 
     /**
      * @dev Emitted when the cashback vault is updated.
      *
      * See {ICashbackController} for details.
      *
-     * @param cashbackVault The address of the cashback vault. If zero the claimable mode is disabled.
+     * @param newCashbackVault The address of the new cashback vault. If zero the claimable mode is disabled.
+     * @param oldCashbackVault The address of the old cashback vault.
      */
-    event CashbackVaultUpdated(address cashbackVault);
+    event CashbackVaultUpdated(address newCashbackVault, address oldCashbackVault);
 
     // ------------------ Transactional functions ----------------- //
 
     /**
      * @dev Sets a new address of the cashback treasury.
      *
-     * Emits a {CashbackTreasuryChanged} event.
+     * Emits a {CashbackTreasuryUpdated} event.
      *
      * @param newCashbackTreasury The address of the new cashback treasury.
      */

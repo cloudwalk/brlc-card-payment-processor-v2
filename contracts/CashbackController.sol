@@ -224,7 +224,7 @@ contract CashbackController is
 
         $.cashbackTreasury = newCashbackTreasury;
 
-        emit CashbackTreasuryChanged(oldCashbackTreasury, newCashbackTreasury);
+        emit CashbackTreasuryUpdated(newCashbackTreasury, oldCashbackTreasury);
     }
 
     /**
@@ -258,7 +258,7 @@ contract CashbackController is
         }
         $.cashbackVault = cashbackVault;
 
-        emit CashbackVaultUpdated(cashbackVault);
+        emit CashbackVaultUpdated(cashbackVault, oldCashbackVault);
     }
 
     // ------------------ View functions -------------------------- //

@@ -299,8 +299,8 @@ describe("Contract 'CashbackController'", () => {
       });
       it("should emit the required event", async () => {
         await expect(tx)
-          .to.emit(cashbackControllerFromOwner, "CashbackTreasuryChanged")
-          .withArgs(ethers.ZeroAddress, CASHBACK_TREASURY_ADDRESS_STUB1);
+          .to.emit(cashbackControllerFromOwner, "CashbackTreasuryUpdated")
+          .withArgs(CASHBACK_TREASURY_ADDRESS_STUB1, ethers.ZeroAddress);
       });
 
       it("should change the cashback treasury address", async () => {
@@ -311,8 +311,8 @@ describe("Contract 'CashbackController'", () => {
         tx = await cashbackControllerFromOwner.setCashbackTreasury(CASHBACK_TREASURY_ADDRESS_STUB2);
 
         await expect(tx)
-          .to.emit(cashbackControllerFromOwner, "CashbackTreasuryChanged")
-          .withArgs(CASHBACK_TREASURY_ADDRESS_STUB1, CASHBACK_TREASURY_ADDRESS_STUB2);
+          .to.emit(cashbackControllerFromOwner, "CashbackTreasuryUpdated")
+          .withArgs(CASHBACK_TREASURY_ADDRESS_STUB2, CASHBACK_TREASURY_ADDRESS_STUB1);
       });
     });
     describe("Should revert if", () => {
@@ -397,7 +397,7 @@ describe("Contract 'CashbackController'", () => {
         it("should emit the required event", async () => {
           await expect(tx)
             .to.emit(cashbackController, "CashbackVaultUpdated")
-            .withArgs(await defaultTokenCashbackVaults[0].getAddress());
+            .withArgs(await defaultTokenCashbackVaults[0].getAddress(), ethers.ZeroAddress);
         });
 
         it("should update the cashback vault", async () => {
@@ -426,7 +426,7 @@ describe("Contract 'CashbackController'", () => {
       it("should emit the required event", async () => {
         await expect(tx)
           .to.emit(cashbackController, "CashbackVaultUpdated")
-          .withArgs(await defaultTokenCashbackVaults[1].getAddress());
+          .withArgs(await defaultTokenCashbackVaults[1].getAddress(), await defaultTokenCashbackVaults[0].getAddress());
       });
 
       it("should update the cashback vault", async () => {
@@ -450,7 +450,7 @@ describe("Contract 'CashbackController'", () => {
       it("should emit the required event", async () => {
         await expect(tx)
           .to.emit(cashbackController, "CashbackVaultUpdated")
-          .withArgs(ethers.ZeroAddress);
+          .withArgs(ethers.ZeroAddress, await defaultTokenCashbackVaults[0].getAddress());
       });
 
       it("should update the cashback vault", async () => {
