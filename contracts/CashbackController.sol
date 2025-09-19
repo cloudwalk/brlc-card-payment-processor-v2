@@ -311,6 +311,8 @@ contract CashbackController is
     /// @inheritdoc ICashbackController
     function proveCashbackController() external pure {}
 
+    // ------------------ Internal functions ---------------------- //
+
     /// @dev Defines the payer part of a payment base amount according to a subsidy limit.
     function _definePayerBaseAmount(uint256 paymentBaseAmount, uint256 subsidyLimit) internal pure returns (uint256) {
         if (paymentBaseAmount > subsidyLimit) {
@@ -325,8 +327,6 @@ contract CashbackController is
         uint256 cashback = (amount * cashbackRate_) / CASHBACK_FACTOR;
         return ((cashback + CASHBACK_ROUNDING_COEF / 2) / CASHBACK_ROUNDING_COEF) * CASHBACK_ROUNDING_COEF;
     }
-
-    // ------------------ Internal functions ---------------------- //
 
     function _updateCashbackAmount(bytes32 paymentId, uint256 desiredCashbackAmount) internal {
         CashbackControllerStorage storage $ = _getCashbackControllerStorage();
