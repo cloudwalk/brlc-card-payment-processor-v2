@@ -9,20 +9,9 @@ import { AccessControlUpgradeable } from "@openzeppelin/contracts-upgradeable/ac
  * @title CashbackControllerWithForcibleRole test contract
  * @author CloudWalk Inc. (See https://www.cloudwalk.io)
  * @dev Test helper that exposes role force-grant and initializes parent contracts.
+ * @custom:oz-upgrades-unsafe-allow missing-initializer
  */
 contract CashbackControllerWithForcibleRole is CashbackController {
-    function initialize(address token_) external override initializer {
-        __AccessControlExt_init_unchained();
-        __Rescuable_init_unchained();
-        __UUPSExt_init_unchained(); // This is needed only to avoid errors during coverage assessment
-
-        CashbackControllerStorage storage $ = _getCashbackControllerStorage();
-        $.token = token_;
-
-        _setRoleAdmin(HOOK_TRIGGER_ROLE, GRANTOR_ROLE);
-        _setRoleAdmin(CASHBACK_OPERATOR_ROLE, OWNER_ROLE);
-        _grantRole(OWNER_ROLE, _msgSender());
-    }
     function forceHookTriggerRole(address account) public {
         AccessControlUpgradeable._grantRole(HOOK_TRIGGER_ROLE, account);
     }
