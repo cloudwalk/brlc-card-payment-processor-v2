@@ -10,7 +10,7 @@ import { EnumerableSet } from "@openzeppelin/contracts/utils/structs/EnumerableS
  * @dev Defines the storage layout for the card payment processor hookable smart contract.
  */
 abstract contract CardPaymentProcessorHookableStorageLayout {
-    // --- Storage layout ----- //
+    // ------------------ Storage layout -------------------------- //
 
     /*
      * ERC-7201: Namespaced Storage Layout
@@ -33,7 +33,7 @@ abstract contract CardPaymentProcessorHookableStorageLayout {
         mapping(bytes4 hookSelector => EnumerableSet.AddressSet) hooks;
     }
 
-    // --- Internal functions ---- //
+    // ------------------ Internal functions ---------------------- //
 
     /// @dev Returns the storage slot location for the `CashbackVaultStorage` struct.
     function _getCardPaymentProcessorHookableStorage()

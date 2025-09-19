@@ -292,7 +292,7 @@ interface ICardPaymentProcessorPrimary is ICardPaymentProcessorTypes {
      * @param extraAmount The extra amount of tokens to transfer because of the payment. No cashback is applied.
      * @param sponsor The address of a sponsor if the payment is subsidized, otherwise zero.
      * @param subsidyLimit The amount of tokens that the sponsor is compensating for the payment.
-     * @param cashbackRate If positive then it is a special cashback rate for the payment in units of `CASHBACK_FACTOR`.
+     * @param cashbackRate If positive then it is a special cashback rate for the payment in units of per mil.
      *                     If negative then the contract settings are used to determine cashback.
      *                     If zero then cashback is not sent.
      * @param confirmationAmount The amount to confirm for the payment immediately after making.

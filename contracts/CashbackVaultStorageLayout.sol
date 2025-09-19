@@ -10,7 +10,7 @@ import { ICashbackVaultTypes } from "./interfaces/ICashbackVault.sol";
  * @dev Defines the storage layout for the cashback vault smart contract.
  */
 abstract contract CashbackVaultStorageLayout is ICashbackVaultTypes {
-    // --- Storage layout ----- //
+    // ------------------ Storage layout -------------------------- //
 
     /*
      * ERC-7201: Namespaced Storage Layout
@@ -40,7 +40,7 @@ abstract contract CashbackVaultStorageLayout is ICashbackVaultTypes {
         mapping(address account => AccountCashbackState state) accountCashbackStates;
     }
 
-    // --- Internal functions ---- //
+    // ------------------ Internal functions ---------------------- //
 
     /// @dev Returns the storage slot location for the `CashbackVaultStorage` struct.
     function _getCashbackVaultStorage() internal pure returns (CashbackVaultStorage storage $) {

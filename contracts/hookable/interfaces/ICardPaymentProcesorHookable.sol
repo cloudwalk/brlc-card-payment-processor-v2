@@ -71,7 +71,7 @@ interface ICardPaymentProcessorHookable is ICardPaymentProcessorHookTypes {
      */
     event HookUnregistered(address indexed hook, bytes4 methodSelector);
 
-    // ------------------ Management functions -------------------- //
+    // ------------------ Transactional functions ----------------- //
 
     /**
      * @dev Registers a hook by checking its supported hook methods.
