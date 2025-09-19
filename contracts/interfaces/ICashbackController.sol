@@ -9,7 +9,7 @@ import { IAfterPaymentCanceledHook } from "../hookable/interfaces/ICardPaymentPr
 /**
  * @title CashbackController types interface
  * @author CloudWalk Inc. (See https://www.cloudwalk.io)
- * @dev The custom types used in the wrapper contract for the cashback controller operations.
+ * @dev The custom types used in the wrapper contract the cashback operations for card payments.
  */
 interface ICashbackControllerTypes {
     /**
@@ -26,7 +26,8 @@ interface ICashbackControllerTypes {
      * Notes:
      *
      * 1. All other cases (allowance problems or some transfer issues) result in a revert.
-     * 2. If there are insufficient funds in the user's account during cashback revocation, this results in a revert, because that case should be impossible to happen.
+     * 2. If there are insufficient funds in the user's account during cashback revocation,
+     * this results in a revert, because that case should be impossible to happen.
      */
     enum PaymentCashbackStatus {
         Undefined,
@@ -102,7 +103,7 @@ interface ICashbackControllerTypes {
 /**
  * @title ICashbackControllerPrimary interface
  * @author CloudWalk Inc. (See https://www.cloudwalk.io)
- * @dev The primary interface of the wrapper contract for the cashback controller operations.
+ * @dev The primary interface of the wrapper contract for the cashback operations for card payments.
  */
 interface ICashbackControllerPrimary is ICashbackControllerTypes {
     // ------------------ Events ---------------------------------- //
@@ -180,7 +181,7 @@ interface ICashbackControllerPrimary is ICashbackControllerTypes {
 /**
  * @title ICashbackControllerConfiguration interface
  * @author CloudWalk Inc. (See https://www.cloudwalk.io)
- * @dev The configuration interface of the wrapper contract for the cashback controller operations.
+ * @dev The configuration interface of the wrapper contract for the cashback operations for card payments.
  */
 interface ICashbackControllerConfiguration is ICashbackControllerTypes {
     // ------------------ Events ---------------------------------- //
@@ -235,7 +236,7 @@ interface ICashbackControllerConfiguration is ICashbackControllerTypes {
 /**
  * @title ICashbackControllerErrors interface
  * @author CloudWalk Inc. (See https://www.cloudwalk.io)
- * @dev The custom errors used in the wrapper contract for the cashback controller operations.
+ * @dev The custom errors used in the wrapper contract for the cashback operations for card payments.
  */
 interface ICashbackControllerErrors {
     /// @dev The payment cashback does not exist.

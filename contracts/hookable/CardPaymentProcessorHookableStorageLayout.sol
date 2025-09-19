@@ -14,7 +14,8 @@ abstract contract CardPaymentProcessorHookableStorageLayout {
 
     /*
      * ERC-7201: Namespaced Storage Layout
-     * keccak256(abi.encode(uint256(keccak256("cloudwalk.storage.CardPaymentProcessorHookable")) - 1)) & ~bytes32(uint256(0xff))
+     * keccak256(abi.encode(uint256(keccak256("cloudwalk.storage.CardPaymentProcessorHookable")) - 1)) &
+     * ~bytes32(uint256(0xff))
      */
     bytes32 private constant CARD_PAYMENT_PROCESSOR_HOOKABLE_STORAGE_LOCATION =
         0x9618f3235c734729f9967657c30b823bf6898e756d4c8b6db78d6edcce4a7d00;

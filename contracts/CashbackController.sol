@@ -490,7 +490,8 @@ contract CashbackController is
     }
 
     /**
-     * @dev Adds extra validation for {HOOK_TRIGGER_ROLE}; only compatible CPP contracts with the same token are allowed.
+     * @dev Adds extra validation for {HOOK_TRIGGER_ROLE};
+     * only compatible CPP contracts with the same token are allowed.
      */
     function _grantRole(bytes32 role, address account) internal virtual override returns (bool) {
         if (role == HOOK_TRIGGER_ROLE) {
