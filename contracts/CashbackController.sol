@@ -119,6 +119,9 @@ contract CashbackController is
         PaymentHookData calldata,
         PaymentHookData calldata payment
     ) external onlyRole(HOOK_TRIGGER_ROLE) {
+        if (payment.cashbackRate == 0) {
+            return;
+        }
         CashbackControllerStorage storage $ = _getCashbackControllerStorage();
 
         if ($.cashbackTreasury == address(0)) {
@@ -150,6 +153,9 @@ contract CashbackController is
         PaymentHookData calldata,
         PaymentHookData calldata payment
     ) external onlyRole(HOOK_TRIGGER_ROLE) {
+        if (payment.cashbackRate == 0) {
+            return;
+        }
         uint256 payerBaseAmount = _definePayerBaseAmount(payment.baseAmount, payment.subsidyLimit);
         uint256 assumedSponsorRefundAmount = (payment.baseAmount > payment.subsidyLimit)
             ? ((payment.refundAmount * payment.subsidyLimit) / payment.baseAmount)
@@ -337,65 +343,54 @@ contract CashbackController is
         }
 
         if (desiredCashbackAmount > oldCashbackAmount) {
-            uint256 amount = desiredCashbackAmount - oldCashbackAmount;
-            (status, amount) = _increaseCashback(paymentCashback, amount);
-            emit CashbackIncreased(paymentId, recipient, status, amount, paymentCashback.balance);
+            uint256 delta = desiredCashbackAmount - oldCashbackAmount;
+            (status, delta) = _increaseCashback(paymentCashback, delta);
+            emit CashbackIncreased(paymentId, recipient, status, delta, paymentCashback.balance);
         } else if (desiredCashbackAmount < oldCashbackAmount) {
-            uint256 amount = oldCashbackAmount - desiredCashbackAmount;
-            (status, amount) = _revokeCashback(paymentCashback, amount);
-            emit CashbackDecreased(paymentId, recipient, status, amount, paymentCashback.balance);
+            uint256 delta = oldCashbackAmount - desiredCashbackAmount;
+            (status, delta) = _revokeCashback(paymentCashback, delta);
+            emit CashbackDecreased(paymentId, recipient, status, delta, paymentCashback.balance);
         }
     }
 
-    /**
-     * @dev Increases cashback related to a payment and stores current state of operation
-     *
-     * It may increase cashback to amount lower then desiredAmount if cashback cap is reached.
-     * After the operation, paymentCashback.cashbackAmount will be equal to the actual increased amount.
-     *
-     * @param paymentCashback The cashback to increase.
-     * @param desiredAmount The desired amount of cashback to increase.
-     *
-     * @return status The new status of the cashback operation.
-     * @return increasedAmount The actual amount of cashback that was increased.
-     */
+    /// @dev Increases cashback related to a payment
     function _increaseCashback(
         PaymentCashback storage paymentCashback,
         uint256 desiredAmount
-    ) internal returns (PaymentCashbackStatus status, uint256 increasedAmount) {
+    ) internal returns (PaymentCashbackStatus status, uint256 delta) {
         CashbackControllerStorage storage $ = _getCashbackControllerStorage();
         AccountCashback memory oldAccountCashback = $.accountCashbacks[paymentCashback.recipient];
         address recipient = paymentCashback.recipient;
 
-        (status, increasedAmount) = _processAccountCashbackWithCap(recipient, desiredAmount);
+        (status, delta) = _processAccountCashbackWithCap(recipient, desiredAmount);
 
         // if it is not capped, we can try to transfer funds
         if (status == PaymentCashbackStatus.Capped) {
-            return (status, increasedAmount);
+            return (status, 0);
         }
 
-        if (IERC20($.token).balanceOf($.cashbackTreasury) < increasedAmount) {
+        if (IERC20($.token).balanceOf($.cashbackTreasury) < delta) {
             status = PaymentCashbackStatus.OutOfFunds;
-            increasedAmount = 0;
+            delta = 0;
             // restore account cashback state to previous state if we failed to increase cashback
             $.accountCashbacks[recipient] = oldAccountCashback;
         } else {
-            IERC20($.token).transferFrom($.cashbackTreasury, address(this), increasedAmount);
+            IERC20($.token).transferFrom($.cashbackTreasury, address(this), delta);
 
             if ($.cashbackVault != address(0)) {
-                ICashbackVault($.cashbackVault).grantCashback(recipient, uint64(increasedAmount));
+                ICashbackVault($.cashbackVault).grantCashback(recipient, uint64(delta));
             } else {
-                IERC20($.token).transfer(recipient, increasedAmount);
+                IERC20($.token).transfer(recipient, delta);
             }
         }
-        paymentCashback.balance += uint64(increasedAmount);
+        paymentCashback.balance += uint64(delta);
     }
 
     /// @dev Revokes partially or fully cashback related to a payment.
     function _revokeCashback(
         PaymentCashback storage paymentCashback,
         uint256 desiredAmount
-    ) internal returns (PaymentCashbackStatus status, uint256 revokedAmount) {
+    ) internal returns (PaymentCashbackStatus status, uint256 delta) {
         CashbackControllerStorage storage $ = _getCashbackControllerStorage();
         status = PaymentCashbackStatus.Success;
         address recipient = paymentCashback.recipient;
@@ -414,9 +409,9 @@ contract CashbackController is
 
         IERC20($.token).transfer($.cashbackTreasury, desiredAmount);
         _reduceTotalCashback(recipient, desiredAmount);
-        revokedAmount = desiredAmount;
+        delta = desiredAmount;
 
-        paymentCashback.balance -= uint64(revokedAmount);
+        paymentCashback.balance -= uint64(delta);
     }
 
     /**
