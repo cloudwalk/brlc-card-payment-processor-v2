@@ -22,7 +22,7 @@ abstract contract CardPaymentProcessorStorageV1 is ICardPaymentProcessorTypes {
     PaymentStatistics internal _paymentStatistics;
 
     /// @dev The default cashback rate for new payments in units of per mil.
-    uint16 internal _cashbackRate;
+    uint16 internal _defaultCashbackRate;
 }
 
 /**

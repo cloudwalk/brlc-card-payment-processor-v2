@@ -1530,7 +1530,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
   // Errors of the contract under test
   const ERROR_NAME_ACCOUNT_ZERO_ADDRESS = "AccountZeroAddress";
   const ERROR_NAME_CASHBACK_RATE_EXCESS = "CashbackRateExcess";
-  const ERROR_NAME_CASHBACK_RATE_UNCHANGED = "CashbackRateUnchanged";
+  const ERROR_NAME_DEFAULT_CASHBACK_RATE_UNCHANGED = "DefaultCashbackRateUnchanged";
   const ERROR_NAME_CASH_OUT_ACCOUNT_NOT_CONFIGURED = "CashOutAccountNotConfigured";
   const ERROR_NAME_CASH_OUT_ACCOUNT_UNCHANGED = "CashOutAccountUnchanged";
   const ERROR_NAME_IMPLEMENTATION_ADDRESS_INVALID = "ImplementationAddressInvalid";
@@ -1884,7 +1884,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
       await proveTx(cardPaymentProcessor.setDefaultCashbackRate(CASHBACK_RATE_DEFAULT));
 
       await expect(cardPaymentProcessor.setDefaultCashbackRate(CASHBACK_RATE_DEFAULT))
-        .to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_CASHBACK_RATE_UNCHANGED);
+        .to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_DEFAULT_CASHBACK_RATE_UNCHANGED);
     });
   });
 

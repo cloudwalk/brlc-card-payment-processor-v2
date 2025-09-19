@@ -200,7 +200,7 @@ contract CardPaymentProcessor is
         }
         uint256 cashbackRateActual;
         if (cashbackRate_ < 0) {
-            cashbackRateActual = _cashbackRate;
+            cashbackRateActual = _defaultCashbackRate;
         } else {
             cashbackRateActual = uint256(cashbackRate_);
             if (cashbackRateActual > MAX_CASHBACK_RATE) {
@@ -250,7 +250,7 @@ contract CardPaymentProcessor is
             paymentId: paymentId,
             payer: payer,
             sponsor: address(0),
-            cashbackRate: _cashbackRate,
+            cashbackRate: _defaultCashbackRate,
             baseAmount: baseAmount,
             extraAmount: extraAmount,
             subsidyLimit: 0,
@@ -435,15 +435,15 @@ contract CardPaymentProcessor is
      * - The new rate must not exceed the allowable maximum specified in the {MAX_CASHBACK_RATE} constant.
      */
     function setDefaultCashbackRate(uint256 newCashbackRate) external onlyRole(OWNER_ROLE) {
-        uint256 oldCashbackRate = _cashbackRate;
+        uint256 oldCashbackRate = _defaultCashbackRate;
         if (newCashbackRate == oldCashbackRate) {
-            revert CashbackRateUnchanged();
+            revert DefaultCashbackRateUnchanged();
         }
         if (newCashbackRate > MAX_CASHBACK_RATE) {
             revert CashbackRateExcess();
         }
 
-        _cashbackRate = uint16(newCashbackRate);
+        _defaultCashbackRate = uint16(newCashbackRate);
 
         emit DefaultCashbackRateChanged(oldCashbackRate, newCashbackRate);
     }
@@ -457,7 +457,7 @@ contract CardPaymentProcessor is
 
     /// @inheritdoc ICardPaymentProcessorConfiguration
     function defaultCashbackRate() external view returns (uint256) {
-        return _cashbackRate;
+        return _defaultCashbackRate;
     }
 
     /// @inheritdoc ICardPaymentProcessorPrimary

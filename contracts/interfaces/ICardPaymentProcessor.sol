@@ -522,8 +522,8 @@ interface ICardPaymentProcessorErrors is ICardPaymentProcessorTypes {
     /// @dev The provided cashback rate exceeds the allowed maximum.
     error CashbackRateExcess();
 
-    /// @dev A new cashback rate is the same as previously set one.
-    error CashbackRateUnchanged();
+    /// @dev A new default cashback rate is the same as previously set one.
+    error DefaultCashbackRateUnchanged();
 
     /// @dev Thrown if the provided new implementation address is not of a card payment processor contract.
     error ImplementationAddressInvalid();
