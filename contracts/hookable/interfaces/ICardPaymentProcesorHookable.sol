@@ -41,21 +41,45 @@ interface ICardPaymentProcessorHookTypes {
 /**
  * @title ICardPaymentProcessorHookable
  * @author CloudWalk Inc. (See https://www.cloudwalk.io)
- * @dev The interface for managing payment processor hooks.
+ * @dev Interface for registering/unregistering hook contracts and describing hook dispatching.
+ *
+ * Hooks are method-specific callbacks. Each hook method is defined by a separate
+ * interface in {ICardPaymentProcessorHooks} (e.g. {IAfterPaymentMadeHook},
+ * {IAfterPaymentUpdatedHook}, {IAfterPaymentCanceledHook}). The set of allowed
+ * values for `methodSelector` are the function selectors of these hook methods
+ * (e.g. `IAfterPaymentMadeHook.afterPaymentMade.selector`).
+ *
+ * When a hook contract is registered for a given method selector, it will be
+ * invoked by the processor whenever the corresponding lifecycle event occurs,
+ * receiving the payment data snapshot(s). See the concrete hook interfaces in
+ * {ICardPaymentProcessorHooks} for the exact payloads and invocation order.
  */
 interface ICardPaymentProcessorHookable is ICardPaymentProcessorHookTypes {
     // ------------------ Events ---------------------------------- //
 
-    /// @dev Emitted when a hook is registered for a specific capability.
+    /**
+     * @dev Emitted when a hook contract is registered for a hook method.
+     * @param hook The address of the hook contract.
+     * @param methodSelector The hook method selector as defined in {ICardPaymentProcessorHooks}.
+     */
     event HookRegistered(address indexed hook, bytes4 methodSelector);
 
-    /// @dev Emitted when a hook is unregistered from a specific capability.
+    /**
+     * @dev Emitted when a hook contract is unregistered from a hook method.
+     * @param hook The address of the hook contract.
+     * @param methodSelector The hook method selector as defined in {ICardPaymentProcessorHooks}.
+     */
     event HookUnregistered(address indexed hook, bytes4 methodSelector);
 
     // ------------------ Management functions -------------------- //
 
     /**
      * @dev Registers a hook by checking its supported hook methods.
+     *
+     * Supported methods are defined by interfaces in {ICardPaymentProcessorHooks}.
+     * The hook contract should implement the relevant interface(s) so it can be
+     * invoked for those method selectors.
+     *
      * @param hookAddress The address of the hook contract to register.
      */
     function registerHook(address hookAddress) external;

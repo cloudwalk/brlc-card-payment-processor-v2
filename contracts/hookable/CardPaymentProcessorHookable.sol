@@ -77,11 +77,14 @@ abstract contract CardPaymentProcessorHookable is
     }
 
     /**
-     * @dev Calls all registered hooks for a given method selector with provided old and new payment data.
-     * @param methodSelector The method selector of the hook capability.
+     * @dev Calls all registered hooks for a given hook method selector with provided old and new payment data.
+     *
+     * The supported method selectors are defined by interfaces in {ICardPaymentProcessorHooks}.
+     *
+     * @param methodSelector The hook method selector (e.g. afterPaymentMade selector).
      * @param paymentId The ID of the payment.
-     * @param oldPayment The old payment.
-     * @param newPayment The new payment.
+     * @param oldPayment The previous payment snapshot.
+     * @param newPayment The new payment snapshot.
      */
     function _callHooks(
         bytes4 methodSelector,
