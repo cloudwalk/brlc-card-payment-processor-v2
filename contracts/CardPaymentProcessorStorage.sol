@@ -12,6 +12,9 @@ abstract contract CardPaymentProcessorStorageV1 is ICardPaymentProcessorTypes {
     /// @dev The address of the underlying token.
     address internal _token;
 
+    /// @dev The default cashback rate for new payments in units of per mil.
+    uint16 internal _defaultCashbackRate;
+
     /// @dev The account to transfer confirmed tokens to.
     address internal _cashOutAccount;
 
@@ -20,9 +23,6 @@ abstract contract CardPaymentProcessorStorageV1 is ICardPaymentProcessorTypes {
 
     /// @dev The payment statistics.
     PaymentStatistics internal _paymentStatistics;
-
-    /// @dev The default cashback rate for new payments in units of per mil.
-    uint16 internal _defaultCashbackRate;
 }
 
 /**
@@ -39,5 +39,5 @@ abstract contract CardPaymentProcessorStorage is CardPaymentProcessorStorageV1 {
      * @dev This empty reserved space is put in place to allow future versions to add new
      * variables without shifting down storage in the inheritance chain.
      */
-    uint256[43] private __gap;
+    uint256[45] private __gap;
 }
