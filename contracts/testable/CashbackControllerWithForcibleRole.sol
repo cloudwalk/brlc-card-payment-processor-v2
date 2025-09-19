@@ -6,11 +6,11 @@ import { CashbackController } from "../CashbackController.sol";
 import { AccessControlUpgradeable } from "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 
 /**
- * @title CashbackControllerWithForcableRole test contract
+ * @title CashbackControllerWithForcibleRole test contract
  * @author CloudWalk Inc. (See https://www.cloudwalk.io)
  * @dev Test helper that exposes role force-grant and initializes parent contracts.
  */
-contract CashbackControllerWithForcableRole is CashbackController {
+contract CashbackControllerWithForcibleRole is CashbackController {
     function initialize(address token_) external override initializer {
         __AccessControlExt_init_unchained();
         __Rescuable_init_unchained();

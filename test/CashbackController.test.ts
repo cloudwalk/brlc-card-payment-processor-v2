@@ -33,7 +33,7 @@ describe("Contract 'CashbackController'", () => {
   const MANAGER_ROLE = ethers.id("MANAGER_ROLE");
 
   let cashbackControllerFactory: Contracts.CashbackController__factory;
-  let cashbackControllerFactoryWithForcableRole: Contracts.CashbackControllerWithForcableRole__factory;
+  let cashbackControllerFactoryWithForcibleRole: Contracts.CashbackControllerWithForcibleRole__factory;
   let tokenMockFactory: Contracts.ERC20TokenMock__factory;
   let cashbackVaultFactory: Contracts.CashbackVault__factory;
   let cardPaymentProcessorFactory: Contracts.CardPaymentProcessor__factory;
@@ -95,9 +95,9 @@ describe("Contract 'CashbackController'", () => {
     return cashbackController;
   }
 
-  async function deployCashbackControllerWithForcableRole(tokenMock: Contracts.ERC20TokenMock) {
+  async function deployCashbackControllerWithForcibleRole(tokenMock: Contracts.ERC20TokenMock) {
     const cashbackController = await upgrades.deployProxy(
-      cashbackControllerFactoryWithForcableRole,
+      cashbackControllerFactoryWithForcibleRole,
       [await tokenMock.getAddress()],
     );
     await cashbackController.waitForDeployment();
@@ -112,7 +112,7 @@ describe("Contract 'CashbackController'", () => {
 
   async function deployTestableContracts() {
     const tokenMock = await deployTokenMock();
-    const cashbackController = await deployCashbackControllerWithForcableRole(tokenMock);
+    const cashbackController = await deployCashbackControllerWithForcibleRole(tokenMock);
 
     return { cashbackController, tokenMock };
   }
@@ -125,7 +125,7 @@ describe("Contract 'CashbackController'", () => {
   }
 
   async function configureTestableContracts(
-    cashbackController: Contracts.CashbackControllerWithForcableRole,
+    cashbackController: Contracts.CashbackControllerWithForcibleRole,
     tokenMock: Contracts.ERC20TokenMock,
   ) {
     await cashbackController.grantRole(GRANTOR_ROLE, deployer.address);
@@ -149,8 +149,8 @@ describe("Contract 'CashbackController'", () => {
     // Contract factories with the explicitly specified deployer account
     cashbackControllerFactory = await ethers.getContractFactory("CashbackController");
     cashbackControllerFactory = cashbackControllerFactory.connect(deployer);
-    cashbackControllerFactoryWithForcableRole = await ethers.getContractFactory("CashbackControllerWithForcableRole");
-    cashbackControllerFactoryWithForcableRole = cashbackControllerFactoryWithForcableRole.connect(deployer);
+    cashbackControllerFactoryWithForcibleRole = await ethers.getContractFactory("CashbackControllerWithForcibleRole");
+    cashbackControllerFactoryWithForcibleRole = cashbackControllerFactoryWithForcibleRole.connect(deployer);
     cardPaymentProcessorFactory = await ethers.getContractFactory("CardPaymentProcessor");
     cardPaymentProcessorFactory = cardPaymentProcessorFactory.connect(deployer);
     tokenMockFactory = await ethers.getContractFactory("ERC20TokenMock");
