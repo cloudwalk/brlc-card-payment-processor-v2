@@ -24,7 +24,7 @@ abstract contract CardPaymentProcessorHookableStorageLayout {
      *
      * Fields:
      *
-     * - hooks ------- The mapping of method selector to set of hook contractaddresses.
+     * - hooks ------- The mapping of method selector to set of hook contract addresses.
      *
      * @custom:storage-location erc7201:cloudwalk.storage.CardPaymentProcessorHookable
      */

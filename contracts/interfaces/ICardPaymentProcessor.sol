@@ -45,7 +45,7 @@ interface ICardPaymentProcessorTypes {
      * - reserve2 --------- The reserved field for future changes.
      * - baseAmount ------- The base amount of tokens in the payment.
      * - extraAmount ------ The extra amount of tokens in the payment, without a cashback.
-     * - reserve3 --------- The deprecated field.
+     * - reserve3 --------- The reserved field for future changes.
      * - refundAmount ----- The total amount of all refunds related to the payment.
      *
      *  The following additional payment parameters can be derived from the structure fields:
@@ -89,7 +89,7 @@ interface ICardPaymentProcessorTypes {
         // Slot3
         uint64 baseAmount;
         uint64 extraAmount;
-        uint64 reserve3; // deprecated
+        uint64 reserve3;
         uint64 refundAmount;
         // No reserve until the end of the storage slot
     }
