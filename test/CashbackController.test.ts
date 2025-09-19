@@ -894,6 +894,29 @@ describe("Contract 'CashbackController'", () => {
           )).to.be.revertedWithCustomError(cashbackControllerFromStranger, "AccessControlUnauthorizedAccount")
             .withArgs(stranger.address, HOOK_TRIGGER_ROLE);
         });
+
+        it("should revert if the cashback treasury is not configured", async () => {
+          const { cashbackController: notConfiguredCashbackController } = await deployAndConfigureContracts();
+          const paymentHookData: Payment = {
+            baseAmount: 100n * DIGITS_COEF,
+            subsidyLimit: 100n,
+            status: 1n,
+            payer: payer.address,
+            cashbackRate: 100n,
+            confirmedAmount: 0n,
+            sponsor: ethers.ZeroAddress,
+            extraAmount: 0n,
+            refundAmount: 0n,
+          };
+          await expect(notConfiguredCashbackController.connect(hookTrigger).afterPaymentMade(
+            paymentId("id1"),
+            EMPTY_PAYMENT,
+            paymentHookData,
+          )).to.be.revertedWithCustomError(
+            notConfiguredCashbackController,
+            "CashbackController_TreasuryNotConfigured",
+          );
+        });
       });
 
       describe("Method 'afterPaymentUpdated()'", () => {

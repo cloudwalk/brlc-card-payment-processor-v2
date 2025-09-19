@@ -125,6 +125,10 @@ contract CashbackController is
 
         CashbackControllerStorage storage $ = _getCashbackControllerStorage();
 
+        if ($.cashbackTreasury == address(0)) {
+            revert CashbackController_TreasuryNotConfigured();
+        }
+
         uint256 basePaymentAmount = _definePayerBaseAmount(payment.baseAmount, payment.subsidyLimit);
         uint256 desiredCashbackAmount = _calculateCashback(basePaymentAmount, payment.cashbackRate);
         PaymentCashback storage paymentCashback = $.paymentCashbacks[paymentId];
