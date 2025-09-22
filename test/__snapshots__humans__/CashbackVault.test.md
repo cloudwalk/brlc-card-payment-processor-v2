@@ -61,7 +61,7 @@ sequenceDiagram
 
 
 **accountCashbackState**
-```json
+```
 Object {
   "balance": 1000n,
   "totalClaimed": 0n,
@@ -99,7 +99,7 @@ Object {
 
 
 **accountCashbackState**
-```json
+```
 Object {
   "balance": 900n,
   "totalClaimed": 0n,
@@ -137,7 +137,7 @@ Object {
 
 
 **accountCashbackState**
-```json
+```
 Object {
   "balance": 800n,
   "totalClaimed": 100n,
