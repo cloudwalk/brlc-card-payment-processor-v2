@@ -224,6 +224,7 @@ Array [
       Object {
         "args": Array [
           "cashbackVault",
+          "0x0000000000000000000000000000000000000000",
         ],
         "contract": "cashbackController",
         "name": "CashbackVaultUpdated",
@@ -466,7 +467,7 @@ Array [
           "0x0000000000000000000000000000000000000000000000000000000000000001",
           "payer",
           3n,
-          300000000n,
+          0n,
           300000000n,
         ],
         "contract": "cashbackController",
@@ -662,7 +663,7 @@ Array [
           0n,
         ],
         "contract": "cashbackController",
-        "name": "CashbackRevoked",
+        "name": "CashbackDecreased",
       },
     ],
     "methodFragment": FunctionFragment {
