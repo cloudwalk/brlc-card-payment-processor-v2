@@ -104,6 +104,7 @@ sequenceDiagram
 | cashOutAccount | 0 |
 
 
+
 </details>
 <details>
 <summary>Step 1: cashbackVault.grantRole</summary>
@@ -136,6 +137,7 @@ sequenceDiagram
 | sponsor | 2000000000000 |
 | cashbackTreasury | 57896044618658097711785492504343953926634992332820282019728792003956564819967 |
 | cashOutAccount | 0 |
+
 
 
 </details>
@@ -172,6 +174,7 @@ sequenceDiagram
 | cashOutAccount | 0 |
 
 
+
 </details>
 <details>
 <summary>Step 3: cashbackController.setCashbackVault</summary>
@@ -204,6 +207,7 @@ sequenceDiagram
 | sponsor | 2000000000000 |
 | cashbackTreasury | 57896044618658097711785492504343953926634992332820282019728792003956564819967 |
 | cashOutAccount | 0 |
+
 
 
 </details>
@@ -251,6 +255,7 @@ sequenceDiagram
 | cashOutAccount | 0 |
 
 
+
 </details>
 <details>
 <summary>Step 5: cpp.refundPayment</summary>
@@ -287,6 +292,7 @@ sequenceDiagram
 | cashOutAccount | 0 |
 
 
+
 </details>
 <details>
 <summary>Step 6: cashbackVault.claim</summary>
@@ -320,6 +326,7 @@ sequenceDiagram
 | sponsor | 2000000000000 |
 | cashbackTreasury | 57896044618658097711785492504343953926634992332820282019728792003956264819967 |
 | cashOutAccount | 0 |
+
 
 
 </details>
@@ -359,6 +366,7 @@ sequenceDiagram
 | sponsor | 2000000000000 |
 | cashbackTreasury | 57896044618658097711785492504343953926634992332820282019728792003956564819967 |
 | cashOutAccount | 0 |
+
 
 
 </details>

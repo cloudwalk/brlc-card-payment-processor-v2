@@ -716,6 +716,15 @@ describe("Contract 'CashbackVault'", () => {
         tokens: {
           tokenMock,
         },
+        customState: {
+          async accountCashbackState() {
+            const state = await cashbackVaultFromOperator.getAccountCashbackState(account.address);
+            return {
+              balance: state.balance,
+              totalClaimed: state.totalClaimed,
+            };
+          },
+        },
       });
 
       await cashbackVaultFromOperator.grantCashback(account.address, 1000n);

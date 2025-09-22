@@ -60,6 +60,14 @@ sequenceDiagram
 | operator | 57896044618658097711785492504343953926634992332820282019728792003956564818967 |
 
 
+**accountCashbackState**
+```json
+Object {
+  "balance": 1000n,
+  "totalClaimed": 0n,
+}
+```
+
 </details>
 <details>
 <summary>Step 1: cashbackVault.revokeCashback</summary>
@@ -90,6 +98,14 @@ sequenceDiagram
 | operator | 57896044618658097711785492504343953926634992332820282019728792003956564819067 |
 
 
+**accountCashbackState**
+```json
+Object {
+  "balance": 900n,
+  "totalClaimed": 0n,
+}
+```
+
 </details>
 <details>
 <summary>Step 2: cashbackVault.claim</summary>
@@ -119,6 +135,14 @@ sequenceDiagram
 | manager | 0 |
 | operator | 57896044618658097711785492504343953926634992332820282019728792003956564819067 |
 
+
+**accountCashbackState**
+```json
+Object {
+  "balance": 800n,
+  "totalClaimed": 100n,
+}
+```
 
 </details>
 
@@ -166,6 +190,7 @@ sequenceDiagram
 | account | 0 |
 | manager | 0 |
 | operator | 57896044618658097711785492504343953926634992332820282019728792003956564818967 |
+
 
 
 </details>

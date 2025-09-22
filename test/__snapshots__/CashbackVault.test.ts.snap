@@ -18,6 +18,12 @@ Array [
     },
     "caller": "operator",
     "contract": "cashbackVault",
+    "customState": Object {
+      "accountCashbackState": Object {
+        "balance": 1000n,
+        "totalClaimed": 0n,
+      },
+    },
     "events": Array [
       Object {
         "args": Array [
@@ -86,6 +92,12 @@ Array [
     },
     "caller": "operator",
     "contract": "cashbackVault",
+    "customState": Object {
+      "accountCashbackState": Object {
+        "balance": 900n,
+        "totalClaimed": 0n,
+      },
+    },
     "events": Array [
       Object {
         "args": Array [
@@ -154,6 +166,12 @@ Array [
     },
     "caller": "manager",
     "contract": "cashbackVault",
+    "customState": Object {
+      "accountCashbackState": Object {
+        "balance": 800n,
+        "totalClaimed": 100n,
+      },
+    },
     "events": Array [
       Object {
         "args": Array [

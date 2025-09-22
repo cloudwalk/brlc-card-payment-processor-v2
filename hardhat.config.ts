@@ -1,5 +1,5 @@
 import { HardhatUserConfig } from "hardhat/config";
-import { expect } from "chai";
+import chai, { expect } from "chai";
 import "@nomicfoundation/hardhat-toolbox";
 import "@openzeppelin/hardhat-upgrades";
 import "hardhat-contract-sizer";
@@ -15,8 +15,9 @@ function getMochaHooks() {
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { mochaHooks: mochaHooksPlugin } = require("@cloudwalk/chainshot") as typeof import("@cloudwalk/chainshot");
-    return mochaHooksPlugin();
-  } catch {
+    return mochaHooksPlugin({ chai });
+  } catch (error) {
+    console.error(error);
     console.error("Init of chainshot plugin failed");
     async function noop() {
       return;
