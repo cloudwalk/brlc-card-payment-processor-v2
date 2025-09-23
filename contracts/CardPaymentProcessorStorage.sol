@@ -12,7 +12,7 @@ abstract contract CardPaymentProcessorStorageV1 is ICardPaymentProcessorTypes {
     /// @dev The address of the underlying token.
     address internal _token;
 
-    /// @dev The default cashback rate for new payments in units of per mil.
+    /// @dev The default cashback rate for new payments in per mille.
     uint16 internal _defaultCashbackRate;
 
     /// @dev The account to transfer confirmed tokens to.

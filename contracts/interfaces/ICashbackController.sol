@@ -9,7 +9,7 @@ import { IAfterPaymentCanceledHook } from "../hookable/interfaces/ICardPaymentPr
 /**
  * @title CashbackController types interface
  * @author CloudWalk Inc. (See https://www.cloudwalk.io)
- * @dev The custom types used in the wrapper contract the cashback operations for card payments.
+ * @dev The custom types used in the wrapper contract for the cashback operations for card payments.
  */
 interface ICashbackControllerTypes {
     /**

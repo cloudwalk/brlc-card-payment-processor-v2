@@ -17,7 +17,7 @@ interface ICardPaymentProcessorHookTypes {
      *
      * - status ----------- The current status of the payment.
      * - payer ------------ The account that made the payment.
-     * - cashbackRate ----- The cashback rate in per mil.
+     * - cashbackRate ----- The cashback rate in per mille.
      * - confirmedAmount -- The confirmed amount that was transferred to the cash-out account.
      * - sponsor ---------- The sponsor of the payment if it is subsidized. Otherwise the zero address.
      * - subsidyLimit ----- The subsidy limit of the payment if it is subsidized. Otherwise zero.

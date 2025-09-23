@@ -95,7 +95,7 @@ contract CardPaymentProcessor is
     /// @dev The role of an executor that is allowed to execute the card payment operations.
     bytes32 public constant EXECUTOR_ROLE = keccak256("EXECUTOR_ROLE");
 
-    /// @dev The maximum allowable cashback rate in permil;
+    /// @dev The maximum allowable cashback rate in per mille;
     uint256 public constant MAX_CASHBACK_RATE = 500;
 
     /// @dev Event addendum flag mask defining whether the payment is sponsored.
@@ -481,6 +481,7 @@ contract CardPaymentProcessor is
     function proveCardPaymentProcessor() external pure {}
 
     // ------------------ Internal functions ---------------------- //
+
     function _makePayment_hookable(MakingOperation memory operation) internal {
         // before hooks goes here if needed
         _makePayment(operation);

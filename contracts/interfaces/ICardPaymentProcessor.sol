@@ -38,7 +38,7 @@ interface ICardPaymentProcessorTypes {
      * - status ----------- The current status of the payment.
      * - reserve1 --------- The reserved field for future changes.
      * - payer ------------ The account that made the payment.
-     * - cashbackRate ----- The cashback rate in per mil.
+     * - cashbackRate ----- The cashback rate in per mille.
      * - confirmedAmount -- The confirmed amount that was transferred to the cash-out account.
      * - sponsor ---------- The sponsor of the payment if it is subsidized. Otherwise the zero address.
      * - subsidyLimit ----- The subsidy limit of the payment if it is subsidized. Otherwise zero.
@@ -292,7 +292,7 @@ interface ICardPaymentProcessorPrimary is ICardPaymentProcessorTypes {
      * @param extraAmount The extra amount of tokens to transfer because of the payment. No cashback is applied.
      * @param sponsor The address of a sponsor if the payment is subsidized, otherwise zero.
      * @param subsidyLimit The amount of tokens that the sponsor is compensating for the payment.
-     * @param cashbackRate If positive then it is a special cashback rate for the payment in units of per mil.
+     * @param cashbackRate If positive then it is a special cashback rate for the payment in per mille.
      *                     If negative then the contract settings are used to determine cashback.
      *                     If zero then cashback is not sent.
      * @param confirmationAmount The amount to confirm for the payment immediately after making.
@@ -500,6 +500,7 @@ interface ICardPaymentProcessorConfiguration {
     function setDefaultCashbackRate(uint256 newCashbackRate) external;
 
     // ------------------ View functions -------------------------- //
+
     /// @dev Returns the current cashback rate.
     function defaultCashbackRate() external view returns (uint256);
 }

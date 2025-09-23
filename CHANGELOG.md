@@ -1,11 +1,11 @@
-## Main changes
+## Main Changes
 
 - **Hooks for CardPaymentProcessor (CPP)**: Introduced a flexible hooks architecture via `CardPaymentProcessorHookable` to run external logic at key points in the payment lifecycle.
 - **Cashback moved to `CashbackController`**: CPP now only keeps cashback rate logic. All calculation, capping, transfers, and storage moved to `CashbackController` for better modularity.
 - **Claimable cashback via `CashbackVault` (CV)**: Optional claimable mode. When configured, granted cashback is credited to the user's vault balance; otherwise tokens are sent directly to the recipient.
 - **Configurable claimable mode**: `setCashbackVault(address)` enables claimable mode (non-zero address) or disables it (zero address). Token allowances are updated accordingly.
 
-### Token flows
+### Token Flows
 ```
 Direct cashback:     CashbackTreasury <=> CashbackController <=> recipient
 Claimable cashback:  CashbackTreasury <=> CashbackController <=> CashbackVault <=> recipient
@@ -61,8 +61,8 @@ Claimable cashback:  CashbackTreasury <=> CashbackController <=> CashbackVault <
 5. From the treasury account, approve CC to spend the token (max allowance recommended).
 6. Grant `HOOK_TRIGGER_ROLE` on CC to the CPP.
 7. Connect CC as a hook on CPP via `registerHook()`.
-8. (Optional) Enable claimable mode by calling `setCashbackVault()` on CC.
-9. (Claimable mode) On CV, grant `CASHBACK_OPERATOR_ROLE` to CC and `MANAGER_ROLE` to your manager.
+8. (Claimable mode) On CV, grant `CASHBACK_OPERATOR_ROLE` to CC and `MANAGER_ROLE` to your manager.
+9. (Optional) Enable claimable mode by calling `setCashbackVault()` on CC.
 10. (Optional) Configure default cashback rate on CPP via `setDefaultCashbackRate(uint256)`.
 11. Execute payments with cashback on CPP.
 
