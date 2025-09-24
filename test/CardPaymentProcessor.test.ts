@@ -201,13 +201,12 @@ interface RefundParts {
 }
 
 enum CashbackConditionType {
-  CashbackEnabled = 0,
-  CashbackDisabledBeforePaymentMaking = 1,
-  CashbackDisabledAfterPaymentMaking = 2,
-  CashbackEnabledPayerHasInsufficientBalance = 3,
-  CashbackEnabledButTreasuryHasInsufficientBalance = 5,
-  CashbackEnabledButIncreasingReverts = 6,
-  CashbackEnabledButIncreasingPartial = 7,
+  CashbackEnabled,
+  CashbackDisabledBeforePaymentMaking,
+  CashbackDisabledAfterPaymentMaking,
+  CashbackEnabledButTreasuryHasInsufficientBalance,
+  CashbackEnabledButIncreasingReverts,
+  CashbackEnabledButIncreasingPartial,
 }
 
 class CardPaymentProcessorModel {
@@ -1403,24 +1402,24 @@ class TestContext {
       }
       checkedPaymentIds.add(expectedPayment.paymentId);
       const actualPayment = await this.cardPaymentProcessorShell.contract.getPayment(expectedPayment.paymentId);
-      const actualCashbackState =
+      const actualPaymentCahback =
         await this.cardPaymentProcessorShell.cashbackControllerContract
           .getPaymentCashback(expectedPayment.paymentId);
-      this.#checkPaymentsEquality(actualPayment, actualCashbackState, expectedPayment, i);
+      this.#checkPaymentsEquality(actualPayment, actualPaymentCahback, expectedPayment, i);
       const expectedTotalCashback =
         this.cardPaymentProcessorShell.model.getCashbackTotalForAccount(expectedPayment.payer.address);
-      const actualAccountCashbackState: AccountCashbackState =
+      const actualAccountCashback: AccountCashbackState =
         await this.cardPaymentProcessorShell.cashbackControllerContract
           .getAccountCashback(expectedPayment.payer.address);
-      expect(actualAccountCashbackState.totalAmount).to.equal(expectedTotalCashback);
-      expect(actualAccountCashbackState.capPeriodStartAmount)
+      expect(actualAccountCashback.totalAmount).to.equal(expectedTotalCashback);
+      expect(actualAccountCashback.capPeriodStartAmount)
         .to.equal(this.cardPaymentProcessorShell.model.capPeriodStartAmount);
     }
   }
 
   #checkPaymentsEquality(
     actualOnChainPayment: Record<string, unknown>,
-    actualCashbackState: Record<string, unknown>,
+    actualPaymentCahback: Record<string, unknown>,
     expectedPayment: PaymentModel,
     paymentIndex: number,
   ) {
@@ -1464,9 +1463,13 @@ class TestContext {
       expectedPayment.extraAmount,
       `payment[${paymentIndex}].extraAmount is wrong`,
     );
-    expect(actualCashbackState.balance).to.equal(
+    expect(actualOnChainPayment.reserve3).to.equal(
+      0,
+      `payment[${paymentIndex}].reserve3 is wrong`,
+    );
+    expect(actualPaymentCahback.balance).to.equal(
       expectedPayment.cashbackAmount,
-      `cashbackState[${paymentIndex}].cashbackAmount is wrong`,
+      `CashbackController.paymentCashbacks[${paymentIndex}].cashbackAmount is wrong`,
     );
     expect(actualOnChainPayment.refundAmount).to.equal(
       expectedPayment.refundAmount,
@@ -4506,13 +4509,13 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
       expectedCapPeriodStartTime: number,
     ) {
       const { cardPaymentProcessorShell, payments: [payment] } = context;
-      const actualAccountCashbackState: AccountCashbackState =
+      const actualAccountCashback: AccountCashbackState =
         await cardPaymentProcessorShell.cashbackControllerContract.getAccountCashback(payment.payer.address);
       const expectedTotalCashback = cardPaymentProcessorShell.model.getCashbackTotalForAccount(payment.payer.address);
       const expectedCapPeriodStartAmount = cardPaymentProcessorShell.model.capPeriodStartAmount;
-      expect(actualAccountCashbackState.totalAmount).to.equal(expectedTotalCashback);
-      expect(actualAccountCashbackState.capPeriodStartAmount).to.equal(expectedCapPeriodStartAmount);
-      expect(actualAccountCashbackState.capPeriodStartTime).to.equal(expectedCapPeriodStartTime);
+      expect(actualAccountCashback.totalAmount).to.equal(expectedTotalCashback);
+      expect(actualAccountCashback.capPeriodStartAmount).to.equal(expectedCapPeriodStartAmount);
+      expect(actualAccountCashback.capPeriodStartTime).to.equal(expectedCapPeriodStartTime);
     }
 
     it("Executes as expected", async () => {
