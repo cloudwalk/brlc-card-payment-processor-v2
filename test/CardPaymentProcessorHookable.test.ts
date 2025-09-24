@@ -101,6 +101,7 @@ describe("Contract 'CardPaymentProcessorHookable'", () => {
     cardPaymentProcessorAddress = await cardPaymentProcessor.getAddress();
     tokenMockAddress = await tokenMock.getAddress();
   });
+
   describe("Hook with only one method implemented", () => {
     let hookContract: Contracts.HookContractMock;
     let hookContractAddress: string;
@@ -160,6 +161,7 @@ describe("Contract 'CardPaymentProcessorHookable'", () => {
         });
       });
     });
+
     describe("Hook method", () => {
       beforeEach(async () => {
         await cardPaymentProcessor.registerHook(hookContractAddress);
@@ -197,6 +199,7 @@ describe("Contract 'CardPaymentProcessorHookable'", () => {
       });
     });
   });
+
   describe("CPP with CashbackController", () => {
     let cashbackController: Contracts.CashbackController;
     let cashbackControllerAddress: string;
@@ -233,6 +236,7 @@ describe("Contract 'CardPaymentProcessorHookable'", () => {
             .to.not.emit(cardPaymentProcessor, EVENT_NAME_HOOK_REGISTERED);
         });
       });
+
       describe("Should revert if", () => {
         it("the caller does not have the required role", async () => {
           await expect(cardPaymentProcessor.connect(user1).registerHook(cashbackControllerAddress))
@@ -246,6 +250,7 @@ describe("Contract 'CardPaymentProcessorHookable'", () => {
         });
       });
     });
+
     describe("Method 'unregisterHook()'", () => {
       beforeEach(async () => {
         await cardPaymentProcessor.registerHook(cashbackControllerAddress);
@@ -266,6 +271,7 @@ describe("Contract 'CardPaymentProcessorHookable'", () => {
           .to.emit(cardPaymentProcessor, EVENT_NAME_HOOK_UNREGISTERED)
           .withArgs(cashbackControllerAddress, cashbackController.afterPaymentCanceled.fragment.selector);
       });
+
       describe("Should revert if", () => {
         it("the proof is invalid", async () => {
           await expect(cardPaymentProcessor.unregisterHook(cashbackControllerAddress, ethers.toBeHex(

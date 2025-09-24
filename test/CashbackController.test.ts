@@ -245,6 +245,7 @@ describe("Contract 'CashbackController'", () => {
         .to.emit(deployedContract, "RoleGranted")
         .withArgs(HOOK_TRIGGER_ROLE, await cardPaymentProcessor.getAddress(), deployer.address);
     });
+
     describe("Should revert if", async () => {
       it("provided account is EOA", async () => {
         await expect(deployedContract.grantRole(HOOK_TRIGGER_ROLE, stranger.address))
@@ -299,6 +300,7 @@ describe("Contract 'CashbackController'", () => {
         await tokenMock.connect(treasury).approve(cashbackControllerAddress, ethers.MaxUint256);
         tx = await cashbackControllerFromOwner.setCashbackTreasury(treasury.address);
       });
+
       it("should emit the required event", async () => {
         await expect(tx)
           .to.emit(cashbackControllerFromOwner, "CashbackTreasuryUpdated")
@@ -318,6 +320,7 @@ describe("Contract 'CashbackController'", () => {
           .withArgs(treasury2.address, treasury.address);
       });
     });
+
     describe("Should revert if", () => {
       it("the caller does not have the required role", async () => {
         await expect(cashbackControllerFromStranger.setCashbackTreasury(treasury.address))
@@ -389,6 +392,7 @@ describe("Contract 'CashbackController'", () => {
         return [await deployCashbackVault(tokenMock), await deployCashbackVault(tokenMock)];
       });
     });
+
     describe(
       "Should execute as expected when initially setting the cashback vault (enabling the claimable mode)",
       async () => {
@@ -442,6 +446,7 @@ describe("Contract 'CashbackController'", () => {
           .to.equal(await defaultTokenCashbackVaults[1].getAddress());
       });
     });
+
     describe("Should execute as expected when setting the cashback vault to zero (disabling claimable mode)", () => {
       let tx: TransactionResponse;
       beforeEach(async () => {
@@ -466,6 +471,7 @@ describe("Contract 'CashbackController'", () => {
           .to.equal(ethers.ZeroAddress);
       });
     });
+
     describe("Should revert if", () => {
       it("the provided cashback vault contract is invalid", async () => {
         await expect(cashbackControllerFromOwner.setCashbackVault(await tokenMock.getAddress()))
@@ -525,6 +531,7 @@ describe("Contract 'CashbackController'", () => {
         paymentHookData,
       );
     });
+
     describe("Should revert if", () => {
       it("the caller does not have the required role", async () => {
         await expect(cashbackControllerFromStranger.correctCashbackAmount(paymentId("id1"), cashbackAmount))
@@ -537,6 +544,7 @@ describe("Contract 'CashbackController'", () => {
           .to.be.revertedWithCustomError(cashbackController, "CashbackController_CashbackDoesNotExist");
       });
     });
+
     describe("Should execute as expected when", () => {
       describe("cashback amount is increased", () => {
         let tx: TransactionResponse;
@@ -636,6 +644,7 @@ describe("Contract 'CashbackController'", () => {
         await cashbackControllerFromOwner.setCashbackTreasury(treasury.address);
       });
     });
+
     describe("CashbackVault is not set", () => {
       describe("Method 'afterPaymentMade()'", () => {
         describe("should execute as expected when", () => {
@@ -696,6 +705,7 @@ describe("Contract 'CashbackController'", () => {
               });
             });
           });
+
           describe("cashback rate is not zero and treasury does not have enough funds", () => {
             let tx: TransactionResponse;
             const baseAmount = 100n * DIGITS_COEF;
@@ -757,6 +767,7 @@ describe("Contract 'CashbackController'", () => {
               });
             });
           });
+
           describe("cashback rate is zero", () => {
             let tx: TransactionResponse;
             const baseAmount = 100n * DIGITS_COEF;
@@ -802,6 +813,7 @@ describe("Contract 'CashbackController'", () => {
               );
             });
           });
+
           describe("cashback rate is not zero and sponsor covers all base amount", () => {
             let tx: TransactionResponse;
             const baseAmount = 100n * DIGITS_COEF;
@@ -849,6 +861,7 @@ describe("Contract 'CashbackController'", () => {
               });
             });
           });
+
           describe("cashback rate is not zero and sponsor covers part of base amount", () => {
             let tx: TransactionResponse;
             const baseAmount = 100n * DIGITS_COEF;
@@ -962,6 +975,7 @@ describe("Contract 'CashbackController'", () => {
               initialAccountCashbackState = await cashbackController.getAccountCashback(payer.address);
               initialOperationState = await cashbackController.getPaymentCashback(paymentId("id1"));
             });
+
             describe("base amount is increased", () => {
               const newBaseAmount = baseAmount + 50n * DIGITS_COEF;
               const newCashbackAmount = cashbackRate * newBaseAmount / CASHBACK_FACTOR;
@@ -1151,6 +1165,7 @@ describe("Contract 'CashbackController'", () => {
               initialAccountCashbackState = await cashbackController.getAccountCashback(payer.address);
               initialOperationState = await cashbackController.getPaymentCashback(paymentId("id1"));
             });
+
             it("should do nothing", async () => {
               const tx = await cashbackControllerFromHookTrigger.afterPaymentUpdated(
                 paymentId("id1"),
@@ -1415,6 +1430,7 @@ describe("Contract 'CashbackController'", () => {
                 initialAccountCashbackState = await cashbackController.getAccountCashback(payer.address);
                 initialOperationState = await cashbackController.getPaymentCashback(paymentId("id1"));
               });
+
               describe("base amount is increased but still below subsidy limit", () => {
                 const newBaseAmount = baseAmount + 10n * DIGITS_COEF;
                 const newCashbackAmount = cashbackRate * (newBaseAmount - subsidyLimit) / CASHBACK_FACTOR;
@@ -1463,6 +1479,7 @@ describe("Contract 'CashbackController'", () => {
                   });
                 });
               });
+
               describe("base amount is increased above subsidy limit", () => {
                 const newBaseAmount = subsidyLimit + 50n * DIGITS_COEF;
                 const newCashbackAmount = cashbackRate * (newBaseAmount - subsidyLimit) / CASHBACK_FACTOR;
@@ -1520,6 +1537,7 @@ describe("Contract 'CashbackController'", () => {
             });
           });
         });
+
         it("should revert if called by a non-hook trigger", async () => {
           await expect(cashbackControllerFromStranger.afterPaymentUpdated(
             paymentId("id1"),
@@ -1604,6 +1622,7 @@ describe("Contract 'CashbackController'", () => {
               });
             });
           });
+
           describe("cashback rate is not zero but payment had no cashback because it was capped", () => {
             const cashbackRate = 100n;
             let initialPayment: Payment;
@@ -1653,9 +1672,11 @@ describe("Contract 'CashbackController'", () => {
                 EMPTY_PAYMENT,
               );
             });
+
             it("should not emit the event", async () => {
               await expect(tx).to.not.emit(cashbackController, "CashbackDecreased");
             });
+
             it("should not change the cashback state", async () => {
               const operationState = resultToObject(await cashbackController
                 .getPaymentCashback(paymentId("id1")));
@@ -1664,12 +1685,14 @@ describe("Contract 'CashbackController'", () => {
                 recipient: payer.address,
               });
             });
+
             it("should not transfer tokens", async () => {
               await expect(tx).to.changeTokenBalances(tokenMock,
                 [treasury.address, payer.address, cashbackControllerAddress],
                 [0n, 0n, 0n],
               );
             });
+
             it("should not update the cashback amount in the account cashback state", async () => {
               const accountCashbackState = resultToObject(await cashbackController
                 .getAccountCashback(payer.address));
@@ -1714,6 +1737,7 @@ describe("Contract 'CashbackController'", () => {
                 EMPTY_PAYMENT,
               );
             });
+
             it("should do nothing", async () => {
               await expect(tx).to.not.emit(cashbackController, "CashbackDecreased");
               await expect(tx).to.not.emit(cashbackController, "CashbackIncreased");
@@ -1755,6 +1779,7 @@ describe("Contract 'CashbackController'", () => {
           await cashbackControllerFromOwner.setCashbackVault(await cashbackVault.getAddress());
         });
       });
+
       describe("Method 'afterPaymentMade()'", () => {
         let tx: TransactionResponse;
         const baseAmount = 100n * DIGITS_COEF;
@@ -1795,6 +1820,7 @@ describe("Contract 'CashbackController'", () => {
             .withArgs(payer.address, cashbackControllerAddress, cashbackAmount, cashbackAmount);
         });
       });
+
       describe("Method 'afterPaymentCanceled()'", () => {
         let tx: TransactionResponse;
         const baseAmount = 100n * DIGITS_COEF;
@@ -1819,6 +1845,7 @@ describe("Contract 'CashbackController'", () => {
             initialPayment,
           );
         });
+
         describe("revokes the whole cashback from vault", () => {
           let tx: TransactionResponse;
           beforeEach(async () => {
@@ -1828,20 +1855,24 @@ describe("Contract 'CashbackController'", () => {
               EMPTY_PAYMENT,
             );
           });
+
           it("should transfer tokens from cashback vault to treasury", async () => {
             await expect(tx).to.changeTokenBalances(tokenMock,
               [treasury.address, payer.address, cashbackControllerAddress, cashbackVault],
               [cashbackAmount, 0n, 0n, -cashbackAmount],
             );
           });
+
           it("should decrease the claimable amount in vault for the payer", async () => {
             expect(await cashbackVault.getAccountCashbackBalance(payer.address)).to.equal(0n);
           });
+
           it("should emit the required event", async () => {
             await expect(tx).to.emit(cashbackVault, "CashbackRevoked")
               .withArgs(payer.address, cashbackControllerAddress, cashbackAmount, 0n);
           });
         });
+
         describe("revokes cashback from vault and from payer if vault cashback balance is not enough", () => {
           let tx: TransactionResponse;
           beforeEach(async () => {
@@ -1852,15 +1883,18 @@ describe("Contract 'CashbackController'", () => {
               EMPTY_PAYMENT,
             );
           });
+
           it("should transfer tokens from cashback vault and from payer to treasury", async () => {
             await expect(tx).to.changeTokenBalances(tokenMock,
               [treasury.address, payer.address, cashbackControllerAddress, cashbackVault],
               [cashbackAmount, -cashbackAmount / 2n, 0n, -cashbackAmount / 2n],
             );
           });
+
           it("should decrease the claimable amount in vault for the payer", async () => {
             expect(await cashbackVault.getAccountCashbackBalance(payer.address)).to.equal(0n);
           });
+
           it("should emit the required event", async () => {
             await expect(tx).to.emit(cashbackVault, "CashbackRevoked")
               .withArgs(payer.address, cashbackControllerAddress, cashbackAmount / 2n, 0n);
@@ -1876,6 +1910,7 @@ describe("Contract 'CashbackController'", () => {
         await cashbackControllerFromOwner.setCashbackTreasury(treasury.address);
       });
     });
+
     describe("first payment that does not reach the cap", () => {
       const cashbackRate = 100n;
       let firstCashbackAmount: bigint;

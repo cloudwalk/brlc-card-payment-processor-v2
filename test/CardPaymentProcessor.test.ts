@@ -1972,21 +1972,28 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
                 await checkPaymentMakingFor(context);
               });
             });
+
             describe("Cashback is disabled, and the base and extra payment amounts are", () => {
               it("Both nonzero", async () => {
                 const context = await beforeMakingPayments();
                 await checkPaymentMakingFor(context, { cashbackEnabled: false });
               });
             });
+
             describe("Cashback is enabled, and the base and extra payment amounts are nonzero, and", () => {
               it("The treasury has insufficient balance", async () => {
                 const context = await beforeMakingPayments();
                 const { cardPaymentProcessorShell, tokenMock } = context;
                 await proveTx(connect(tokenMock, cashbackTreasury)
-                  .transfer(sponsor.address, await tokenMock.balanceOf(cashbackTreasury.address)));
+                  .transfer(
+                    sponsor.address,
+                    await tokenMock.balanceOf(cashbackTreasury.address) - BigInt(CASHBACK_ROUNDING_COEF),
+                  ),
+                );
                 cardPaymentProcessorShell.model.setCashbackSendingStatus(CashbackOperationStatus.OutOfFunds);
                 await checkPaymentMakingFor(context);
               });
+
               it("The cashback is capped", async () => {
                 const context = await beforeMakingPayments();
                 const { payments: [payment] } = context;
@@ -1996,6 +2003,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
             });
           });
         });
+
         describe("The payment is sponsored, cashback is enabled, and", () => {
           describe("The cashback rate is determined by the contract settings, and", () => {
             describe("The base and extra payment amounts are both nonzero, and the subsidy limit is", () => {
@@ -2032,6 +2040,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
                 await checkPaymentMakingFor(context, { sponsor, subsidyLimit });
               });
             });
+
             describe("The base and extra payment amounts are both zero, and the subsidy limit is", () => {
               it("Non-zero", async () => {
                 const context = await beforeMakingPayments();
@@ -2050,6 +2059,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
                 await checkPaymentMakingFor(context, { sponsor, subsidyLimit: 0 });
               });
             });
+
             describe("The base amount is nonzero, the extra amount is zero, and the subsidy limit is", () => {
               it("The same as the payment sum amount", async () => {
                 const context = await beforeMakingPayments();
@@ -2071,6 +2081,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
                 await checkPaymentMakingFor(context, { sponsor, subsidyLimit: 0 });
               });
             });
+
             describe("The base amount is zero, the extra amount is nonzero, and the subsidy limit is", () => {
               it("The same as the payment sum amount", async () => {
                 const context = await beforeMakingPayments();
@@ -2093,6 +2104,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
               });
             });
           });
+
           describe("The cashback rate is requested to be zero, and", () => {
             const cashbackRate = 0;
             describe("The base and extra payment amounts are both nonzero, and the subsidy limit is ", () => {
@@ -2103,6 +2115,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
               });
             });
           });
+
           describe("The cashback is requested to be a special value, and", () => {
             const cashbackRate = CASHBACK_RATE_DEFAULT * 2;
             describe("The base and extra payment amounts are both nonzero, and the subsidy limit is ", () => {
@@ -2120,6 +2133,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
           });
         });
       });
+
       describe("The payment is immediately confirmed, sponsored, with some amounts, usual cashback, and", () => {
         describe("The confirmation amount is", () => {
           it("Less than the base amount", async () => {
@@ -3083,7 +3097,6 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
     describe("Executes as expected if", () => {
       describe("The payment is not subsidized and not confirmed, and", () => {
         it("Cashback operations are enabled", async () => {
-          // WHY IT FAILS??
           const context = await beforeMakingPayments();
           const { cardPaymentProcessorShell, payments: [payment] } = context;
           await cardPaymentProcessorShell.makeCommonPayments([payment]);
@@ -4590,6 +4603,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
         await cardPaymentProcessorShell.cashbackControllerContract.setCashbackVault(await cashbackVault.getAddress());
       });
     });
+
     describe("Making a payment with cashback", () => {
       let tx: Promise<TransactionResponse>;
       let cashbackAmount: number;
@@ -4608,6 +4622,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
           [context.cashbackTreasury.address, await cashbackVault.getAddress()],
           [-cashbackAmount, cashbackAmount]);
       });
+
       it("should increase the claimable amount in vault for the payer", async () => {
         expect(await cashbackVault.getAccountCashbackBalance(payer.address)).to.equal(cashbackAmount);
       });
@@ -4689,6 +4704,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
           });
         });
       });
+
       describe("Claim part of the cashback", () => {
         let tx: TransactionResponse;
         let cashbackClaimed: number;
