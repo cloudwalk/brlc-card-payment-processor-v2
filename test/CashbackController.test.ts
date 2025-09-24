@@ -576,7 +576,7 @@ describe("Contract 'CashbackController'", () => {
             .withArgs(paymentId("id1"), payer.address, CashbackStatus.Success, increaseAmount, newCashbackAmount);
         });
 
-        it("should store the cashback state", async () => {
+        it("should update the cashback state", async () => {
           const operationState = resultToObject(await cashbackController
             .getPaymentCashback(paymentId("id1")));
           checkEquality(operationState, {
@@ -599,7 +599,7 @@ describe("Contract 'CashbackController'", () => {
             .withArgs(paymentId("id1"), payer.address, CashbackStatus.Success, decreaseAmount, newCashbackAmount);
         });
 
-        it("should store the cashback state", async () => {
+        it("should update the cashback state", async () => {
           const operationState = resultToObject(await cashbackController
             .getPaymentCashback(paymentId("id1")));
           checkEquality(operationState, {
@@ -622,7 +622,7 @@ describe("Contract 'CashbackController'", () => {
             .withArgs(paymentId("id1"), payer.address, CashbackStatus.Success, decreaseAmount, newCashbackAmount);
         });
 
-        it("should store the cashback state", async () => {
+        it("should update the cashback state", async () => {
           const operationState = resultToObject(await cashbackController
             .getPaymentCashback(paymentId("id1")));
           checkEquality(operationState, {
@@ -643,7 +643,7 @@ describe("Contract 'CashbackController'", () => {
           await expect(tx).to.not.emit(cashbackController, "CashbackIncreased");
         });
 
-        it("should store the cashback state", async () => {
+        it("should update the cashback state", async () => {
           const operationState = resultToObject(await cashbackController
             .getPaymentCashback(paymentId("id1")));
           checkEquality(operationState, {
@@ -714,7 +714,7 @@ describe("Contract 'CashbackController'", () => {
                 .withArgs(paymentId("id1"), payer.address, CashbackStatus.Success, cashbackAmount);
             });
 
-            it("should store the cashback state", async () => {
+            it("should update the cashback state", async () => {
               const operationState = resultToObject(await cashbackController
                 .getPaymentCashback(paymentId("id1")));
 
@@ -731,7 +731,7 @@ describe("Contract 'CashbackController'", () => {
               );
             });
 
-            it("should store the account cashback state", async () => {
+            it("should update the account cashback state", async () => {
               const accountCashbackState = resultToObject(await cashbackController
                 .getAccountCashback(payer.address));
               checkEquality(accountCashbackState, {
@@ -776,7 +776,7 @@ describe("Contract 'CashbackController'", () => {
                 .withArgs(paymentId("id1"), payer.address, CashbackStatus.OutOfFunds, 0n);
             });
 
-            it("should store the cashback state", async () => {
+            it("should update the cashback state", async () => {
               const operationState = resultToObject(await cashbackController
                 .getPaymentCashback(paymentId("id1")));
 
@@ -793,7 +793,7 @@ describe("Contract 'CashbackController'", () => {
               );
             });
 
-            it("should store the account cashback state", async () => {
+            it("should update the account cashback state", async () => {
               const accountCashbackState = resultToObject(await cashbackController
                 .getAccountCashback(payer.address));
               checkEquality(accountCashbackState, {
@@ -887,7 +887,7 @@ describe("Contract 'CashbackController'", () => {
               );
             });
 
-            it("should store the account cashback state", async () => {
+            it("should update the account cashback state", async () => {
               const accountCashbackState = resultToObject(await cashbackController
                 .getAccountCashback(payer.address));
               checkEquality(accountCashbackState, {
@@ -936,7 +936,7 @@ describe("Contract 'CashbackController'", () => {
               );
             });
 
-            it("should store the account cashback state", async () => {
+            it("should update the account cashback state", async () => {
               const accountCashbackState = resultToObject(await cashbackController
                 .getAccountCashback(payer.address));
               checkEquality(accountCashbackState, {
@@ -1042,7 +1042,7 @@ describe("Contract 'CashbackController'", () => {
                   );
               });
 
-              it("should store the cashback state", async () => {
+              it("should update the cashback state", async () => {
                 const operationState = resultToObject(await cashbackController
                   .getPaymentCashback(paymentId("id1")));
                 checkEquality(operationState, {
@@ -1099,7 +1099,7 @@ describe("Contract 'CashbackController'", () => {
                   );
               });
 
-              it("should store the cashback state", async () => {
+              it("should update the cashback state", async () => {
                 const operationState = resultToObject(await cashbackController
                   .getPaymentCashback(paymentId("id1")));
                 checkEquality(operationState, {
@@ -1146,7 +1146,7 @@ describe("Contract 'CashbackController'", () => {
                 await expect(tx).to.not.emit(cashbackController, "CashbackIncreased");
               });
 
-              it("should store the cashback state", async () => {
+              it("should update the cashback state", async () => {
                 const operationState = resultToObject(await cashbackController
                   .getPaymentCashback(paymentId("id1")));
                 checkEquality(operationState, {
@@ -1289,7 +1289,7 @@ describe("Contract 'CashbackController'", () => {
                     );
                 });
 
-                it("should store the cashback state", async () => {
+                it("should update the cashback state", async () => {
                   const operationState = resultToObject(await cashbackController
                     .getPaymentCashback(paymentId("id1")));
                   checkEquality(operationState, {
@@ -1349,7 +1349,7 @@ describe("Contract 'CashbackController'", () => {
                     );
                 });
 
-                it("should store the cashback state", async () => {
+                it("should update the cashback state", async () => {
                   const operationState = resultToObject(await cashbackController
                     .getPaymentCashback(paymentId("id1")));
                   checkEquality(operationState, {
@@ -1410,7 +1410,7 @@ describe("Contract 'CashbackController'", () => {
                     );
                 });
 
-                it("should store the cashback state", async () => {
+                it("should update the cashback state", async () => {
                   const operationState = resultToObject(await cashbackController
                     .getPaymentCashback(paymentId("id1")));
                   checkEquality(operationState, {
@@ -1544,7 +1544,7 @@ describe("Contract 'CashbackController'", () => {
                     );
                 });
 
-                it("should store the cashback state", async () => {
+                it("should update the cashback state", async () => {
                   const operationState = resultToObject(await cashbackController
                     .getPaymentCashback(paymentId("id1")));
                   checkEquality(operationState, {
@@ -1632,7 +1632,7 @@ describe("Contract 'CashbackController'", () => {
                 );
             });
 
-            it("should store the cashback state", async () => {
+            it("should update the cashback state", async () => {
               const operationState = resultToObject(await cashbackController
                 .getPaymentCashback(paymentId("id1")));
               checkEquality(operationState, {
