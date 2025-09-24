@@ -4644,7 +4644,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
           );
       });
 
-      describe("Refund part of the payment", () => {
+      describe("Refunding part of the payment", () => {
         let tx: Promise<TransactionResponse>;
         let cashbackRemaining: number;
         let cashbackRefunded: number;
@@ -4681,7 +4681,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
             );
         });
 
-        describe("Claim all cashback", () => {
+        describe("Claiming all cashback", () => {
           let tx: TransactionResponse;
           beforeEach(async () => {
             tx = await cashbackVault.claim(payer.address, cashbackRemaining);
@@ -4705,7 +4705,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
         });
       });
 
-      describe("Claim part of the cashback", () => {
+      describe("Claiming part of the cashback", () => {
         let tx: TransactionResponse;
         let cashbackClaimed: number;
 
@@ -4720,7 +4720,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
             [-cashbackClaimed, cashbackClaimed]);
         });
 
-        describe("Revoke payment", () => {
+        describe("Revocation of the payment", () => {
           let tx: Promise<TransactionResponse>;
           beforeEach(async () => {
             tx = (await cardPaymentProcessorShell.revokePayment(payment)).tx; ;

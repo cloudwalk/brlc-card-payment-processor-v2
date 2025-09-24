@@ -1846,7 +1846,7 @@ describe("Contract 'CashbackController'", () => {
           );
         });
 
-        describe("revokes the whole cashback from vault", () => {
+        describe("Revoking the whole cashback from vault", () => {
           let tx: TransactionResponse;
           beforeEach(async () => {
             tx = await cashbackControllerFromHookTrigger.afterPaymentCanceled(
@@ -1873,7 +1873,7 @@ describe("Contract 'CashbackController'", () => {
           });
         });
 
-        describe("revokes cashback from vault and from payer if vault cashback balance is not enough", () => {
+        describe("Revoking cashback from vault and from payer if vault cashback balance is not enough", () => {
           let tx: TransactionResponse;
           beforeEach(async () => {
             await cashbackVault.claim(payer.address, cashbackAmount / 2n);
