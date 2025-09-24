@@ -30,7 +30,7 @@ export function connect<T extends BaseContract = BaseContract>(contract: T, sign
   return contract.connect(signer) as T;
 }
 
-export function getAddress(contract: Contract): string {
+export function getAddress(contract: Contract | BaseContract): string {
   const address = contract.target;
   if (typeof address !== "string" || address.length != 42 || !address.startsWith("0x")) {
     throw new Error("The '.target' field of the contract is not an address string");

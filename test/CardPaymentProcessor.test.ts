@@ -1962,7 +1962,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
                 await checkPaymentMakingFor(context);
               });
 
-              it("Both nonzero, and cashback is partially sent with non-zero amount", async () => {
+              it("Both nonzero, and cashback is partially sent with a non-zero amount", async () => {
                 const context = await beforeMakingPayments();
                 const { payments: [payment], cardPaymentProcessorShell } = context;
                 const sentCashbackAmount = 2 * CASHBACK_ROUNDING_COEF;
@@ -2243,7 +2243,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
         ).to.be.revertedWithCustomError(cardPaymentProcessorShell.contract, ERROR_NAME_PAYMENT_ZERO_ID);
       });
 
-      it("The account has not enough token balance", async () => {
+      it("The account does not have enough token balance", async () => {
         const context = await beforeMakingPayments();
         const { cardPaymentProcessorShell, tokenMock, payments: [payment] } = context;
 
@@ -2267,7 +2267,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
         ).withArgs(payment.payer.address, anyValue, anyValue);
       });
 
-      it("The sponsor has not enough token balance", async () => {
+      it("The sponsor does not have enough token balance", async () => {
         const context = await beforeMakingPayments();
         const { cardPaymentProcessorShell, tokenMock, payments: [payment] } = context;
 
@@ -2805,7 +2805,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
             await checkUpdating(context, { newBaseAmount, subsidyLimit });
           });
 
-          it("The base amount decreases bellow SL but the sum amount is still above SL", async () => {
+          it("The base amount decreases below SL but the sum amount is still above SL", async () => {
             const context = await beforeMakingPayments();
             const { payments: [payment] } = context;
             const subsidyLimit = Math.floor(payment.baseAmount * 0.5);
@@ -2814,7 +2814,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
             await checkUpdating(context, { newBaseAmount, subsidyLimit });
           });
 
-          it("The base amount decreases and the sum amount becomes bellow SL", async () => {
+          it("The base amount decreases and the sum amount becomes below SL", async () => {
             const context = await beforeMakingPayments();
             const { payments: [payment] } = context;
             const subsidyLimit = Math.floor(payment.baseAmount * 0.5);
@@ -2853,7 +2853,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
             await checkUpdating(context, { newBaseAmount, newExtraAmount, subsidyLimit });
           });
 
-          it("The base amount decreases and the sum amount becomes bellow SL", async () => {
+          it("The base amount decreases and the sum amount becomes below SL", async () => {
             const context = await beforeMakingPayments();
             const { payments: [payment] } = context;
             const subsidyLimit = Math.floor(payment.baseAmount + payment.extraAmount * 0.5);
@@ -3885,7 +3885,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
         ).to.be.revertedWithCustomError(cardPaymentProcessorShell.contract, ERROR_NAME_ACCOUNT_ZERO_ADDRESS);
       });
 
-      it("The cash-out account does not configured", async () => {
+      it("The cash-out account is not configured", async () => {
         const { cardPaymentProcessorShell } = await prepareForPayments();
         const tokenAmount = nonZeroTokenAmount;
         await proveTx(cardPaymentProcessorShell.contract.setCashOutAccount(ZERO_ADDRESS));
@@ -4083,7 +4083,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
       await context.checkCardPaymentProcessorState();
     });
 
-    it("Revocation execute correctly for a payment with and without extra amount, cashback, subsidy", async () => {
+    it("Revocation executes correctly for a payment with and without extra amount, cashback, subsidy", async () => {
       const context = await beforeMakingPayments();
       const { cardPaymentProcessorShell, payments: [payment] } = context;
 
@@ -4597,10 +4597,10 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
         await cashbackVault.grantRole(GRANTOR_ROLE, deployer.address);
         await cashbackVault.grantRole(
           CASHBACK_OPERATOR_ROLE,
-          await cardPaymentProcessorShell.cashbackControllerContract.getAddress(),
+          getAddress(cardPaymentProcessorShell.cashbackControllerContract),
         );
         await cashbackVault.grantRole(MANAGER_ROLE, deployer.address);
-        await cardPaymentProcessorShell.cashbackControllerContract.setCashbackVault(await cashbackVault.getAddress());
+        await cardPaymentProcessorShell.cashbackControllerContract.setCashbackVault(getAddress(cashbackVault));
       });
     });
 
@@ -4619,7 +4619,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
 
       it("should transfer tokens from treasury to cashback vault", async () => {
         await expect(tx).to.changeTokenBalances(tokenMock,
-          [context.cashbackTreasury.address, await cashbackVault.getAddress()],
+          [context.cashbackTreasury.address, getAddress(cashbackVault)],
           [-cashbackAmount, cashbackAmount]);
       });
 
@@ -4658,7 +4658,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
 
         it("should transfer tokens from cashback vault to treasury", async () => {
           await expect(tx).to.changeTokenBalances(tokenMock,
-            [await cashbackVault.getAddress(), context.cashbackTreasury.address],
+            [getAddress(cashbackVault), context.cashbackTreasury.address],
             [-cashbackRefunded, cashbackRefunded]);
         });
 
@@ -4689,7 +4689,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
 
           it("should transfer tokens from vault to payer", async () => {
             await expect(tx).to.changeTokenBalances(tokenMock,
-              [await cashbackVault.getAddress(), payer.address],
+              [getAddress(cashbackVault), payer.address],
               [-cashbackRemaining, cashbackRemaining]);
           });
 
@@ -4716,20 +4716,20 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
 
         it("should transfer tokens from vault to payer", async () => {
           await expect(tx).to.changeTokenBalances(tokenMock,
-            [await cashbackVault.getAddress(), payer.address],
+            [getAddress(cashbackVault), payer.address],
             [-cashbackClaimed, cashbackClaimed]);
         });
 
         describe("Revocation of the payment", () => {
           let tx: Promise<TransactionResponse>;
           beforeEach(async () => {
-            tx = (await cardPaymentProcessorShell.revokePayment(payment)).tx; ;
+            tx = (await cardPaymentProcessorShell.revokePayment(payment)).tx;
           });
 
           it("should transfer cashback from cashback vault and account balance to treasury", async () => {
             const paymentModel = cardPaymentProcessorShell.model.getPaymentById(payment.id);
             await expect(tx).to.changeTokenBalances(tokenMock,
-              [await cashbackVault.getAddress(), context.cashbackTreasury.address, payer.address],
+              [getAddress(cashbackVault), context.cashbackTreasury.address, payer.address],
               [
                 -(cashbackAmount - cashbackClaimed),
                 cashbackAmount,
@@ -4742,8 +4742,8 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
     });
   });
 
-  describe("Scenarios", () => {
-    it("CC and CV scenarios", async () => {
+  describe("Snapshot scenarios", () => {
+    it("Common usage of CPP with CC and CV", async () => {
       const context = await beforeMakingPayments();
       const cardPaymentProcessorShell = context.cardPaymentProcessorShell;
       const tokenMock = context.tokenMock as unknown as Contracts.ERC20TokenMock;
@@ -4772,10 +4772,10 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
       await cashbackVault.grantRole(GRANTOR_ROLE, deployer.address);
       await cashbackVault.grantRole(
         CASHBACK_OPERATOR_ROLE,
-        await cardPaymentProcessorShell.cashbackControllerContract.getAddress(),
+        getAddress(cardPaymentProcessorShell.cashbackControllerContract),
       );
       await cashbackVault.grantRole(MANAGER_ROLE, deployer.address);
-      await cardPaymentProcessorShell.cashbackControllerContract.setCashbackVault(await cashbackVault.getAddress());
+      await cardPaymentProcessorShell.cashbackControllerContract.setCashbackVault(getAddress(cashbackVault));
       const payment = {
         ...context.payments[0],
         baseAmount: 10000 * DIGITS_COEF,

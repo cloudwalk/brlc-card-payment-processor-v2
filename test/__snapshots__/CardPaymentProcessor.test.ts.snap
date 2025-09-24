@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Contract 'CardPaymentProcessor' with CashbackController hook connected Scenarios CC and CV scenarios 1`] = `
+exports[`Contract 'CardPaymentProcessor' with CashbackController hook connected Snapshot scenarios Common usage of CPP with CC and CV 1`] = `
 Array [
   Object {
     "args": Array [

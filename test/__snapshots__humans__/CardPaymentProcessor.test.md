@@ -1,6 +1,6 @@
 # CardPaymentProcessor.test
 
-## Contract 'CardPaymentProcessor' with CashbackController hook connected > Scenarios > CC and CV scenarios
+## Contract 'CardPaymentProcessor' with CashbackController hook connected > Snapshot scenarios > Common usage of CPP with CC and CV
 
 | Idx | Caller | Contract | Name | Args |
 | --- | ------ | -------- | ---- | ---- |
