@@ -4751,7 +4751,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
       const cashbackVaultFactory = await ethers.getContractFactory("CashbackVault");
       const cashbackVault = await upgrades.deployProxy(cashbackVaultFactory, [getAddress(context.tokenMock)]);
       await cashbackVault.waitForDeployment();
-      await expect.startScenario({
+      await expect.startChainshot({
         accounts: {
           payer: context.payments[0].payer.address,
           deployer: deployer.address,
@@ -4788,7 +4788,7 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
       await cardPaymentProcessorShell.refundPayment(payment, 100 * DIGITS_COEF);
       await cashbackVault.claim(payer.address, 1 * DIGITS_COEF);
       await cardPaymentProcessorShell.revokePayment(payment);
-      await expect.endScenario();
+      await expect.stopChainshot();
     });
   });
 });

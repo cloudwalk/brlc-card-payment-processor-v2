@@ -704,7 +704,7 @@ describe("Contract 'CashbackVault'", () => {
     });
 
     it("snapshot scenario test", async () => {
-      await expect.startScenario({
+      await expect.startChainshot({
         accounts: {
           account: account.address,
           manager: manager.address,
@@ -731,11 +731,11 @@ describe("Contract 'CashbackVault'", () => {
       await cashbackVaultFromOperator.revokeCashback(account.address, 100n);
       await cashbackVaultFromManager.claim(account.address, 100n);
 
-      await expect.endScenario();
+      await expect.stopChainshot();
     });
 
     it("snapshot scenario test 2", async () => {
-      await expect.startScenario({
+      await expect.startChainshot({
         accounts: {
           account: account.address,
           manager: manager.address,
@@ -751,7 +751,7 @@ describe("Contract 'CashbackVault'", () => {
       });
 
       await cashbackVaultFromOperator.grantCashback(account.address, 1000n);
-      await expect.endScenario();
+      await expect.stopChainshot();
     });
   });
 });
