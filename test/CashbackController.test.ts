@@ -30,6 +30,7 @@ describe("Contract 'CashbackController'", () => {
   const HOOK_TRIGGER_ROLE: string = ethers.id("HOOK_TRIGGER_ROLE");
   const CASHBACK_OPERATOR_ROLE = ethers.id("CASHBACK_OPERATOR_ROLE");
   const MANAGER_ROLE = ethers.id("MANAGER_ROLE");
+  const RESCUER_ROLE = ethers.id("RESCUER_ROLE");
 
   let cashbackControllerFactory: Contracts.CashbackController__factory;
   let cashbackControllerFactoryWithForcibleRole: Contracts.CashbackControllerWithForcibleRole__factory;
@@ -78,7 +79,7 @@ describe("Contract 'CashbackController'", () => {
   }
 
   function paymentId(description: string) {
-    return ethers.keccak256(ethers.toUtf8Bytes(description));
+    return ethers.id(description);
   }
 
   async function deployTokenMock(nameSuffix = "") {
@@ -184,6 +185,7 @@ describe("Contract 'CashbackController'", () => {
         expect(await deployedContract.GRANTOR_ROLE()).to.equal(GRANTOR_ROLE);
         expect(await deployedContract.HOOK_TRIGGER_ROLE()).to.equal(HOOK_TRIGGER_ROLE);
         expect(await deployedContract.CASHBACK_OPERATOR_ROLE()).to.equal(CASHBACK_OPERATOR_ROLE);
+        expect(await deployedContract.RESCUER_ROLE()).to.equal(RESCUER_ROLE);
       });
 
       it("should set correct role admins", async () => {
@@ -191,6 +193,7 @@ describe("Contract 'CashbackController'", () => {
         expect(await deployedContract.getRoleAdmin(GRANTOR_ROLE)).to.equal(OWNER_ROLE);
         expect(await deployedContract.getRoleAdmin(HOOK_TRIGGER_ROLE)).to.equal(GRANTOR_ROLE);
         expect(await deployedContract.getRoleAdmin(CASHBACK_OPERATOR_ROLE)).to.equal(GRANTOR_ROLE);
+        expect(await deployedContract.getRoleAdmin(RESCUER_ROLE)).to.equal(GRANTOR_ROLE);
       });
 
       it("should set correct roles for the deployer", async () => {
@@ -198,6 +201,7 @@ describe("Contract 'CashbackController'", () => {
         expect(await deployedContract.hasRole(GRANTOR_ROLE, deployer.address)).to.eq(false);
         expect(await deployedContract.hasRole(HOOK_TRIGGER_ROLE, deployer.address)).to.eq(false);
         expect(await deployedContract.hasRole(CASHBACK_OPERATOR_ROLE, deployer.address)).to.eq(false);
+        expect(await deployedContract.hasRole(RESCUER_ROLE, deployer.address)).to.eq(false);
       });
 
       it("should set correct underlying token address", async () => {
