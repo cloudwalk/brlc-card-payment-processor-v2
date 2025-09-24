@@ -56,9 +56,9 @@ describe("Contract 'CashbackController'", () => {
   let sponsor: HardhatEthersSigner;
   let cashbackOperator: HardhatEthersSigner;
 
-  type Payment = Exclude<Parameters<typeof cashbackControllerFromOwner.afterPaymentMade>[1], Typed>;
+  type PaymentHookData = Exclude<Parameters<typeof cashbackControllerFromOwner.afterPaymentMade>[1], Typed>;
 
-  const EMPTY_PAYMENT: Payment = {
+  const EMPTY_PAYMENT: PaymentHookData = {
     baseAmount: 0n,
     subsidyLimit: 0n,
     status: 0n,
@@ -525,7 +525,7 @@ describe("Contract 'CashbackController'", () => {
       await setUpFixture(async function setUpTreasury() {
         await cashbackControllerFromOwner.setCashbackTreasury(treasury.address);
       });
-      const paymentHookData: Payment = {
+      const paymentHookData: PaymentHookData = {
         baseAmount,
         subsidyLimit: 100n,
         status: 1n,
@@ -666,7 +666,7 @@ describe("Contract 'CashbackController'", () => {
             const cashbackAmount = cashbackRate * baseAmount / CASHBACK_FACTOR;
 
             beforeEach(async () => {
-              const paymentHookData: Payment = {
+              const paymentHookData: PaymentHookData = {
                 baseAmount,
                 subsidyLimit: 100n,
                 status: 1n,
@@ -724,7 +724,7 @@ describe("Contract 'CashbackController'", () => {
             const cashbackAmount = cashbackRate * baseAmount / CASHBACK_FACTOR;
 
             beforeEach(async () => {
-              const paymentHookData: Payment = {
+              const paymentHookData: PaymentHookData = {
                 baseAmount,
                 subsidyLimit: 100n,
                 status: 1n,
@@ -785,7 +785,7 @@ describe("Contract 'CashbackController'", () => {
             const cashbackRate = 0n;
 
             beforeEach(async () => {
-              const paymentHookData: Payment = {
+              const paymentHookData: PaymentHookData = {
                 baseAmount,
                 subsidyLimit: 100n,
                 status: 1n,
@@ -832,7 +832,7 @@ describe("Contract 'CashbackController'", () => {
             const cashbackAmount = cashbackRate * baseAmount / CASHBACK_FACTOR;
 
             beforeEach(async () => {
-              const paymentHookData: Payment = {
+              const paymentHookData: PaymentHookData = {
                 baseAmount,
                 subsidyLimit: baseAmount,
                 status: 1n,
@@ -881,7 +881,7 @@ describe("Contract 'CashbackController'", () => {
             const cashbackAmount = cashbackRate * (baseAmount - subsidyLimit) / CASHBACK_FACTOR;
 
             beforeEach(async () => {
-              const paymentHookData: Payment = {
+              const paymentHookData: PaymentHookData = {
                 baseAmount,
                 subsidyLimit,
                 status: 1n,
@@ -934,7 +934,7 @@ describe("Contract 'CashbackController'", () => {
 
         it("should revert if the cashback treasury is not configured", async () => {
           const { cashbackController: notConfiguredCashbackController } = await deployAndConfigureContracts();
-          const paymentHookData: Payment = {
+          const paymentHookData: PaymentHookData = {
             baseAmount: 100n * DIGITS_COEF,
             subsidyLimit: 100n,
             status: 1n,
@@ -962,7 +962,7 @@ describe("Contract 'CashbackController'", () => {
             const baseAmount = 100n * DIGITS_COEF;
             const cashbackRate = 100n;
             const cashbackAmount = cashbackRate * baseAmount / CASHBACK_FACTOR;
-            let initialPayment: Payment;
+            let initialPayment: PaymentHookData;
             let initialAccountCashbackState: Awaited<ReturnType<typeof cashbackController.getAccountCashback>>;
             let initialOperationState: Awaited<ReturnType<typeof cashbackController.getPaymentCashback>>;
 
@@ -995,7 +995,7 @@ describe("Contract 'CashbackController'", () => {
               let tx: TransactionResponse;
 
               beforeEach(async () => {
-                const updatedPayment: Payment = {
+                const updatedPayment: PaymentHookData = {
                   ...initialPayment,
                   baseAmount: newBaseAmount,
                 };
@@ -1052,7 +1052,7 @@ describe("Contract 'CashbackController'", () => {
               let tx: TransactionResponse;
 
               beforeEach(async () => {
-                const updatedPayment: Payment = {
+                const updatedPayment: PaymentHookData = {
                   ...initialPayment,
                   refundAmount: newRefundAmount,
                 };
@@ -1105,7 +1105,7 @@ describe("Contract 'CashbackController'", () => {
               let tx: TransactionResponse;
 
               beforeEach(async () => {
-                const updatedPayment: Payment = {
+                const updatedPayment: PaymentHookData = {
                   ...initialPayment,
                   confirmedAmount: initialPayment.confirmedAmount as bigint + 1n, // just some irrelevant change
                 };
@@ -1152,7 +1152,7 @@ describe("Contract 'CashbackController'", () => {
           describe("payment cashback rate is zero", () => {
             const baseAmount = 100n * DIGITS_COEF;
             const cashbackRate = 0n;
-            let initialPayment: Payment;
+            let initialPayment: PaymentHookData;
             let initialAccountCashbackState: Awaited<ReturnType<typeof cashbackController.getAccountCashback>>;
             let initialOperationState: Awaited<ReturnType<typeof cashbackController.getPaymentCashback>>;
 
@@ -1209,7 +1209,7 @@ describe("Contract 'CashbackController'", () => {
               const subsidyLimit = baseAmount / 2n;
               const cashbackRate = 100n;
               const cashbackAmount = cashbackRate * (baseAmount - subsidyLimit) / CASHBACK_FACTOR;
-              let initialPayment: Payment;
+              let initialPayment: PaymentHookData;
               let initialAccountCashbackState: Awaited<ReturnType<typeof cashbackController.getAccountCashback>>;
               let initialOperationState: Awaited<ReturnType<typeof cashbackController.getPaymentCashback>>;
 
@@ -1242,7 +1242,7 @@ describe("Contract 'CashbackController'", () => {
                 let tx: TransactionResponse;
 
                 beforeEach(async () => {
-                  const updatedPayment: Payment = {
+                  const updatedPayment: PaymentHookData = {
                     ...initialPayment,
                     baseAmount: newBaseAmount,
                   };
@@ -1302,7 +1302,7 @@ describe("Contract 'CashbackController'", () => {
                 let tx: TransactionResponse;
 
                 beforeEach(async () => {
-                  const updatedPayment: Payment = {
+                  const updatedPayment: PaymentHookData = {
                     ...initialPayment,
                     refundAmount,
                   };
@@ -1363,7 +1363,7 @@ describe("Contract 'CashbackController'", () => {
                 let tx: TransactionResponse;
 
                 beforeEach(async () => {
-                  const updatedPayment: Payment = {
+                  const updatedPayment: PaymentHookData = {
                     ...initialPayment,
                     refundAmount,
                   };
@@ -1417,7 +1417,7 @@ describe("Contract 'CashbackController'", () => {
               const baseAmount = 100n * DIGITS_COEF;
               const subsidyLimit = baseAmount + 50n * DIGITS_COEF;
               const cashbackRate = 100n;
-              let initialPayment: Payment;
+              let initialPayment: PaymentHookData;
               let initialAccountCashbackState: Awaited<ReturnType<typeof cashbackController.getAccountCashback>>;
               let initialOperationState: Awaited<ReturnType<typeof cashbackController.getPaymentCashback>>;
 
@@ -1449,7 +1449,7 @@ describe("Contract 'CashbackController'", () => {
                 let tx: TransactionResponse;
 
                 beforeEach(async () => {
-                  const updatedPayment: Payment = {
+                  const updatedPayment: PaymentHookData = {
                     ...initialPayment,
                     baseAmount: newBaseAmount,
                   };
@@ -1498,7 +1498,7 @@ describe("Contract 'CashbackController'", () => {
                 let tx: TransactionResponse;
 
                 beforeEach(async () => {
-                  const updatedPayment: Payment = {
+                  const updatedPayment: PaymentHookData = {
                     ...initialPayment,
                     baseAmount: newBaseAmount,
                   };
@@ -1565,7 +1565,7 @@ describe("Contract 'CashbackController'", () => {
             const baseAmount = 100n * DIGITS_COEF;
             const cashbackRate = 100n;
             const cashbackAmount = cashbackRate * baseAmount / CASHBACK_FACTOR;
-            let initialPayment: Payment;
+            let initialPayment: PaymentHookData;
             let initialAccountCashbackState: Awaited<ReturnType<typeof cashbackController.getAccountCashback>>;
             let initialOperationState: Awaited<ReturnType<typeof cashbackController.getPaymentCashback>>;
             let tx: TransactionResponse;
@@ -1636,12 +1636,12 @@ describe("Contract 'CashbackController'", () => {
 
           describe("cashback rate is not zero but payment had no cashback because it was capped", () => {
             const cashbackRate = 100n;
-            let initialPayment: Payment;
+            let initialPayment: PaymentHookData;
             let initialAccountCashbackState: Awaited<ReturnType<typeof cashbackController.getAccountCashback>>;
             let initialOperationState: Awaited<ReturnType<typeof cashbackController.getPaymentCashback>>;
             let tx: TransactionResponse;
             beforeEach(async () => {
-              const cappingPayment: Payment = {
+              const cappingPayment: PaymentHookData = {
                 baseAmount: MAX_CASHBACK_FOR_CAP_PERIOD * CASHBACK_FACTOR / cashbackRate + 1n * DIGITS_COEF,
                 subsidyLimit: 0n,
                 status: 1n,
@@ -1718,7 +1718,7 @@ describe("Contract 'CashbackController'", () => {
           describe("cashback rate is zero", () => {
             const baseAmount = 100n * DIGITS_COEF;
             const cashbackRate = 0n;
-            let initialPayment: Payment;
+            let initialPayment: PaymentHookData;
             let initialAccountCashbackState: Awaited<ReturnType<typeof cashbackController.getAccountCashback>>;
             let initialOperationState: Awaited<ReturnType<typeof cashbackController.getPaymentCashback>>;
             let tx: TransactionResponse;
@@ -1837,7 +1837,7 @@ describe("Contract 'CashbackController'", () => {
         const baseAmount = 100n * DIGITS_COEF;
         const cashbackRate = 100n;
         const cashbackAmount = baseAmount * cashbackRate / CASHBACK_FACTOR;
-        let initialPayment: Payment;
+        let initialPayment: PaymentHookData;
         beforeEach(async () => {
           initialPayment = {
             baseAmount,
