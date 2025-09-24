@@ -566,14 +566,14 @@ describe("Contract 'CashbackController'", () => {
       describe("cashback amount is increased", () => {
         let tx: TransactionResponse;
         const newCashbackAmount = cashbackAmount + 10n * DIGITS_COEF;
-        const increasedAmount = newCashbackAmount - cashbackAmount;
+        const increaseAmount = newCashbackAmount - cashbackAmount;
         beforeEach(async () => {
           tx = await cashbackControllerFromCashbackOperator.correctCashbackAmount(paymentId("id1"), newCashbackAmount);
         });
 
         it("should emit the required event", async () => {
           await expect(tx).to.emit(cashbackController, "CashbackIncreased")
-            .withArgs(paymentId("id1"), payer.address, CashbackStatus.Success, increasedAmount, newCashbackAmount);
+            .withArgs(paymentId("id1"), payer.address, CashbackStatus.Success, increaseAmount, newCashbackAmount);
         });
 
         it("should store the cashback state", async () => {
@@ -589,14 +589,14 @@ describe("Contract 'CashbackController'", () => {
       describe("cashback amount is decreased", () => {
         let tx: TransactionResponse;
         const newCashbackAmount = cashbackAmount - 10n * DIGITS_COEF;
-        const decreasedAmount = cashbackAmount - newCashbackAmount;
+        const decreaseAmount = cashbackAmount - newCashbackAmount;
         beforeEach(async () => {
           tx = await cashbackControllerFromCashbackOperator.correctCashbackAmount(paymentId("id1"), newCashbackAmount);
         });
 
         it("should emit the required event", async () => {
           await expect(tx).to.emit(cashbackController, "CashbackDecreased")
-            .withArgs(paymentId("id1"), payer.address, CashbackStatus.Success, decreasedAmount, newCashbackAmount);
+            .withArgs(paymentId("id1"), payer.address, CashbackStatus.Success, decreaseAmount, newCashbackAmount);
         });
 
         it("should store the cashback state", async () => {
@@ -612,14 +612,14 @@ describe("Contract 'CashbackController'", () => {
       describe("cashback amount is set to zero", () => {
         let tx: TransactionResponse;
         const newCashbackAmount = 0n;
-        const decreasedAmount = cashbackAmount - newCashbackAmount;
+        const decreaseAmount = cashbackAmount - newCashbackAmount;
         beforeEach(async () => {
           tx = await cashbackControllerFromCashbackOperator.correctCashbackAmount(paymentId("id1"), newCashbackAmount);
         });
 
         it("should emit the required event", async () => {
           await expect(tx).to.emit(cashbackController, "CashbackDecreased")
-            .withArgs(paymentId("id1"), payer.address, CashbackStatus.Success, decreasedAmount, newCashbackAmount);
+            .withArgs(paymentId("id1"), payer.address, CashbackStatus.Success, decreaseAmount, newCashbackAmount);
         });
 
         it("should store the cashback state", async () => {
@@ -1015,7 +1015,7 @@ describe("Contract 'CashbackController'", () => {
             describe("base amount is increased", () => {
               const newBaseAmount = baseAmount + 50n * DIGITS_COEF;
               const newCashbackAmount = cashbackRate * newBaseAmount / CASHBACK_FACTOR;
-              const increasedAmount = newCashbackAmount - cashbackAmount;
+              const increaseAmount = newCashbackAmount - cashbackAmount;
 
               let tx: TransactionResponse;
 
@@ -1037,7 +1037,7 @@ describe("Contract 'CashbackController'", () => {
                     paymentId("id1"),
                     payer.address,
                     CashbackStatus.Success,
-                    increasedAmount,
+                    increaseAmount,
                     newCashbackAmount,
                   );
               });
@@ -1054,7 +1054,7 @@ describe("Contract 'CashbackController'", () => {
               it("should transfer tokens correctly", async () => {
                 await expect(tx).to.changeTokenBalances(tokenMock,
                   [treasury.address, payer.address, cashbackControllerAddress],
-                  [-increasedAmount, increasedAmount, 0n],
+                  [-increaseAmount, increaseAmount, 0n],
                 );
               });
 
@@ -1072,7 +1072,7 @@ describe("Contract 'CashbackController'", () => {
             describe("refund amount is increased", () => {
               const newRefundAmount = 50n * DIGITS_COEF;
               const newCashbackAmount = cashbackRate * (baseAmount - newRefundAmount) / CASHBACK_FACTOR;
-              const decreasedAmount = cashbackAmount - newCashbackAmount;
+              const decreaseAmount = cashbackAmount - newCashbackAmount;
 
               let tx: TransactionResponse;
 
@@ -1094,7 +1094,7 @@ describe("Contract 'CashbackController'", () => {
                     paymentId("id1"),
                     payer.address,
                     CashbackStatus.Success,
-                    decreasedAmount,
+                    decreaseAmount,
                     newCashbackAmount,
                   );
               });
@@ -1111,7 +1111,7 @@ describe("Contract 'CashbackController'", () => {
               it("should transfer tokens correctly", async () => {
                 await expect(tx).to.changeTokenBalances(tokenMock,
                   [treasury.address, payer.address, cashbackControllerAddress],
-                  [decreasedAmount, -decreasedAmount, 0n],
+                  [decreaseAmount, -decreaseAmount, 0n],
                 );
               });
 
@@ -1262,7 +1262,7 @@ describe("Contract 'CashbackController'", () => {
               describe("base amount is increased", () => {
                 const newBaseAmount = baseAmount + 50n * DIGITS_COEF;
                 const newCashbackAmount = cashbackRate * (newBaseAmount - subsidyLimit) / CASHBACK_FACTOR;
-                const increasedAmount = newCashbackAmount - cashbackAmount;
+                const increaseAmount = newCashbackAmount - cashbackAmount;
 
                 let tx: TransactionResponse;
 
@@ -1284,7 +1284,7 @@ describe("Contract 'CashbackController'", () => {
                       paymentId("id1"),
                       payer.address,
                       CashbackStatus.Success,
-                      increasedAmount,
+                      increaseAmount,
                       newCashbackAmount,
                     );
                 });
@@ -1301,7 +1301,7 @@ describe("Contract 'CashbackController'", () => {
                 it("should transfer tokens correctly", async () => {
                   await expect(tx).to.changeTokenBalances(tokenMock,
                     [treasury.address, payer.address, cashbackControllerAddress],
-                    [-increasedAmount, increasedAmount, 0n],
+                    [-increaseAmount, increaseAmount, 0n],
                   );
                 });
 
@@ -1322,7 +1322,7 @@ describe("Contract 'CashbackController'", () => {
                 const newCashbackAmount = cashbackRate *
                   ((baseAmount - subsidyLimit) - refundAmount * subsidyLimit / baseAmount) /
                   CASHBACK_FACTOR;
-                const decreasedAmount = cashbackAmount - newCashbackAmount;
+                const decreaseAmount = cashbackAmount - newCashbackAmount;
 
                 let tx: TransactionResponse;
 
@@ -1344,7 +1344,7 @@ describe("Contract 'CashbackController'", () => {
                       paymentId("id1"),
                       payer.address,
                       CashbackStatus.Success,
-                      decreasedAmount,
+                      decreaseAmount,
                       newCashbackAmount,
                     );
                 });
@@ -1361,7 +1361,7 @@ describe("Contract 'CashbackController'", () => {
                 it("should transfer tokens correctly", async () => {
                   await expect(tx).to.changeTokenBalances(tokenMock,
                     [treasury.address, payer.address, cashbackControllerAddress],
-                    [decreasedAmount, -decreasedAmount, 0n],
+                    [decreaseAmount, -decreaseAmount, 0n],
                   );
                 });
 
@@ -1383,7 +1383,7 @@ describe("Contract 'CashbackController'", () => {
                   additionalRefundThatWillGoToPayer; // additional refund that will cap sponsor part and goes to payer
                 // but we will not charge cashback for the additional refund that goes to payer
                 const newCashbackAmount = 0n;
-                const decreasedAmount = cashbackAmount;
+                const decreaseAmount = cashbackAmount;
 
                 let tx: TransactionResponse;
 
@@ -1405,7 +1405,7 @@ describe("Contract 'CashbackController'", () => {
                       paymentId("id1"),
                       payer.address,
                       CashbackStatus.Success,
-                      decreasedAmount,
+                      decreaseAmount,
                       newCashbackAmount,
                     );
                 });
@@ -1422,7 +1422,7 @@ describe("Contract 'CashbackController'", () => {
                 it("should transfer tokens correctly", async () => {
                   await expect(tx).to.changeTokenBalances(tokenMock,
                     [treasury.address, payer.address, cashbackControllerAddress],
-                    [decreasedAmount, -decreasedAmount, 0n],
+                    [decreaseAmount, -decreaseAmount, 0n],
                   );
                 });
 
