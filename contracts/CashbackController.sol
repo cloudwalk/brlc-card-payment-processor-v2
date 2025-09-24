@@ -8,6 +8,7 @@ import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.s
 import { AccessControlExtUpgradeable } from "./base/AccessControlExtUpgradeable.sol";
 import { RescuableUpgradeable } from "./base/RescuableUpgradeable.sol";
 import { UUPSExtUpgradeable } from "./base/UUPSExtUpgradeable.sol";
+import { PausableExtUpgradeable } from "./base/PausableExtUpgradeable.sol";
 import { Versionable } from "./base/Versionable.sol";
 
 import { CashbackControllerStorageLayout } from "./CashbackControlllerStorageLayout.sol";
@@ -32,6 +33,7 @@ import { ICardPaymentProcessor } from "./interfaces/ICardPaymentProcessor.sol";
 contract CashbackController is
     CashbackControllerStorageLayout,
     AccessControlExtUpgradeable,
+    PausableExtUpgradeable,
     RescuableUpgradeable,
     UUPSExtUpgradeable,
     Versionable,
@@ -98,8 +100,9 @@ contract CashbackController is
      */
     function initialize(address token_) external virtual initializer {
         __AccessControlExt_init_unchained();
+        __PausableExt_init_unchained();
         __Rescuable_init_unchained();
-        __UUPSExt_init_unchained(); // This is needed only to avoid errors during coverage assessment
+        __UUPSExt_init_unchained();
 
         if (token_ == address(0)) {
             revert CashbackController_TokenAddressZero();
@@ -200,12 +203,13 @@ contract CashbackController is
      *
      * @dev Requirements:
      *
+     * - The contract must not be paused.
      * - The caller must have the {CASHBACK_OPERATOR_ROLE} role.
      */
     function correctCashbackAmount(
         bytes32 paymentId,
         uint64 newCashbackAmount
-    ) external onlyRole(CASHBACK_OPERATOR_ROLE) {
+    ) external whenNotPaused onlyRole(CASHBACK_OPERATOR_ROLE) {
         _updateCashbackAmount(paymentId, newCashbackAmount);
     }
 

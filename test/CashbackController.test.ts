@@ -31,6 +31,7 @@ describe("Contract 'CashbackController'", () => {
   const CASHBACK_OPERATOR_ROLE = ethers.id("CASHBACK_OPERATOR_ROLE");
   const MANAGER_ROLE = ethers.id("MANAGER_ROLE");
   const RESCUER_ROLE = ethers.id("RESCUER_ROLE");
+  const PAUSER_ROLE = ethers.id("PAUSER_ROLE");
 
   let cashbackControllerFactory: Contracts.CashbackController__factory;
   let cashbackControllerFactoryWithForcibleRole: Contracts.CashbackControllerWithForcibleRole__factory;
@@ -56,6 +57,7 @@ describe("Contract 'CashbackController'", () => {
   let treasury2: HardhatEthersSigner;
   let sponsor: HardhatEthersSigner;
   let cashbackOperator: HardhatEthersSigner;
+  let pauser: HardhatEthersSigner;
 
   type PaymentHookData = Exclude<Parameters<typeof cashbackControllerFromOwner.afterPaymentMade>[1], Typed>;
 
@@ -132,6 +134,7 @@ describe("Contract 'CashbackController'", () => {
     await cashbackController.grantRole(GRANTOR_ROLE, deployer.address);
     await cashbackController.forceHookTriggerRole(hookTrigger.address);
     await cashbackController.grantRole(CASHBACK_OPERATOR_ROLE, cashbackOperator.address);
+    await cashbackController.grantRole(PAUSER_ROLE, pauser.address);
 
     await tokenMock.mint(treasury.address, INITIAL_TREASURY_BALANCE);
     await tokenMock.connect(treasury).approve(await cashbackController.getAddress(), ethers.MaxUint256);
@@ -145,7 +148,7 @@ describe("Contract 'CashbackController'", () => {
   }
 
   before(async () => {
-    [deployer, hookTrigger, stranger, treasury, treasury2, payer, sponsor, cashbackOperator] =
+    [deployer, hookTrigger, stranger, treasury, treasury2, payer, sponsor, cashbackOperator, pauser] =
       await ethers.getSigners();
 
     // Contract factories with the explicitly specified deployer account
@@ -186,6 +189,7 @@ describe("Contract 'CashbackController'", () => {
         expect(await deployedContract.HOOK_TRIGGER_ROLE()).to.equal(HOOK_TRIGGER_ROLE);
         expect(await deployedContract.CASHBACK_OPERATOR_ROLE()).to.equal(CASHBACK_OPERATOR_ROLE);
         expect(await deployedContract.RESCUER_ROLE()).to.equal(RESCUER_ROLE);
+        expect(await deployedContract.PAUSER_ROLE()).to.equal(PAUSER_ROLE);
       });
 
       it("should set correct role admins", async () => {
@@ -194,6 +198,7 @@ describe("Contract 'CashbackController'", () => {
         expect(await deployedContract.getRoleAdmin(HOOK_TRIGGER_ROLE)).to.equal(GRANTOR_ROLE);
         expect(await deployedContract.getRoleAdmin(CASHBACK_OPERATOR_ROLE)).to.equal(GRANTOR_ROLE);
         expect(await deployedContract.getRoleAdmin(RESCUER_ROLE)).to.equal(GRANTOR_ROLE);
+        expect(await deployedContract.getRoleAdmin(PAUSER_ROLE)).to.equal(GRANTOR_ROLE);
       });
 
       it("should set correct roles for the deployer", async () => {
@@ -202,6 +207,7 @@ describe("Contract 'CashbackController'", () => {
         expect(await deployedContract.hasRole(HOOK_TRIGGER_ROLE, deployer.address)).to.eq(false);
         expect(await deployedContract.hasRole(CASHBACK_OPERATOR_ROLE, deployer.address)).to.eq(false);
         expect(await deployedContract.hasRole(RESCUER_ROLE, deployer.address)).to.eq(false);
+        expect(await deployedContract.hasRole(PAUSER_ROLE, deployer.address)).to.eq(false);
       });
 
       it("should set correct underlying token address", async () => {
@@ -547,19 +553,6 @@ describe("Contract 'CashbackController'", () => {
       );
     });
 
-    describe("Should revert if", () => {
-      it("the caller does not have the required role", async () => {
-        await expect(cashbackControllerFromStranger.correctCashbackAmount(paymentId("id1"), cashbackAmount))
-          .to.be.revertedWithCustomError(cashbackControllerFromStranger, "AccessControlUnauthorizedAccount")
-          .withArgs(stranger.address, CASHBACK_OPERATOR_ROLE);
-      });
-
-      it("the payment cashback does not exist", async () => {
-        await expect(cashbackControllerFromCashbackOperator.correctCashbackAmount(paymentId("nothing"), cashbackAmount))
-          .to.be.revertedWithCustomError(cashbackController, "CashbackController_CashbackDoesNotExist");
-      });
-    });
-
     describe("Should execute as expected when called properly and if", () => {
       describe("cashback amount is increased", () => {
         let tx: TransactionResponse;
@@ -649,6 +642,25 @@ describe("Contract 'CashbackController'", () => {
             recipient: payer.address,
           });
         });
+      });
+    });
+
+    describe("Should revert if", () => {
+      it("the caller does not have the required role", async () => {
+        await expect(cashbackControllerFromStranger.correctCashbackAmount(paymentId("id1"), cashbackAmount))
+          .to.be.revertedWithCustomError(cashbackControllerFromStranger, "AccessControlUnauthorizedAccount")
+          .withArgs(stranger.address, CASHBACK_OPERATOR_ROLE);
+      });
+
+      it("the payment cashback does not exist", async () => {
+        await expect(cashbackControllerFromCashbackOperator.correctCashbackAmount(paymentId("nothing"), cashbackAmount))
+          .to.be.revertedWithCustomError(cashbackController, "CashbackController_CashbackDoesNotExist");
+      });
+
+      it("the contract is paused", async () => {
+        await cashbackController.connect(pauser).pause();
+        await expect(cashbackControllerFromCashbackOperator.correctCashbackAmount(paymentId("id1"), cashbackAmount))
+          .to.be.revertedWithCustomError(cashbackControllerFromCashbackOperator, "EnforcedPause");
       });
     });
   });
