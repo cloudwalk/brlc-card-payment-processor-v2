@@ -178,37 +178,39 @@ describe("Contract 'CashbackController'", () => {
       deployedContract = contracts.cashbackController;
     });
 
-    it("should expose correct role hashes", async () => {
-      expect(await deployedContract.OWNER_ROLE()).to.equal(OWNER_ROLE);
-      expect(await deployedContract.GRANTOR_ROLE()).to.equal(GRANTOR_ROLE);
-      expect(await deployedContract.HOOK_TRIGGER_ROLE()).to.equal(HOOK_TRIGGER_ROLE);
-      expect(await deployedContract.CASHBACK_OPERATOR_ROLE()).to.equal(CASHBACK_OPERATOR_ROLE);
-    });
+    describe("Should execute as expected when called properly and", () => {
+      it("should expose correct role hashes", async () => {
+        expect(await deployedContract.OWNER_ROLE()).to.equal(OWNER_ROLE);
+        expect(await deployedContract.GRANTOR_ROLE()).to.equal(GRANTOR_ROLE);
+        expect(await deployedContract.HOOK_TRIGGER_ROLE()).to.equal(HOOK_TRIGGER_ROLE);
+        expect(await deployedContract.CASHBACK_OPERATOR_ROLE()).to.equal(CASHBACK_OPERATOR_ROLE);
+      });
 
-    it("should set correct role admins", async () => {
-      expect(await deployedContract.getRoleAdmin(OWNER_ROLE)).to.equal(OWNER_ROLE);
-      expect(await deployedContract.getRoleAdmin(GRANTOR_ROLE)).to.equal(OWNER_ROLE);
-      expect(await deployedContract.getRoleAdmin(HOOK_TRIGGER_ROLE)).to.equal(GRANTOR_ROLE);
-      expect(await deployedContract.getRoleAdmin(CASHBACK_OPERATOR_ROLE)).to.equal(GRANTOR_ROLE);
-    });
+      it("should set correct role admins", async () => {
+        expect(await deployedContract.getRoleAdmin(OWNER_ROLE)).to.equal(OWNER_ROLE);
+        expect(await deployedContract.getRoleAdmin(GRANTOR_ROLE)).to.equal(OWNER_ROLE);
+        expect(await deployedContract.getRoleAdmin(HOOK_TRIGGER_ROLE)).to.equal(GRANTOR_ROLE);
+        expect(await deployedContract.getRoleAdmin(CASHBACK_OPERATOR_ROLE)).to.equal(GRANTOR_ROLE);
+      });
 
-    it("should set correct roles for the deployer", async () => {
-      expect(await deployedContract.hasRole(OWNER_ROLE, deployer.address)).to.eq(true);
-      expect(await deployedContract.hasRole(GRANTOR_ROLE, deployer.address)).to.eq(false);
-      expect(await deployedContract.hasRole(HOOK_TRIGGER_ROLE, deployer.address)).to.eq(false);
-      expect(await deployedContract.hasRole(CASHBACK_OPERATOR_ROLE, deployer.address)).to.eq(false);
-    });
+      it("should set correct roles for the deployer", async () => {
+        expect(await deployedContract.hasRole(OWNER_ROLE, deployer.address)).to.eq(true);
+        expect(await deployedContract.hasRole(GRANTOR_ROLE, deployer.address)).to.eq(false);
+        expect(await deployedContract.hasRole(HOOK_TRIGGER_ROLE, deployer.address)).to.eq(false);
+        expect(await deployedContract.hasRole(CASHBACK_OPERATOR_ROLE, deployer.address)).to.eq(false);
+      });
 
-    it("should set correct underlying token address", async () => {
-      expect(await cashbackControllerFromOwner.underlyingToken()).to.equal(await tokenMock.getAddress());
-    });
+      it("should set correct underlying token address", async () => {
+        expect(await cashbackControllerFromOwner.underlyingToken()).to.equal(await tokenMock.getAddress());
+      });
 
-    it("should not set cashback treasury address", async () => {
-      expect(await cashbackControllerFromOwner.getCashbackTreasury()).to.equal(ethers.ZeroAddress);
-    });
+      it("should not set cashback treasury address", async () => {
+        expect(await cashbackControllerFromOwner.getCashbackTreasury()).to.equal(ethers.ZeroAddress);
+      });
 
-    it("should not set cashback vault address", async () => {
-      expect(await cashbackControllerFromOwner.getCashbackVault()).to.equal(ethers.ZeroAddress);
+      it("should not set cashback vault address", async () => {
+        expect(await cashbackControllerFromOwner.getCashbackVault()).to.equal(ethers.ZeroAddress);
+      });
     });
 
     describe("Should revert if", () => {
@@ -237,13 +239,15 @@ describe("Contract 'CashbackController'", () => {
       await deployedContract.grantRole(GRANTOR_ROLE, deployer.address);
     });
 
-    it("should grant the role to the CardPaymentProcessor with the correct underlying token", async () => {
-      const cardPaymentProcessor =
-        await upgrades.deployProxy(cardPaymentProcessorFactory, [await specificTokenMock.getAddress()]);
+    describe("Should execute as expected when called properly and", () => {
+      it("should grant the role to the caller contract with the correct underlying token", async () => {
+        const cardPaymentProcessor =
+          await upgrades.deployProxy(cardPaymentProcessorFactory, [await specificTokenMock.getAddress()]);
 
-      await expect(deployedContract.grantRole(HOOK_TRIGGER_ROLE, await cardPaymentProcessor.getAddress()))
-        .to.emit(deployedContract, "RoleGranted")
-        .withArgs(HOOK_TRIGGER_ROLE, await cardPaymentProcessor.getAddress(), deployer.address);
+        await expect(deployedContract.grantRole(HOOK_TRIGGER_ROLE, await cardPaymentProcessor.getAddress()))
+          .to.emit(deployedContract, "RoleGranted")
+          .withArgs(HOOK_TRIGGER_ROLE, await cardPaymentProcessor.getAddress(), deployer.address);
+      });
     });
 
     describe("Should revert if", async () => {
@@ -268,12 +272,18 @@ describe("Contract 'CashbackController'", () => {
   });
 
   describe("Method 'upgradeToAndCall()'", () => {
-    it("should upgrade the contract to a new implementation", async () => {
-      const newImplementation = await cashbackControllerFactory.deploy();
-      await newImplementation.waitForDeployment();
+    describe("Should execute as expected when called properly and", () => {
+      it("should upgrade the contract to a new implementation", async () => {
+        const newImplementation = await cashbackControllerFactory.deploy();
+        await newImplementation.waitForDeployment();
 
-      const tx = cashbackControllerFromOwner.upgradeToAndCall(await newImplementation.getAddress(), "0x");
-      await expect(tx).to.emit(cashbackControllerFromOwner, "Upgraded").withArgs(await newImplementation.getAddress());
+        const tx = cashbackControllerFromOwner.upgradeToAndCall(await newImplementation.getAddress(), "0x");
+        await expect(tx)
+          .to.emit(cashbackControllerFromOwner, "Upgraded")
+          .withArgs(
+            await newImplementation.getAddress(),
+          );
+      });
     });
 
     describe("Should revert if", () => {
@@ -394,7 +404,7 @@ describe("Contract 'CashbackController'", () => {
     });
 
     describe(
-      "Should execute as expected when initially setting the cashback vault (enabling the claimable mode)",
+      "Should execute as expected when initially setting the cashback vault (enabling the claimable mode) and",
       async () => {
         let tx: TransactionResponse;
         beforeEach(async () => {
@@ -418,7 +428,7 @@ describe("Contract 'CashbackController'", () => {
         });
       },
     );
-    describe("Should execute as expected when updating the cashback vault", () => {
+    describe("Should execute as expected when updating the cashback vault and", () => {
       let tx: TransactionResponse;
       beforeEach(async () => {
         await cashbackControllerFromOwner.setCashbackVault(await defaultTokenCashbackVaults[0].getAddress());
@@ -447,30 +457,31 @@ describe("Contract 'CashbackController'", () => {
       });
     });
 
-    describe("Should execute as expected when setting the cashback vault to zero (disabling claimable mode)", () => {
-      let tx: TransactionResponse;
-      beforeEach(async () => {
-        await cashbackControllerFromOwner.setCashbackVault(await defaultTokenCashbackVaults[0].getAddress());
+    describe("Should execute as expected when setting the cashback vault to zero (disabling claimable mode) and",
+      () => {
+        let tx: TransactionResponse;
+        beforeEach(async () => {
+          await cashbackControllerFromOwner.setCashbackVault(await defaultTokenCashbackVaults[0].getAddress());
 
-        tx = await cashbackControllerFromOwner.setCashbackVault(ethers.ZeroAddress);
-      });
+          tx = await cashbackControllerFromOwner.setCashbackVault(ethers.ZeroAddress);
+        });
 
-      it("should remove allowance from the old CV contract", async () => {
-        expect(await tokenMock.allowance(cashbackControllerAddress, await defaultTokenCashbackVaults[0].getAddress()))
-          .to.equal(0);
-      });
+        it("should remove allowance from the old CV contract", async () => {
+          expect(await tokenMock.allowance(cashbackControllerAddress, await defaultTokenCashbackVaults[0].getAddress()))
+            .to.equal(0);
+        });
 
-      it("should emit the required event", async () => {
-        await expect(tx)
-          .to.emit(cashbackController, "CashbackVaultUpdated")
-          .withArgs(ethers.ZeroAddress, await defaultTokenCashbackVaults[0].getAddress());
-      });
+        it("should emit the required event", async () => {
+          await expect(tx)
+            .to.emit(cashbackController, "CashbackVaultUpdated")
+            .withArgs(ethers.ZeroAddress, await defaultTokenCashbackVaults[0].getAddress());
+        });
 
-      it("should update the cashback vault", async () => {
-        expect(await cashbackController.getCashbackVault())
-          .to.equal(ethers.ZeroAddress);
+        it("should update the cashback vault", async () => {
+          expect(await cashbackController.getCashbackVault())
+            .to.equal(ethers.ZeroAddress);
+        });
       });
-    });
 
     describe("Should revert if", () => {
       it("the provided cashback vault contract is invalid", async () => {
@@ -545,7 +556,7 @@ describe("Contract 'CashbackController'", () => {
       });
     });
 
-    describe("Should execute as expected when", () => {
+    describe("Should execute as expected when called properly and if", () => {
       describe("cashback amount is increased", () => {
         let tx: TransactionResponse;
         const newCashbackAmount = cashbackAmount + 10n * DIGITS_COEF;
@@ -647,7 +658,7 @@ describe("Contract 'CashbackController'", () => {
 
     describe("CashbackVault is not set", () => {
       describe("Method 'afterPaymentMade()'", () => {
-        describe("should execute as expected when", () => {
+        describe("Should execute as expected when called properly and if", () => {
           describe("cashback rate is not zero", () => {
             let tx: TransactionResponse;
             const baseAmount = 100n * DIGITS_COEF;
@@ -946,7 +957,7 @@ describe("Contract 'CashbackController'", () => {
       });
 
       describe("Method 'afterPaymentUpdated()'", () => {
-        describe("should execute as expected when", () => {
+        describe("Should execute as expected when called properly and if", () => {
           describe("payment cashback rate is not zero and no sponsor", () => {
             const baseAmount = 100n * DIGITS_COEF;
             const cashbackRate = 100n;
@@ -1549,7 +1560,7 @@ describe("Contract 'CashbackController'", () => {
       });
 
       describe("Method 'afterPaymentCanceled()'", () => {
-        describe("should execute as expected when", () => {
+        describe("Should execute as expected when called properly and if", () => {
           describe("cashback rate is not zero", () => {
             const baseAmount = 100n * DIGITS_COEF;
             const cashbackRate = 100n;
