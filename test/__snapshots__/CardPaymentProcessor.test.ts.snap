@@ -8,13 +8,13 @@ Array [
       "deployer",
     ],
     "balances": Object {
-      "brlc": Object {
-        "brlc": 0n,
+      "BRLC": Object {
+        "BRLC": 0n,
+        "CPP": 0n,
         "cashOutAccount": 0n,
         "cashbackController": 0n,
         "cashbackTreasury": 57896044618658097711785492504343953926634992332820282019728792003956564819967n,
         "cashbackVault": 0n,
-        "cpp": 0n,
         "deployer": 0n,
         "executor": 0n,
         "payer": 1000000000000n,
@@ -30,7 +30,7 @@ Array [
           "deployer",
           "deployer",
         ],
-        "contract": "cpp",
+        "contract": "CPP",
         "name": "RoleGranted",
       },
     ],
@@ -71,13 +71,13 @@ Array [
       "cashbackController",
     ],
     "balances": Object {
-      "brlc": Object {
-        "brlc": 0n,
+      "BRLC": Object {
+        "BRLC": 0n,
+        "CPP": 0n,
         "cashOutAccount": 0n,
         "cashbackController": 0n,
         "cashbackTreasury": 57896044618658097711785492504343953926634992332820282019728792003956564819967n,
         "cashbackVault": 0n,
-        "cpp": 0n,
         "deployer": 0n,
         "executor": 0n,
         "payer": 1000000000000n,
@@ -93,7 +93,7 @@ Array [
           "cashbackController",
           "deployer",
         ],
-        "contract": "cpp",
+        "contract": "CPP",
         "name": "RoleGranted",
       },
     ],
@@ -134,13 +134,13 @@ Array [
       "deployer",
     ],
     "balances": Object {
-      "brlc": Object {
-        "brlc": 0n,
+      "BRLC": Object {
+        "BRLC": 0n,
+        "CPP": 0n,
         "cashOutAccount": 0n,
         "cashbackController": 0n,
         "cashbackTreasury": 57896044618658097711785492504343953926634992332820282019728792003956564819967n,
         "cashbackVault": 0n,
-        "cpp": 0n,
         "deployer": 0n,
         "executor": 0n,
         "payer": 1000000000000n,
@@ -156,7 +156,7 @@ Array [
           "deployer",
           "deployer",
         ],
-        "contract": "cpp",
+        "contract": "CPP",
         "name": "RoleGranted",
       },
     ],
@@ -196,13 +196,13 @@ Array [
       "cashbackVault",
     ],
     "balances": Object {
-      "brlc": Object {
-        "brlc": 0n,
+      "BRLC": Object {
+        "BRLC": 0n,
+        "CPP": 0n,
         "cashOutAccount": 0n,
         "cashbackController": 0n,
         "cashbackTreasury": 57896044618658097711785492504343953926634992332820282019728792003956564819967n,
         "cashbackVault": 0n,
-        "cpp": 0n,
         "deployer": 0n,
         "executor": 0n,
         "payer": 1000000000000n,
@@ -218,7 +218,7 @@ Array [
           "cashbackVault",
           115792089237316195423570985008687907853269984665640564039457584007913129639935n,
         ],
-        "contract": "brlc",
+        "contract": "BRLC",
         "name": "Approval",
       },
       Object {
@@ -264,13 +264,13 @@ Array [
       0n,
     ],
     "balances": Object {
-      "brlc": Object {
-        "brlc": 0n,
+      "BRLC": Object {
+        "BRLC": 0n,
+        "CPP": 14000000000n,
         "cashOutAccount": 0n,
         "cashbackController": 0n,
         "cashbackTreasury": 57896044618658097711785492504343953926634992332820282019728792003956264819967n,
         "cashbackVault": 300000000n,
-        "cpp": 14000000000n,
         "deployer": 0n,
         "executor": 0n,
         "payer": 986000000000n,
@@ -278,15 +278,15 @@ Array [
       },
     },
     "caller": "executor",
-    "contract": "cpp",
+    "contract": "CPP",
     "events": Array [
       Object {
         "args": Array [
           "payer",
-          "cpp",
+          "CPP",
           14000000000n,
         ],
-        "contract": "brlc",
+        "contract": "BRLC",
         "name": "Transfer",
       },
       Object {
@@ -295,7 +295,7 @@ Array [
           "payer",
           "0x010000000002540be40000000000ee6b28000000000342770c00",
         ],
-        "contract": "cpp",
+        "contract": "CPP",
         "name": "PaymentMade",
       },
       Object {
@@ -304,7 +304,7 @@ Array [
           "cashbackController",
           300000000n,
         ],
-        "contract": "brlc",
+        "contract": "BRLC",
         "name": "Transfer",
       },
       Object {
@@ -313,7 +313,7 @@ Array [
           "cashbackVault",
           300000000n,
         ],
-        "contract": "brlc",
+        "contract": "BRLC",
         "name": "Transfer",
       },
       Object {
@@ -428,13 +428,13 @@ Array [
       100000000n,
     ],
     "balances": Object {
-      "brlc": Object {
-        "brlc": 0n,
+      "BRLC": Object {
+        "BRLC": 0n,
+        "CPP": 13900000000n,
         "cashOutAccount": 0n,
         "cashbackController": 0n,
         "cashbackTreasury": 57896044618658097711785492504343953926634992332820282019728792003956264819967n,
         "cashbackVault": 300000000n,
-        "cpp": 13900000000n,
         "deployer": 0n,
         "executor": 0n,
         "payer": 986100000000n,
@@ -442,15 +442,15 @@ Array [
       },
     },
     "caller": "executor",
-    "contract": "cpp",
+    "contract": "CPP",
     "events": Array [
       Object {
         "args": Array [
-          "cpp",
+          "CPP",
           "payer",
           100000000n,
         ],
-        "contract": "brlc",
+        "contract": "BRLC",
         "name": "Transfer",
       },
       Object {
@@ -459,7 +459,7 @@ Array [
           "payer",
           "0x010000000000000000000000000005f5e100",
         ],
-        "contract": "cpp",
+        "contract": "CPP",
         "name": "PaymentRefunded",
       },
       Object {
@@ -511,13 +511,13 @@ Array [
       1000000n,
     ],
     "balances": Object {
-      "brlc": Object {
-        "brlc": 0n,
+      "BRLC": Object {
+        "BRLC": 0n,
+        "CPP": 13900000000n,
         "cashOutAccount": 0n,
         "cashbackController": 0n,
         "cashbackTreasury": 57896044618658097711785492504343953926634992332820282019728792003956264819967n,
         "cashbackVault": 299000000n,
-        "cpp": 13900000000n,
         "deployer": 0n,
         "executor": 0n,
         "payer": 986101000000n,
@@ -533,7 +533,7 @@ Array [
           "payer",
           1000000n,
         ],
-        "contract": "brlc",
+        "contract": "BRLC",
         "name": "Transfer",
       },
       Object {
@@ -583,13 +583,13 @@ Array [
       "0x0000000000000000000000000000000000000000000000000000000000000001",
     ],
     "balances": Object {
-      "brlc": Object {
-        "brlc": 0n,
+      "BRLC": Object {
+        "BRLC": 0n,
+        "CPP": 0n,
         "cashOutAccount": 0n,
         "cashbackController": 0n,
         "cashbackTreasury": 57896044618658097711785492504343953926634992332820282019728792003956564819967n,
         "cashbackVault": 0n,
-        "cpp": 0n,
         "deployer": 0n,
         "executor": 0n,
         "payer": 1000000000000n,
@@ -597,15 +597,15 @@ Array [
       },
     },
     "caller": "executor",
-    "contract": "cpp",
+    "contract": "CPP",
     "events": Array [
       Object {
         "args": Array [
-          "cpp",
+          "CPP",
           "payer",
           13900000000n,
         ],
-        "contract": "brlc",
+        "contract": "BRLC",
         "name": "Transfer",
       },
       Object {
@@ -614,7 +614,7 @@ Array [
           "payer",
           "0x010000000002540be40000000000ee6b2800000000033c812b00",
         ],
-        "contract": "cpp",
+        "contract": "CPP",
         "name": "PaymentRevoked",
       },
       Object {
@@ -623,7 +623,7 @@ Array [
           "cashbackController",
           299000000n,
         ],
-        "contract": "brlc",
+        "contract": "BRLC",
         "name": "Transfer",
       },
       Object {
@@ -642,7 +642,7 @@ Array [
           "cashbackController",
           1000000n,
         ],
-        "contract": "brlc",
+        "contract": "BRLC",
         "name": "Transfer",
       },
       Object {
@@ -651,7 +651,7 @@ Array [
           "cashbackTreasury",
           300000000n,
         ],
-        "contract": "brlc",
+        "contract": "BRLC",
         "name": "Transfer",
       },
       Object {

@@ -4761,12 +4761,12 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
           cashOutAccount: context.cashOutAccount.address,
         },
         contracts: {
-          cpp: cardPaymentProcessorShell.contract,
+          CPP: cardPaymentProcessorShell.contract,
           cashbackVault,
           cashbackController: cardPaymentProcessorShell.cashbackControllerContract,
         },
         tokens: {
-          brlc: tokenMock,
+          BRLC: tokenMock,
         },
       });
       await cashbackVault.grantRole(GRANTOR_ROLE, deployer.address);

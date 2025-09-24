@@ -8,12 +8,12 @@ Array [
       1000n,
     ],
     "balances": Object {
-      "tokenMock": Object {
+      "BRLC": Object {
+        "BRLC": 0n,
         "account": 0n,
         "cashbackVault": 1000n,
         "manager": 0n,
         "operator": 57896044618658097711785492504343953926634992332820282019728792003956564818967n,
-        "tokenMock": 0n,
       },
     },
     "caller": "operator",
@@ -31,7 +31,7 @@ Array [
           "cashbackVault",
           1000n,
         ],
-        "contract": "tokenMock",
+        "contract": "BRLC",
         "name": "Transfer",
       },
       Object {
@@ -82,12 +82,12 @@ Array [
       100n,
     ],
     "balances": Object {
-      "tokenMock": Object {
+      "BRLC": Object {
+        "BRLC": 0n,
         "account": 0n,
         "cashbackVault": 900n,
         "manager": 0n,
         "operator": 57896044618658097711785492504343953926634992332820282019728792003956564819067n,
-        "tokenMock": 0n,
       },
     },
     "caller": "operator",
@@ -105,7 +105,7 @@ Array [
           "operator",
           100n,
         ],
-        "contract": "tokenMock",
+        "contract": "BRLC",
         "name": "Transfer",
       },
       Object {
@@ -156,12 +156,12 @@ Array [
       100n,
     ],
     "balances": Object {
-      "tokenMock": Object {
+      "BRLC": Object {
+        "BRLC": 0n,
         "account": 100n,
         "cashbackVault": 800n,
         "manager": 0n,
         "operator": 57896044618658097711785492504343953926634992332820282019728792003956564819067n,
-        "tokenMock": 0n,
       },
     },
     "caller": "manager",
@@ -179,7 +179,7 @@ Array [
           "account",
           100n,
         ],
-        "contract": "tokenMock",
+        "contract": "BRLC",
         "name": "Transfer",
       },
       Object {

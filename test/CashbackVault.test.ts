@@ -714,7 +714,7 @@ describe("Contract 'CashbackVault'", () => {
           cashbackVault: cashbackVaultFromManager,
         },
         tokens: {
-          tokenMock,
+          BRLC: tokenMock,
         },
         customState: {
           async accountCashbackState() {

@@ -16,17 +16,17 @@ sequenceDiagram
   participant cashbackVault
   rect rgb(230,255,230)
     operator->>cashbackVault: operator calls cashbackVault.grantCashback
-    operator-->>cashbackVault: tokenMock.Transfer: operator -> cashbackVault (1000)
+    operator-->>cashbackVault: BRLC.Transfer: operator -> cashbackVault (1000)
     Note over cashbackVault: cashbackVault.CashbackGranted
   end
   rect rgb(230,255,230)
     operator->>cashbackVault: operator calls cashbackVault.revokeCashback
-    cashbackVault-->>operator: tokenMock.Transfer: cashbackVault -> operator (100)
+    cashbackVault-->>operator: BRLC.Transfer: cashbackVault -> operator (100)
     Note over cashbackVault: cashbackVault.CashbackRevoked
   end
   rect rgb(230,255,230)
     manager->>cashbackVault: manager calls cashbackVault.claim
-    cashbackVault-->>account: tokenMock.Transfer: cashbackVault -> account (100)
+    cashbackVault-->>account: BRLC.Transfer: cashbackVault -> account (100)
     Note over cashbackVault: cashbackVault.CashbackClaimed
   end
 ```
@@ -45,16 +45,16 @@ sequenceDiagram
 
 | # | Contract | Event | Args |
 | - | -------- | ----- | ---- |
-| 1 | tokenMock | Transfer | `[operator, cashbackVault, 1000]` |
+| 1 | BRLC | Transfer | `[operator, cashbackVault, 1000]` |
 | 2 | cashbackVault | CashbackGranted | `[account, operator, 1000, 1000]` |
 
 **Balances**
 
-**Token:** tokenMock
+**Token:** BRLC
 | Holder | Balance |
 | ------ | ------- |
 | cashbackVault | 1000 |
-| tokenMock | 0 |
+| BRLC | 0 |
 | account | 0 |
 | manager | 0 |
 | operator | 57896044618658097711785492504343953926634992332820282019728792003956564818967 |
@@ -83,16 +83,16 @@ Object {
 
 | # | Contract | Event | Args |
 | - | -------- | ----- | ---- |
-| 1 | tokenMock | Transfer | `[cashbackVault, operator, 100]` |
+| 1 | BRLC | Transfer | `[cashbackVault, operator, 100]` |
 | 2 | cashbackVault | CashbackRevoked | `[account, operator, 100, 900]` |
 
 **Balances**
 
-**Token:** tokenMock
+**Token:** BRLC
 | Holder | Balance |
 | ------ | ------- |
 | cashbackVault | 900 |
-| tokenMock | 0 |
+| BRLC | 0 |
 | account | 0 |
 | manager | 0 |
 | operator | 57896044618658097711785492504343953926634992332820282019728792003956564819067 |
@@ -121,16 +121,16 @@ Object {
 
 | # | Contract | Event | Args |
 | - | -------- | ----- | ---- |
-| 1 | tokenMock | Transfer | `[cashbackVault, account, 100]` |
+| 1 | BRLC | Transfer | `[cashbackVault, account, 100]` |
 | 2 | cashbackVault | CashbackClaimed | `[account, manager, 100, 800]` |
 
 **Balances**
 
-**Token:** tokenMock
+**Token:** BRLC
 | Holder | Balance |
 | ------ | ------- |
 | cashbackVault | 800 |
-| tokenMock | 0 |
+| BRLC | 0 |
 | account | 100 |
 | manager | 0 |
 | operator | 57896044618658097711785492504343953926634992332820282019728792003956564819067 |
