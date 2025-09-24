@@ -27,7 +27,7 @@ let tokenMockFactory: Contracts.ERC20TokenMock__factory;
 let hookContractMockFactory: Contracts.HookContractMock__factory;
 let cashbackControllerFactory: Contracts.CashbackController__factory;
 
-async function unregisterProof(hookContract: BaseContract, cardPaymentProcessor: BaseContract) {
+async function calculateUnregistrationProof(hookContract: BaseContract, cardPaymentProcessor: BaseContract) {
   return ethers.toBeHex(
     BigInt(ethers.keccak256(ethers.toUtf8Bytes("unregisterHook"))) ^
     BigInt(await hookContract.getAddress()) ^
@@ -48,6 +48,7 @@ async function deployContracts() {
   await cardPaymentProcessor.waitForDeployment();
 
   const hookContract = await hookContractMockFactory.deploy();
+  await hookContract.waitForDeployment();
 
   return { cardPaymentProcessor, tokenMock, hookContract };
 }
@@ -81,8 +82,10 @@ describe("Contract 'CardPaymentProcessorHookable'", () => {
 
   async function deployHookContract() {
     const hookContract = await hookContractMockFactory.deploy();
+    await hookContract.waitForDeployment();
     return hookContract;
   }
+
   before(async () => {
     [deployer, user1] = await ethers.getSigners();
 
@@ -140,7 +143,7 @@ describe("Contract 'CardPaymentProcessorHookable'", () => {
 
       it("should execute as expected and emit a single required event", async () => {
         const tx = await cardPaymentProcessor.unregisterHook(hookContractAddress,
-          await unregisterProof(hookContract, cardPaymentProcessor),
+          await calculateUnregistrationProof(hookContract, cardPaymentProcessor),
         );
         const receipt = await tx.provider.getTransactionReceipt(tx.hash);
         const eventsCount = receipt?.logs.length || 0;
@@ -154,7 +157,7 @@ describe("Contract 'CardPaymentProcessorHookable'", () => {
       describe("Should revert if", () => {
         it("the caller does not have the required role", async () => {
           await expect(cardPaymentProcessor.connect(user1).unregisterHook(hookContractAddress,
-            await unregisterProof(hookContract, cardPaymentProcessor),
+            await calculateUnregistrationProof(hookContract, cardPaymentProcessor),
           ))
             .to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_ACCESS_CONTROL_UNAUTHORIZED_ACCOUNT)
             .withArgs(user1.address, OWNER_ROLE);
@@ -162,7 +165,7 @@ describe("Contract 'CardPaymentProcessorHookable'", () => {
       });
     });
 
-    describe("Hook method", () => {
+    describe("Internal method '_callHooks()'", () => {
       beforeEach(async () => {
         await cardPaymentProcessor.registerHook(hookContractAddress);
         await tokenMock.connect(user1).approve(cardPaymentProcessorAddress, 1);
@@ -180,7 +183,7 @@ describe("Contract 'CardPaymentProcessorHookable'", () => {
           CASHBACK_RATE_AS_IN_CONTRACT,
           0,
         );
-          // check that the hook contract is called
+
         await expect(tx).to.emit(hookContract, EVENT_NAME_LOG_AFTER_PAYMENT_MADE);
       });
 
@@ -244,7 +247,7 @@ describe("Contract 'CardPaymentProcessorHookable'", () => {
             .withArgs(user1.address, OWNER_ROLE);
         });
 
-        it("the hook has not implemented the required hook method", async () => {
+        it("the hook has not implemented the required interface", async () => {
           await expect(cardPaymentProcessor.registerHook(tokenMockAddress))
             .to.be.reverted;
         });
@@ -259,7 +262,7 @@ describe("Contract 'CardPaymentProcessorHookable'", () => {
       it("should emit the required events", async () => {
         const tx = cardPaymentProcessor.unregisterHook(
           cashbackControllerAddress,
-          await unregisterProof(cashbackController, cardPaymentProcessor),
+          await calculateUnregistrationProof(cashbackController, cardPaymentProcessor),
         );
         await expect(tx)
           .to.emit(cardPaymentProcessor, EVENT_NAME_HOOK_UNREGISTERED)
