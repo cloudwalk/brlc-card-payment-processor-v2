@@ -3,6 +3,7 @@
 pragma solidity 0.8.24;
 
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import { AccessControlExtUpgradeable } from "./base/AccessControlExtUpgradeable.sol";
 import { RescuableUpgradeable } from "./base/RescuableUpgradeable.sol";
@@ -36,6 +37,10 @@ contract CashbackController is
     Versionable,
     ICashbackController
 {
+    // ------------------ Types ----------------------------------- //
+
+    using SafeERC20 for IERC20;
+
     // ------------------ Constants ------------------------------- //
 
     /// @dev The role for hook trigger who are allowed to trigger the hook.
@@ -383,12 +388,12 @@ contract CashbackController is
             // restore account cashback state to previous state if we failed to increase cashback
             $.accountCashbacks[recipient] = oldAccountCashback;
         } else {
-            IERC20($.token).transferFrom($.cashbackTreasury, address(this), delta);
+            IERC20($.token).safeTransferFrom($.cashbackTreasury, address(this), delta);
 
             if ($.cashbackVault != address(0)) {
                 ICashbackVault($.cashbackVault).grantCashback(recipient, uint64(delta));
             } else {
-                IERC20($.token).transfer(recipient, delta);
+                IERC20($.token).safeTransfer(recipient, delta);
             }
         }
         paymentCashback.balance += uint64(delta);
@@ -412,10 +417,10 @@ contract CashbackController is
             ICashbackVault($.cashbackVault).revokeCashback(recipient, uint64(vaultRevocationAmount));
         }
         if (accountRevocationAmount > 0) {
-            IERC20($.token).transferFrom(recipient, address(this), accountRevocationAmount);
+            IERC20($.token).safeTransferFrom(recipient, address(this), accountRevocationAmount);
         }
 
-        IERC20($.token).transfer($.cashbackTreasury, desiredAmount);
+        IERC20($.token).safeTransfer($.cashbackTreasury, desiredAmount);
         _reduceTotalCashback(recipient, desiredAmount);
         delta = desiredAmount;
 
