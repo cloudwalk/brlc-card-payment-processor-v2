@@ -331,13 +331,22 @@ describe("Contract 'CashbackController'", () => {
         expect(await cashbackControllerFromOwner.getCashbackTreasury()).to.equal(treasury.address);
       });
 
-      it("should emit the required event if the cashback treasury is changed again", async () => {
-        await tokenMock.connect(treasury2).approve(cashbackControllerAddress, ethers.MaxUint256);
-        tx = await cashbackControllerFromOwner.setCashbackTreasury(treasury2.address);
+      describe("when the cashback treasury is changed again", () => {
+        let tx2: TransactionResponse;
+        beforeEach(async () => {
+          await tokenMock.connect(treasury2).approve(cashbackControllerAddress, ethers.MaxUint256);
+          tx2 = await cashbackControllerFromOwner.setCashbackTreasury(treasury2.address);
+        });
 
-        await expect(tx)
-          .to.emit(cashbackControllerFromOwner, "CashbackTreasuryUpdated")
-          .withArgs(treasury2.address, treasury.address);
+        it("should emit the required event", async () => {
+          await expect(tx2)
+            .to.emit(cashbackControllerFromOwner, "CashbackTreasuryUpdated")
+            .withArgs(treasury2.address, treasury.address);
+        });
+
+        it("should change the cashback treasury address", async () => {
+          expect(await cashbackControllerFromOwner.getCashbackTreasury()).to.equal(treasury2.address);
+        });
       });
     });
 
