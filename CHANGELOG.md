@@ -6,6 +6,7 @@
 - **Configurable claimable mode**: `setCashbackVault(address)` enables claimable mode (non-zero address) or disables it (zero address). Token allowances are updated accordingly.
 
 ### Token Flows
+
 ```
 Direct cashback:     CashbackTreasury <=> CashbackController <=> recipient
 Claimable cashback:  CashbackTreasury <=> CashbackController <=> CashbackVault <=> recipient
@@ -14,14 +15,16 @@ Claimable cashback:  CashbackTreasury <=> CashbackController <=> CashbackVault <
 ## New API
 
 ### CPP via `CardPaymentProcessorHookable`
+
 - Configuration
-  - `registerHook(address hookAddress)` — register a hook for all supported hook methods.
-  - `unregisterHook(address hookAddress, bytes32 proof)` — unregister a hook with a security proof.
+  - `registerHook(address hookAddress)` — attaches hook to all supported methods and detaches from unsupported ones.
+  - `unregisterHook(address hookAddress, bytes32 proof)` — detaches a hook from all methods with a security proof.
 - Events
   - `HookRegistered(address hookAddress, bytes4 hookMethod)`
   - `HookUnregistered(address hookAddress, bytes4 hookMethod)`
 
 ### CashbackController
+
 - Operations
   - `correctCashbackAmount(bytes32 paymentId, uint64 newCashbackAmount)` — manual correction per payment.
 - Configuration
@@ -40,20 +43,22 @@ Claimable cashback:  CashbackTreasury <=> CashbackController <=> CashbackVault <
   - `CashbackIncreased(bytes32 indexed paymentId, address indexed recipient, PaymentCashbackStatus indexed status, uint256 delta, uint256 balance)`
   - `CashbackDecreased(bytes32 indexed paymentId, address indexed recipient, PaymentCashbackStatus indexed status, uint256 delta, uint256 balance)`
 
-
 ## Roles & Permissions
+
 - `HOOK_TRIGGER_ROLE` (admin `GRANTOR_ROLE`): must be granted to CPP so it can invoke controller hooks.
 - `OWNER_ROLE`: required for configuration functions.
 - `CASHBACK_OPERATOR_ROLE`: required to call `correctCashbackAmount()`.
- - CashbackVault roles when claimable mode is enabled:
-   - `CASHBACK_OPERATOR_ROLE` on CV: grant to `CashbackController` so it can `grantCashback`/`revokeCashback`.
-   - `MANAGER_ROLE` on CV: grant to the account/service that will call `claim`/`claimAll`.
+- CashbackVault roles when claimable mode is enabled:
+  - `CASHBACK_OPERATOR_ROLE` on CV: grant to `CashbackController` so it can `grantCashback`/`revokeCashback`.
+  - `MANAGER_ROLE` on CV: grant to the account/service that will call `claim`/`claimAll`.
 
 ## Breaking Changes
+
 - Removed `ICardPaymentCashback.*` and all cashback logic from CPP.
 - Removed CPP functions: `enableCashback()/disableCashback()`, `setCashbackTreasury()`, `getAccountCashbackState()`.
 
 ## Migration
+
 1. If no cashback is needed: upgrade CPP and stop here.
 2. If existing cashback payments exist on a CPP: deploy a new CPP and route payments to it.
 3. Deploy `CashbackController` (CC) with the same token as the CPP.
@@ -67,4 +72,5 @@ Claimable cashback:  CashbackTreasury <=> CashbackController <=> CashbackVault <
 11. Execute payments with cashback on CPP.
 
 # 2.3
+
 older changes
