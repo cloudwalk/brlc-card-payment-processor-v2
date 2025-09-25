@@ -235,7 +235,7 @@ describe("Contract 'CashbackController'", () => {
     });
   });
 
-  describe("Method 'grantRole()' with HOOK_TRIGGER_ROLE role", () => {
+  describe("Method 'grantRole()' with HOOK_TRIGGER_ROLE", () => {
     let deployedContract: Contracts.CashbackController;
     let specificTokenMock: Contracts.ERC20TokenMock;
 
@@ -258,7 +258,7 @@ describe("Contract 'CashbackController'", () => {
       });
     });
 
-    describe("Should revert if", async () => {
+    describe("Should revert if", () => {
       it("provided account is EOA", async () => {
         await expect(deployedContract.grantRole(HOOK_TRIGGER_ROLE, stranger.address))
           .to.be.revertedWithCustomError(deployedContract, "CashbackController_HookTriggerRoleIncompatible");
@@ -269,7 +269,7 @@ describe("Contract 'CashbackController'", () => {
           .to.be.revertedWithCustomError(deployedContract, "CashbackController_HookTriggerRoleIncompatible");
       });
 
-      it("provided account is CardPaymentProcessor but the underlying token mismatches the controller token",
+      it("provided account is CardPaymentProcessor but the underlying token does not match the controller token",
         async () => {
           const cardPaymentProcessor =
             await upgrades.deployProxy(cardPaymentProcessorFactory, [await tokenMock.getAddress()]);
@@ -421,14 +421,14 @@ describe("Contract 'CashbackController'", () => {
     });
 
     describe(
-      "Should execute as expected when initially setting the cashback vault (enabling the claimable mode) and",
-      async () => {
+      "Should execute as expected when initially setting the cashback vault (enabling claimable mode) and",
+      () => {
         let tx: TransactionResponse;
         beforeEach(async () => {
           tx = await cashbackControllerFromOwner.setCashbackVault(await defaultTokenCashbackVaults[0].getAddress());
         });
 
-        it("should set maximum allowance for the new CV contract", async () => {
+        it("should set maximum allowance for the new cashback vault contract", async () => {
           expect(await tokenMock.allowance(cashbackControllerAddress, await defaultTokenCashbackVaults[0].getAddress()))
             .to.equal(ethers.MaxUint256);
         });
@@ -452,12 +452,12 @@ describe("Contract 'CashbackController'", () => {
         tx = await cashbackControllerFromOwner.setCashbackVault(await defaultTokenCashbackVaults[1].getAddress());
       });
 
-      it("should set maximum allowance for the new vault contract", async () => {
+      it("should set maximum allowance for the new cashback vault contract", async () => {
         expect(await tokenMock.allowance(cashbackControllerAddress, await defaultTokenCashbackVaults[1].getAddress()))
           .to.equal(ethers.MaxUint256);
       });
 
-      it("should remove allowance from the old CV contract", async () => {
+      it("should remove the allowance from the old cashback vault contract", async () => {
         expect(await tokenMock.allowance(cashbackControllerAddress, await defaultTokenCashbackVaults[0].getAddress()))
           .to.equal(0);
       });
@@ -483,7 +483,7 @@ describe("Contract 'CashbackController'", () => {
           tx = await cashbackControllerFromOwner.setCashbackVault(ethers.ZeroAddress);
         });
 
-        it("should remove allowance from the old CV contract", async () => {
+        it("should remove the allowance from the old cashback vault contract", async () => {
           expect(await tokenMock.allowance(cashbackControllerAddress, await defaultTokenCashbackVaults[0].getAddress()))
             .to.equal(0);
         });
