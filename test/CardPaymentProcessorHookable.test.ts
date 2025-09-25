@@ -115,18 +115,44 @@ describe("Contract 'CardPaymentProcessorHookable'", () => {
     });
 
     describe("Method 'registerHook()'", () => {
-      it("should execute as expected and emit a single required event", async () => {
-        const tx = await cardPaymentProcessor.registerHook(hookContractAddress);
-        const receipt = await tx.provider.getTransactionReceipt(tx.hash);
-        const eventsCount = receipt?.logs.length || 0;
+      describe("Should execute as expected when called the first time and", () => {
+        let tx: TransactionResponse;
+        beforeEach(async () => {
+          tx = await cardPaymentProcessor.registerHook(hookContractAddress);
+        });
 
-        await expect(tx)
-          .to.emit(cardPaymentProcessor, EVENT_NAME_HOOK_REGISTERED)
-          .withArgs(hookContractAddress, hookContract.afterPaymentMade.fragment.selector);
+        it("should emit the required event", async () => {
+          await expect(tx)
+            .to.emit(cardPaymentProcessor, EVENT_NAME_HOOK_REGISTERED)
+            .withArgs(hookContractAddress, hookContract.afterPaymentMade.fragment.selector);
+        });
 
-        expect(eventsCount).to.equal(1);
+        it("should emit the required count of events", async () => {
+          const receipt = await tx.provider.getTransactionReceipt(tx.hash);
+          const eventsCount = receipt?.logs.length || 0;
+          expect(eventsCount).to.equal(1);
+        });
+
+        describe("Should execute as expected after the hook stops supporting a method and", () => {
+          let tx: TransactionResponse;
+          beforeEach(async () => {
+            await hookContract.setSupportsAfterPaymentMade(false);
+            tx = await cardPaymentProcessor.registerHook(hookContractAddress);
+          });
+
+          it("should emit the required event", async () => {
+            await expect(tx)
+              .to.emit(cardPaymentProcessor, EVENT_NAME_HOOK_UNREGISTERED)
+              .withArgs(hookContractAddress, hookContract.afterPaymentMade.fragment.selector);
+          });
+
+          it("should emit the required count of events", async () => {
+            const receipt = await tx.provider.getTransactionReceipt(tx.hash);
+            const eventsCount = receipt?.logs.length || 0;
+            expect(eventsCount).to.equal(1);
+          });
+        });
       });
-
       describe("Should revert if", () => {
         it("the caller does not have the required role", async () => {
           await expect(cardPaymentProcessor.connect(user1).registerHook(hookContractAddress))

@@ -13,8 +13,14 @@ contract HookContractMock is IAfterPaymentMadeHook {
     event LogAfterPaymentMade(bytes32 paymentId, PaymentHookData oldPayment, PaymentHookData newPayment);
     error RevertFromAfterPaymentMade();
 
-    function supportsHookMethod(bytes4 methodSelector) external pure override returns (bool) {
-        return methodSelector == IAfterPaymentMadeHook.afterPaymentMade.selector;
+    bool private supportsAfterPaymentMade = true;
+
+    function supportsHookMethod(bytes4 methodSelector) external view override returns (bool) {
+        return methodSelector == IAfterPaymentMadeHook.afterPaymentMade.selector && supportsAfterPaymentMade;
+    }
+
+    function setSupportsAfterPaymentMade(bool isSupported) external {
+        supportsAfterPaymentMade = isSupported;
     }
 
     function afterPaymentMade(
