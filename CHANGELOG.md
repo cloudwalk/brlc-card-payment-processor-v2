@@ -4,7 +4,7 @@
 - **Cashback moved to `CashbackController`**: CPP now only keeps cashback rate logic. All calculation, capping, transfers, and storage moved to `CashbackController` for better modularity.
 - **Claimable cashback via `CashbackVault` (CV)**: Optional claimable mode. When configured, granted cashback is credited to the user's vault balance; otherwise tokens are sent directly to the recipient.
 - **Configurable claimable mode**: `setCashbackVault(address)` enables claimable mode (non-zero address) or disables it (zero address). Token allowances are updated accordingly.
-
+- Blocklistable functionality
 ### Token Flows
 
 ```
@@ -56,6 +56,7 @@ Claimable cashback:  CashbackTreasury <=> CashbackController <=> CashbackVault <
 
 - Removed `ICardPaymentCashback.*` and all cashback logic from CPP.
 - Removed CPP functions: `enableCashback()/disableCashback()`, `setCashbackTreasury()`, `getAccountCashbackState()`.
+- Removed Blocklistable functionality and related roles.
 
 ## Migration
 
