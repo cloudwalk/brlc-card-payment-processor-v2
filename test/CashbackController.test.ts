@@ -181,7 +181,7 @@ describe("Contract 'CashbackController'", () => {
     });
 
     describe("Should execute as expected when called properly and", () => {
-      it("should expose correct role hashes", async () => {
+      it("should expose the correct role hashes", async () => {
         expect(await deployedContract.OWNER_ROLE()).to.equal(OWNER_ROLE);
         expect(await deployedContract.GRANTOR_ROLE()).to.equal(GRANTOR_ROLE);
         expect(await deployedContract.HOOK_TRIGGER_ROLE()).to.equal(HOOK_TRIGGER_ROLE);
@@ -190,7 +190,7 @@ describe("Contract 'CashbackController'", () => {
         expect(await deployedContract.PAUSER_ROLE()).to.equal(PAUSER_ROLE);
       });
 
-      it("should set correct role admins", async () => {
+      it("should set the correct role admins", async () => {
         expect(await deployedContract.getRoleAdmin(OWNER_ROLE)).to.equal(OWNER_ROLE);
         expect(await deployedContract.getRoleAdmin(GRANTOR_ROLE)).to.equal(OWNER_ROLE);
         expect(await deployedContract.getRoleAdmin(HOOK_TRIGGER_ROLE)).to.equal(GRANTOR_ROLE);
@@ -199,7 +199,7 @@ describe("Contract 'CashbackController'", () => {
         expect(await deployedContract.getRoleAdmin(PAUSER_ROLE)).to.equal(GRANTOR_ROLE);
       });
 
-      it("should set correct roles for the deployer", async () => {
+      it("should set the correct roles for the deployer", async () => {
         expect(await deployedContract.hasRole(OWNER_ROLE, deployer.address)).to.eq(true);
         expect(await deployedContract.hasRole(GRANTOR_ROLE, deployer.address)).to.eq(false);
         expect(await deployedContract.hasRole(HOOK_TRIGGER_ROLE, deployer.address)).to.eq(false);
@@ -208,15 +208,15 @@ describe("Contract 'CashbackController'", () => {
         expect(await deployedContract.hasRole(PAUSER_ROLE, deployer.address)).to.eq(false);
       });
 
-      it("should set correct underlying token address", async () => {
+      it("should set the correct underlying token address", async () => {
         expect(await cashbackControllerFromOwner.underlyingToken()).to.equal(await tokenMock.getAddress());
       });
 
-      it("should not set cashback treasury address", async () => {
+      it("should not set the cashback treasury address", async () => {
         expect(await cashbackControllerFromOwner.getCashbackTreasury()).to.equal(ethers.ZeroAddress);
       });
 
-      it("should not set cashback vault address", async () => {
+      it("should not set the cashback vault address", async () => {
         expect(await cashbackControllerFromOwner.getCashbackVault()).to.equal(ethers.ZeroAddress);
       });
     });
@@ -264,7 +264,7 @@ describe("Contract 'CashbackController'", () => {
           .to.be.revertedWithCustomError(deployedContract, "CashbackController_HookTriggerRoleIncompatible");
       });
 
-      it("provided account is contract but not a CardPaymentProcessor", async () => {
+      it("provided account is a contract but not a CardPaymentProcessor contract", async () => {
         await expect(deployedContract.grantRole(HOOK_TRIGGER_ROLE, tokenMock.getAddress()))
           .to.be.revertedWithCustomError(deployedContract, "CashbackController_HookTriggerRoleIncompatible");
       });
@@ -355,19 +355,19 @@ describe("Contract 'CashbackController'", () => {
           .withArgs(stranger.address, OWNER_ROLE);
       });
 
-      it("new cashback treasury address is zero", async () => {
+      it("the new cashback treasury address is zero", async () => {
         await expect(cashbackControllerFromOwner.setCashbackTreasury(ethers.ZeroAddress))
           .to.be.revertedWithCustomError(cashbackControllerFromOwner, "CashbackController_TreasuryAddressZero");
       });
 
-      it("if the cashback treasury is not changed", async () => {
+      it("the cashback treasury is not changed", async () => {
         await cashbackControllerFromOwner.setCashbackTreasury(treasury.address);
 
         await expect(cashbackControllerFromOwner.setCashbackTreasury(treasury.address))
           .to.be.revertedWithCustomError(cashbackControllerFromOwner, "CashbackController_TreasuryUnchanged");
       });
 
-      it("if the cashback treasury has no allowance for the contract", async () => {
+      it("the cashback treasury has no allowance for the contract", async () => {
         await expect(cashbackControllerFromOwner.setCashbackTreasury(CASHBACK_TREASURY_ADDRESS_STUB1))
           .to.be.revertedWithCustomError(cashbackControllerFromOwner, "CashbackController_TreasuryAllowanceZero");
       });
@@ -506,7 +506,7 @@ describe("Contract 'CashbackController'", () => {
           .to.be.revertedWithCustomError(cashbackController, "CashbackController_CashbackVaultInvalid");
       });
 
-      it("the cashback vault underlying token mismatches the controller token", async () => {
+      it("the cashback vault underlying token does not match the controller token", async () => {
         const anotherTokenMock = await deployTokenMock("2");
         const anotherCashbackVault = await deployCashbackVault(anotherTokenMock);
         await expect(cashbackControllerFromOwner.setCashbackVault(await anotherCashbackVault.getAddress()))
@@ -630,7 +630,7 @@ describe("Contract 'CashbackController'", () => {
         });
       });
 
-      describe("cashback amount is same as the current amount", () => {
+      describe("cashback amount is the same as the current amount", () => {
         let tx: TransactionResponse;
         beforeEach(async () => {
           tx = await cashbackControllerFromCashbackOperator.correctCashbackAmount(paymentId("id1"), cashbackAmount);
@@ -1122,7 +1122,7 @@ describe("Contract 'CashbackController'", () => {
               });
             });
 
-            describe("changes are non relevant to cashback calculation", () => {
+            describe("changes are not relevant to the cashback calculation", () => {
               let tx: TransactionResponse;
 
               beforeEach(async () => {
@@ -1225,7 +1225,7 @@ describe("Contract 'CashbackController'", () => {
           });
 
           describe("payment cashback rate is not zero and sponsor exists and", () => {
-            describe("subsidy limit is less than base amount and", () => {
+            describe("the subsidy limit is less than the base amount and", () => {
               const baseAmount = 100n * DIGITS_COEF;
               const subsidyLimit = baseAmount / 2n;
               const cashbackRate = 100n;
@@ -1370,7 +1370,7 @@ describe("Contract 'CashbackController'", () => {
                 });
               });
 
-              describe("refund amount is increased but sponsor refund amount is capped by subsidy limit", () => {
+              describe("the refund amount increases but the sponsor's refund is capped by the subsidy limit", () => {
                 const additionalRefundThatWillGoToPayer = 10n * DIGITS_COEF;
                 const refundAmount =
                   baseAmount + // amount of refund to make sponsor part equal to subsidy limit
@@ -1459,7 +1459,7 @@ describe("Contract 'CashbackController'", () => {
                 initialAccountCashbackState = await cashbackController.getAccountCashback(payer.address);
               });
 
-              describe("base amount is increased but still below subsidy limit", () => {
+              describe("the base amount is increased but remains below the subsidy limit", () => {
                 const newBaseAmount = baseAmount + 10n * DIGITS_COEF;
 
                 let tx: TransactionResponse;
@@ -1507,7 +1507,7 @@ describe("Contract 'CashbackController'", () => {
                 });
               });
 
-              describe("base amount is increased above subsidy limit", () => {
+              describe("the base amount is increased above the subsidy limit", () => {
                 const newBaseAmount = subsidyLimit + 50n * DIGITS_COEF;
                 const newCashbackAmount = cashbackRate * (newBaseAmount - subsidyLimit) / CASHBACK_FACTOR;
 
@@ -1836,7 +1836,7 @@ describe("Contract 'CashbackController'", () => {
           );
         });
 
-        it("should increase the claimable amount in vault for the payer", async () => {
+        it("should increase the claimable amount in the vault for the payer", async () => {
           expect(await cashbackVault.getAccountCashbackBalance(payer.address)).to.equal(cashbackAmount);
         });
 
@@ -1887,7 +1887,7 @@ describe("Contract 'CashbackController'", () => {
             );
           });
 
-          it("should decrease the claimable amount in vault for the payer", async () => {
+          it("should decrease the claimable amount in the vault for the payer", async () => {
             expect(await cashbackVault.getAccountCashbackBalance(payer.address)).to.equal(0n);
           });
 
@@ -1915,7 +1915,7 @@ describe("Contract 'CashbackController'", () => {
             );
           });
 
-          it("should decrease the claimable amount in vault for the payer", async () => {
+          it("should decrease the claimable amount in the vault for the payer", async () => {
             expect(await cashbackVault.getAccountCashbackBalance(payer.address)).to.equal(0n);
           });
 
