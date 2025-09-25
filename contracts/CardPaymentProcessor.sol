@@ -7,7 +7,6 @@ import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.s
 
 import { UUPSExtUpgradeable } from "./base/UUPSExtUpgradeable.sol";
 import { AccessControlExtUpgradeable } from "./base/AccessControlExtUpgradeable.sol";
-import { BlocklistableUpgradeable } from "./base/BlocklistableUpgradeable.sol";
 import { PausableExtUpgradeable } from "./base/PausableExtUpgradeable.sol";
 import { RescuableUpgradeable } from "./base/RescuableUpgradeable.sol";
 import { Versionable } from "./base/Versionable.sol";
@@ -30,7 +29,6 @@ import { ICardPaymentProcessorPrimary } from "./interfaces/ICardPaymentProcessor
 contract CardPaymentProcessor is
     CardPaymentProcessorStorage,
     AccessControlExtUpgradeable,
-    BlocklistableUpgradeable,
     PausableExtUpgradeable,
     RescuableUpgradeable,
     UUPSExtUpgradeable,
@@ -137,7 +135,6 @@ contract CardPaymentProcessor is
         }
 
         __AccessControlExt_init_unchained();
-        __Blocklistable_init_unchained();
         __PausableExt_init_unchained();
         __Rescuable_init_unchained();
         __UUPSExt_init_unchained(); // This is needed only to avoid errors during coverage assessment

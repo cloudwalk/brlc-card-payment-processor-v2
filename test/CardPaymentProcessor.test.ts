@@ -1553,7 +1553,6 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
 
   const OWNER_ROLE: string = ethers.id("OWNER_ROLE");
   const GRANTOR_ROLE: string = ethers.id("GRANTOR_ROLE");
-  const BLOCKLISTER_ROLE: string = ethers.id("BLOCKLISTER_ROLE");
   const PAUSER_ROLE: string = ethers.id("PAUSER_ROLE");
   const RESCUER_ROLE: string = ethers.id("RESCUER_ROLE");
   const EXECUTOR_ROLE: string = ethers.id("EXECUTOR_ROLE");
@@ -1706,7 +1705,6 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
       // The role hashes
       expect(await cardPaymentProcessor.OWNER_ROLE()).to.equal(OWNER_ROLE);
       expect(await cardPaymentProcessor.GRANTOR_ROLE()).to.equal(GRANTOR_ROLE);
-      expect(await cardPaymentProcessor.BLOCKLISTER_ROLE()).to.equal(BLOCKLISTER_ROLE);
       expect(await cardPaymentProcessor.PAUSER_ROLE()).to.equal(PAUSER_ROLE);
       expect(await cardPaymentProcessor.RESCUER_ROLE()).to.equal(RESCUER_ROLE);
       expect(await cardPaymentProcessor.EXECUTOR_ROLE()).to.equal(EXECUTOR_ROLE);
@@ -1714,7 +1712,6 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
       // The admins of roles
       expect(await cardPaymentProcessor.getRoleAdmin(OWNER_ROLE)).to.equal(OWNER_ROLE);
       expect(await cardPaymentProcessor.getRoleAdmin(GRANTOR_ROLE)).to.equal(OWNER_ROLE);
-      expect(await cardPaymentProcessor.getRoleAdmin(BLOCKLISTER_ROLE)).to.equal(GRANTOR_ROLE);
       expect(await cardPaymentProcessor.getRoleAdmin(PAUSER_ROLE)).to.equal(GRANTOR_ROLE);
       expect(await cardPaymentProcessor.getRoleAdmin(RESCUER_ROLE)).to.equal(GRANTOR_ROLE);
       expect(await cardPaymentProcessor.getRoleAdmin(EXECUTOR_ROLE)).to.equal(GRANTOR_ROLE);
@@ -1722,7 +1719,6 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
       // The deployer should have the owner role, but not the other roles
       expect(await cardPaymentProcessor.hasRole(OWNER_ROLE, deployer.address)).to.equal(true);
       expect(await cardPaymentProcessor.hasRole(GRANTOR_ROLE, deployer.address)).to.equal(false);
-      expect(await cardPaymentProcessor.hasRole(BLOCKLISTER_ROLE, deployer.address)).to.equal(false);
       expect(await cardPaymentProcessor.hasRole(PAUSER_ROLE, deployer.address)).to.equal(false);
       expect(await cardPaymentProcessor.hasRole(RESCUER_ROLE, deployer.address)).to.equal(false);
       expect(await cardPaymentProcessor.hasRole(EXECUTOR_ROLE, deployer.address)).to.equal(false);
