@@ -38,17 +38,12 @@ abstract contract CardPaymentProcessorHookable is
      */
     function registerHook(address hookAddress) external onlyRole(OWNER_ROLE) {
         bytes4[] memory hookMethods = _getHookMethods();
-        CardPaymentProcessorHookableStorage storage $ = _getCardPaymentProcessorHookableStorage();
 
         for (uint256 i = 0; i < hookMethods.length; i++) {
-            if (
-                ICardPaymentProcessorHook(hookAddress).supportsHookMethod(hookMethods[i]) &&
-                $.hooks[hookMethods[i]].add(hookAddress) // add returns true if hook was added
-            ) {
-                emit HookRegistered(
-                    hookAddress, // Tools: prevent Prettier one-liner
-                    hookMethods[i]
-                );
+            if (ICardPaymentProcessorHook(hookAddress).supportsHookMethod(hookMethods[i])) {
+                _attachHook(hookMethods[i], hookAddress);
+            } else {
+                _detachHook(hookMethods[i], hookAddress);
             }
         }
     }
@@ -70,19 +65,27 @@ abstract contract CardPaymentProcessorHookable is
                     bytes32(uint256(uint160(address(this))))
         );
         bytes4[] memory hookMethods = _getHookMethods();
-        CardPaymentProcessorHookableStorage storage $ = _getCardPaymentProcessorHookableStorage();
 
         for (uint256 i = 0; i < hookMethods.length; i++) {
-            if ($.hooks[hookMethods[i]].remove(hookAddress)) {
-                emit HookUnregistered(
-                    hookAddress, // Tools: prevent Prettier one-liner
-                    hookMethods[i]
-                );
-            }
+            _detachHook(hookMethods[i], hookAddress);
         }
     }
 
     // ------------------ Internal functions -------------------- //
+
+    function _attachHook(bytes4 methodSelector, address hookAddress) internal {
+        CardPaymentProcessorHookableStorage storage $ = _getCardPaymentProcessorHookableStorage();
+        if ($.hooks[methodSelector].add(hookAddress)) {
+            emit HookRegistered(hookAddress, methodSelector);
+        }
+    }
+
+    function _detachHook(bytes4 methodSelector, address hookAddress) internal {
+        CardPaymentProcessorHookableStorage storage $ = _getCardPaymentProcessorHookableStorage();
+        if ($.hooks[methodSelector].remove(hookAddress)) {
+            emit HookUnregistered(hookAddress, methodSelector);
+        }
+    }
 
     /// @dev Used as replacement for constant array of hook methods
     function _getHookMethods() internal pure returns (bytes4[] memory) {

@@ -74,7 +74,7 @@ interface ICardPaymentProcessorHookable is ICardPaymentProcessorHookTypes {
     // ------------------ Transactional functions ----------------- //
 
     /**
-     * @dev Registers a hook by checking its supported hook methods.
+     * @dev Registers and unregisters a hook by checking its supported hook methods.
      *
      * Supported methods are defined by interfaces in {ICardPaymentProcessorHooks}.
      * The hook contract should implement the relevant interface(s) so it can be
