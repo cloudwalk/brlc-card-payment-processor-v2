@@ -1,5 +1,3 @@
-/* eslint @typescript-eslint/no-unused-vars: "off" */
-
 import { ethers, upgrades } from "hardhat";
 import { expect } from "chai";
 import { Typed } from "ethers";
@@ -61,7 +59,7 @@ describe("Contract 'CashbackController'", () => {
 
   type PaymentHookData = Exclude<Parameters<typeof cashbackControllerFromOwner.afterPaymentMade>[1], Typed>;
 
-  const EMPTY_PAYMENT: PaymentHookData = {
+  const EMPTY_PAYMENT_HOOK_DATA: PaymentHookData = {
     baseAmount: 0n,
     subsidyLimit: 0n,
     status: 0n,
@@ -557,7 +555,7 @@ describe("Contract 'CashbackController'", () => {
       };
       await cashbackControllerFromHookTrigger.afterPaymentMade(
         paymentId("id1"),
-        EMPTY_PAYMENT,
+        EMPTY_PAYMENT_HOOK_DATA,
         paymentHookData,
       );
     });
@@ -704,7 +702,7 @@ describe("Contract 'CashbackController'", () => {
               };
               tx = await cashbackControllerFromHookTrigger.afterPaymentMade(
                 paymentId("id1"),
-                EMPTY_PAYMENT,
+                EMPTY_PAYMENT_HOOK_DATA,
                 paymentHookData,
               );
             });
@@ -766,7 +764,7 @@ describe("Contract 'CashbackController'", () => {
               );
               tx = await cashbackControllerFromHookTrigger.afterPaymentMade(
                 paymentId("id1"),
-                EMPTY_PAYMENT,
+                EMPTY_PAYMENT_HOOK_DATA,
                 paymentHookData,
               );
             });
@@ -823,7 +821,7 @@ describe("Contract 'CashbackController'", () => {
               };
               tx = await cashbackControllerFromHookTrigger.afterPaymentMade(
                 paymentId("id1"),
-                EMPTY_PAYMENT,
+                EMPTY_PAYMENT_HOOK_DATA,
                 paymentHookData,
               );
             });
@@ -854,7 +852,6 @@ describe("Contract 'CashbackController'", () => {
             let tx: TransactionResponse;
             const baseAmount = 100n * DIGITS_COEF;
             const cashbackRate = 100n;
-            const cashbackAmount = cashbackRate * baseAmount / CASHBACK_FACTOR;
 
             beforeEach(async () => {
               const paymentHookData: PaymentHookData = {
@@ -870,7 +867,7 @@ describe("Contract 'CashbackController'", () => {
               };
               tx = await cashbackControllerFromHookTrigger.afterPaymentMade(
                 paymentId("id1"),
-                EMPTY_PAYMENT,
+                EMPTY_PAYMENT_HOOK_DATA,
                 paymentHookData,
               );
             });
@@ -919,7 +916,7 @@ describe("Contract 'CashbackController'", () => {
               };
               tx = await cashbackControllerFromHookTrigger.afterPaymentMade(
                 paymentId("id1"),
-                EMPTY_PAYMENT,
+                EMPTY_PAYMENT_HOOK_DATA,
                 paymentHookData,
               );
             });
@@ -951,8 +948,8 @@ describe("Contract 'CashbackController'", () => {
         it("should revert if called by a non-hook trigger", async () => {
           await expect(cashbackControllerFromStranger.afterPaymentMade(
             paymentId("id1"),
-            EMPTY_PAYMENT,
-            EMPTY_PAYMENT,
+            EMPTY_PAYMENT_HOOK_DATA,
+            EMPTY_PAYMENT_HOOK_DATA,
           )).to.be.revertedWithCustomError(cashbackControllerFromStranger, "AccessControlUnauthorizedAccount")
             .withArgs(stranger.address, HOOK_TRIGGER_ROLE);
         });
@@ -972,7 +969,7 @@ describe("Contract 'CashbackController'", () => {
           };
           await expect(notConfiguredCashbackController.connect(hookTrigger).afterPaymentMade(
             paymentId("id1"),
-            EMPTY_PAYMENT,
+            EMPTY_PAYMENT_HOOK_DATA,
             paymentHookData,
           )).to.be.revertedWithCustomError(
             notConfiguredCashbackController,
@@ -989,7 +986,6 @@ describe("Contract 'CashbackController'", () => {
             const cashbackAmount = cashbackRate * baseAmount / CASHBACK_FACTOR;
             let initialPayment: PaymentHookData;
             let initialAccountCashbackState: Awaited<ReturnType<typeof cashbackController.getAccountCashback>>;
-            let initialOperationState: Awaited<ReturnType<typeof cashbackController.getPaymentCashback>>;
 
             beforeEach(async () => {
               initialPayment = {
@@ -1005,11 +1001,10 @@ describe("Contract 'CashbackController'", () => {
               };
               await cashbackControllerFromHookTrigger.afterPaymentMade(
                 paymentId("id1"),
-                EMPTY_PAYMENT,
+                EMPTY_PAYMENT_HOOK_DATA,
                 initialPayment,
               );
               initialAccountCashbackState = await cashbackController.getAccountCashback(payer.address);
-              initialOperationState = await cashbackController.getPaymentCashback(paymentId("id1"));
             });
 
             describe("base amount is increased", () => {
@@ -1195,7 +1190,7 @@ describe("Contract 'CashbackController'", () => {
               };
               await cashbackControllerFromHookTrigger.afterPaymentMade(
                 paymentId("id1"),
-                EMPTY_PAYMENT,
+                EMPTY_PAYMENT_HOOK_DATA,
                 initialPayment,
               );
               initialAccountCashbackState = await cashbackController.getAccountCashback(payer.address);
@@ -1236,7 +1231,6 @@ describe("Contract 'CashbackController'", () => {
               const cashbackAmount = cashbackRate * (baseAmount - subsidyLimit) / CASHBACK_FACTOR;
               let initialPayment: PaymentHookData;
               let initialAccountCashbackState: Awaited<ReturnType<typeof cashbackController.getAccountCashback>>;
-              let initialOperationState: Awaited<ReturnType<typeof cashbackController.getPaymentCashback>>;
 
               beforeEach(async () => {
                 initialPayment = {
@@ -1252,11 +1246,10 @@ describe("Contract 'CashbackController'", () => {
                 };
                 await cashbackControllerFromHookTrigger.afterPaymentMade(
                   paymentId("id1"),
-                  EMPTY_PAYMENT,
+                  EMPTY_PAYMENT_HOOK_DATA,
                   initialPayment,
                 );
                 initialAccountCashbackState = await cashbackController.getAccountCashback(payer.address);
-                initialOperationState = await cashbackController.getPaymentCashback(paymentId("id1"));
               });
 
               describe("base amount is increased", () => {
@@ -1444,7 +1437,6 @@ describe("Contract 'CashbackController'", () => {
               const cashbackRate = 100n;
               let initialPayment: PaymentHookData;
               let initialAccountCashbackState: Awaited<ReturnType<typeof cashbackController.getAccountCashback>>;
-              let initialOperationState: Awaited<ReturnType<typeof cashbackController.getPaymentCashback>>;
 
               beforeEach(async () => {
                 initialPayment = {
@@ -1460,16 +1452,14 @@ describe("Contract 'CashbackController'", () => {
                 };
                 await cashbackControllerFromHookTrigger.afterPaymentMade(
                   paymentId("id1"),
-                  EMPTY_PAYMENT,
+                  EMPTY_PAYMENT_HOOK_DATA,
                   initialPayment,
                 );
                 initialAccountCashbackState = await cashbackController.getAccountCashback(payer.address);
-                initialOperationState = await cashbackController.getPaymentCashback(paymentId("id1"));
               });
 
               describe("base amount is increased but still below subsidy limit", () => {
                 const newBaseAmount = baseAmount + 10n * DIGITS_COEF;
-                const newCashbackAmount = cashbackRate * (newBaseAmount - subsidyLimit) / CASHBACK_FACTOR;
 
                 let tx: TransactionResponse;
 
@@ -1577,8 +1567,8 @@ describe("Contract 'CashbackController'", () => {
         it("should revert if called by a non-hook trigger", async () => {
           await expect(cashbackControllerFromStranger.afterPaymentUpdated(
             paymentId("id1"),
-            EMPTY_PAYMENT,
-            EMPTY_PAYMENT,
+            EMPTY_PAYMENT_HOOK_DATA,
+            EMPTY_PAYMENT_HOOK_DATA,
           )).to.be.revertedWithCustomError(cashbackControllerFromStranger, "AccessControlUnauthorizedAccount")
             .withArgs(stranger.address, HOOK_TRIGGER_ROLE);
         });
@@ -1592,7 +1582,6 @@ describe("Contract 'CashbackController'", () => {
             const cashbackAmount = cashbackRate * baseAmount / CASHBACK_FACTOR;
             let initialPayment: PaymentHookData;
             let initialAccountCashbackState: Awaited<ReturnType<typeof cashbackController.getAccountCashback>>;
-            let initialOperationState: Awaited<ReturnType<typeof cashbackController.getPaymentCashback>>;
             let tx: TransactionResponse;
 
             beforeEach(async () => {
@@ -1609,15 +1598,14 @@ describe("Contract 'CashbackController'", () => {
               };
               await cashbackControllerFromHookTrigger.afterPaymentMade(
                 paymentId("id1"),
-                EMPTY_PAYMENT,
+                EMPTY_PAYMENT_HOOK_DATA,
                 initialPayment,
               );
               initialAccountCashbackState = await cashbackController.getAccountCashback(payer.address);
-              initialOperationState = await cashbackController.getPaymentCashback(paymentId("id1"));
               tx = await cashbackControllerFromHookTrigger.afterPaymentCanceled(
                 paymentId("id1"),
                 initialPayment,
-                EMPTY_PAYMENT,
+                EMPTY_PAYMENT_HOOK_DATA,
               );
             });
 
@@ -1680,7 +1668,7 @@ describe("Contract 'CashbackController'", () => {
               // spending cap limit
               await cashbackControllerFromHookTrigger.afterPaymentMade(
                 paymentId("capping payment"),
-                EMPTY_PAYMENT,
+                EMPTY_PAYMENT_HOOK_DATA,
                 cappingPayment,
               );
 
@@ -1697,7 +1685,7 @@ describe("Contract 'CashbackController'", () => {
               };
               await cashbackControllerFromHookTrigger.afterPaymentMade(
                 paymentId("id1"),
-                EMPTY_PAYMENT,
+                EMPTY_PAYMENT_HOOK_DATA,
                 initialPayment,
               );
               initialAccountCashbackState = await cashbackController.getAccountCashback(payer.address);
@@ -1705,7 +1693,7 @@ describe("Contract 'CashbackController'", () => {
               tx = await cashbackControllerFromHookTrigger.afterPaymentCanceled(
                 paymentId("id1"),
                 initialPayment,
-                EMPTY_PAYMENT,
+                EMPTY_PAYMENT_HOOK_DATA,
               );
             });
 
@@ -1762,7 +1750,7 @@ describe("Contract 'CashbackController'", () => {
               };
               await cashbackControllerFromHookTrigger.afterPaymentMade(
                 paymentId("id1"),
-                EMPTY_PAYMENT,
+                EMPTY_PAYMENT_HOOK_DATA,
                 initialPayment,
               );
               initialAccountCashbackState = await cashbackController.getAccountCashback(payer.address);
@@ -1770,7 +1758,7 @@ describe("Contract 'CashbackController'", () => {
               tx = await cashbackControllerFromHookTrigger.afterPaymentCanceled(
                 paymentId("id1"),
                 initialPayment,
-                EMPTY_PAYMENT,
+                EMPTY_PAYMENT_HOOK_DATA,
               );
             });
 
@@ -1796,8 +1784,8 @@ describe("Contract 'CashbackController'", () => {
         it("should revert if called by a non-hook trigger", async () => {
           await expect(cashbackControllerFromStranger.afterPaymentCanceled(
             paymentId("id1"),
-            EMPTY_PAYMENT,
-            EMPTY_PAYMENT,
+            EMPTY_PAYMENT_HOOK_DATA,
+            EMPTY_PAYMENT_HOOK_DATA,
           )).to.be.revertedWithCustomError(cashbackControllerFromStranger, "AccessControlUnauthorizedAccount")
             .withArgs(stranger.address, HOOK_TRIGGER_ROLE);
         });
@@ -1825,7 +1813,7 @@ describe("Contract 'CashbackController'", () => {
         beforeEach(async () => {
           tx = await cashbackControllerFromHookTrigger.afterPaymentMade(
             paymentId("id1"),
-            EMPTY_PAYMENT,
+            EMPTY_PAYMENT_HOOK_DATA,
             {
               baseAmount,
               subsidyLimit: 0n,
@@ -1858,7 +1846,6 @@ describe("Contract 'CashbackController'", () => {
       });
 
       describe("Method 'afterPaymentCanceled()'", () => {
-        let tx: TransactionResponse;
         const baseAmount = 100n * DIGITS_COEF;
         const cashbackRate = 100n;
         const cashbackAmount = baseAmount * cashbackRate / CASHBACK_FACTOR;
@@ -1877,7 +1864,7 @@ describe("Contract 'CashbackController'", () => {
           };
           await cashbackControllerFromHookTrigger.afterPaymentMade(
             paymentId("id1"),
-            EMPTY_PAYMENT,
+            EMPTY_PAYMENT_HOOK_DATA,
             initialPayment,
           );
         });
@@ -1888,7 +1875,7 @@ describe("Contract 'CashbackController'", () => {
             tx = await cashbackControllerFromHookTrigger.afterPaymentCanceled(
               paymentId("id1"),
               initialPayment,
-              EMPTY_PAYMENT,
+              EMPTY_PAYMENT_HOOK_DATA,
             );
           });
 
@@ -1916,7 +1903,7 @@ describe("Contract 'CashbackController'", () => {
             tx = await cashbackControllerFromHookTrigger.afterPaymentCanceled(
               paymentId("id1"),
               initialPayment,
-              EMPTY_PAYMENT,
+              EMPTY_PAYMENT_HOOK_DATA,
             );
           });
 
@@ -1958,7 +1945,7 @@ describe("Contract 'CashbackController'", () => {
         firstCashbackAmount = cashbackRate * baseAmount / CASHBACK_FACTOR;
         tx = await cashbackControllerFromHookTrigger.afterPaymentMade(
           paymentId("id1"),
-          EMPTY_PAYMENT,
+          EMPTY_PAYMENT_HOOK_DATA,
           {
             baseAmount,
             subsidyLimit: 0n,
@@ -2003,7 +1990,7 @@ describe("Contract 'CashbackController'", () => {
           secondCashbackAmount = MAX_CASHBACK_FOR_CAP_PERIOD - firstCashbackAmount;
           tx = await cashbackControllerFromHookTrigger.afterPaymentMade(
             paymentId("id2"),
-            EMPTY_PAYMENT,
+            EMPTY_PAYMENT_HOOK_DATA,
             {
               baseAmount,
               subsidyLimit: 0n,
@@ -2049,7 +2036,7 @@ describe("Contract 'CashbackController'", () => {
           beforeEach(async () => {
             tx = await cashbackControllerFromHookTrigger.afterPaymentMade(
               paymentId("id3"),
-              EMPTY_PAYMENT,
+              EMPTY_PAYMENT_HOOK_DATA,
               {
                 baseAmount: 100n * DIGITS_COEF,
                 subsidyLimit: 0n,
@@ -2092,7 +2079,7 @@ describe("Contract 'CashbackController'", () => {
               await increaseBlockTimestamp(CASHBACK_CAP_RESET_PERIOD + 1);
               tx = await cashbackControllerFromHookTrigger.afterPaymentMade(
                 paymentId("id4"),
-                EMPTY_PAYMENT,
+                EMPTY_PAYMENT_HOOK_DATA,
                 {
                   baseAmount: 100n * DIGITS_COEF,
                   subsidyLimit: 0n,

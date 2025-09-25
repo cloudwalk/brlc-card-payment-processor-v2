@@ -203,7 +203,7 @@ describe("Contract 'CardPaymentProcessorHookable'", () => {
     });
   });
 
-  describe("CPP with CashbackController", () => {
+  describe("Hook with all methods implemented", () => {
     let cashbackController: Contracts.CashbackController;
     let cashbackControllerAddress: string;
 
@@ -222,6 +222,8 @@ describe("Contract 'CardPaymentProcessorHookable'", () => {
         });
 
         it("should emit the required events", async () => {
+          const receipt = await tx.provider.getTransactionReceipt(tx.hash);
+          const eventsCount = receipt?.logs.length || 0;
           await expect(tx)
             .to.emit(cardPaymentProcessor, EVENT_NAME_HOOK_REGISTERED)
             .withArgs(cashbackControllerAddress, cashbackController.afterPaymentMade.fragment.selector);
@@ -231,6 +233,8 @@ describe("Contract 'CardPaymentProcessorHookable'", () => {
           await expect(tx)
             .to.emit(cardPaymentProcessor, EVENT_NAME_HOOK_REGISTERED)
             .withArgs(cashbackControllerAddress, cashbackController.afterPaymentCanceled.fragment.selector);
+
+          expect(eventsCount).to.equal(3);
         });
 
         it("should not emit events when called a second time", async () => {
