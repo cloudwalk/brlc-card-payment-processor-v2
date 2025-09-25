@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.24;
 
 /**
  * @title ICardPaymentProcessorTypes interface
@@ -38,14 +38,14 @@ interface ICardPaymentProcessorTypes {
      * - status ----------- The current status of the payment.
      * - reserve1 --------- The reserved field for future changes.
      * - payer ------------ The account that made the payment.
-     * - cashbackRate ----- The cashback rate in units of `CASHBACK_FACTOR`.
+     * - cashbackRate ----- The cashback rate in per mille.
      * - confirmedAmount -- The confirmed amount that was transferred to the cash-out account.
      * - sponsor ---------- The sponsor of the payment if it is subsidized. Otherwise the zero address.
      * - subsidyLimit ----- The subsidy limit of the payment if it is subsidized. Otherwise zero.
      * - reserve2 --------- The reserved field for future changes.
      * - baseAmount ------- The base amount of tokens in the payment.
      * - extraAmount ------ The extra amount of tokens in the payment, without a cashback.
-     * - cashbackAmount --- The cumulative cashback amount that was granted to the payer related to the payment.
+     * - reserve3 --------- The reserved field for future changes.
      * - refundAmount ----- The total amount of all refunds related to the payment.
      *
      *  The following additional payment parameters can be derived from the structure fields:
@@ -89,7 +89,7 @@ interface ICardPaymentProcessorTypes {
         // Slot3
         uint64 baseAmount;
         uint64 extraAmount;
-        uint64 cashbackAmount;
+        uint64 reserve3;
         uint64 refundAmount;
         // No reserve until the end of the storage slot
     }
@@ -292,7 +292,7 @@ interface ICardPaymentProcessorPrimary is ICardPaymentProcessorTypes {
      * @param extraAmount The extra amount of tokens to transfer because of the payment. No cashback is applied.
      * @param sponsor The address of a sponsor if the payment is subsidized, otherwise zero.
      * @param subsidyLimit The amount of tokens that the sponsor is compensating for the payment.
-     * @param cashbackRate If positive then it is a special cashback rate for the payment in units of `CASHBACK_FACTOR`.
+     * @param cashbackRate If positive then it is a special cashback rate for the payment in per mille.
      *                     If negative then the contract settings are used to determine cashback.
      *                     If zero then cashback is not sent.
      * @param confirmationAmount The amount to confirm for the payment immediately after making.
@@ -470,6 +470,13 @@ interface ICardPaymentProcessorConfiguration {
         address newCashOutAccount
     );
 
+    /**
+     * @dev Emitted when the cashback rate is changed.
+     * @param oldRate The value of the old cashback rate.
+     * @param newRate The value of the new cashback rate.
+     */
+    event DefaultCashbackRateChanged(uint256 oldRate, uint256 newRate);
+
     // ------------------ Transactional functions ----------------- //
 
     /**
@@ -482,6 +489,20 @@ interface ICardPaymentProcessorConfiguration {
      * @param newCashOutAccount The new cash-out account address.
      */
     function setCashOutAccount(address newCashOutAccount) external;
+
+    /**
+     * @dev Sets a new default cashback rate for new payments.
+     *
+     * Emits a {DefaultCashbackRateChanged} event.
+     *
+     * @param newCashbackRate The value of the new cashback rate.
+     */
+    function setDefaultCashbackRate(uint256 newCashbackRate) external;
+
+    // ------------------ View functions -------------------------- //
+
+    /// @dev Returns the current cashback rate.
+    function defaultCashbackRate() external view returns (uint256);
 }
 
 /**
@@ -498,6 +519,12 @@ interface ICardPaymentProcessorErrors is ICardPaymentProcessorTypes {
 
     /// @dev A new cash-out account is the same as the previously set one.
     error CashOutAccountUnchanged();
+
+    /// @dev The provided cashback rate exceeds the allowed maximum.
+    error CashbackRateExcess();
+
+    /// @dev A new default cashback rate is the same as previously set one.
+    error DefaultCashbackRateUnchanged();
 
     /// @dev Thrown if the provided new implementation address is not of a card payment processor contract.
     error ImplementationAddressInvalid();

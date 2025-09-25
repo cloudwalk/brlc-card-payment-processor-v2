@@ -3,6 +3,7 @@
 pragma solidity 0.8.24;
 
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import { AccessControlExtUpgradeable } from "./base/AccessControlExtUpgradeable.sol";
 import { PausableExtUpgradeable } from "./base/PausableExtUpgradeable.sol";
@@ -10,11 +11,11 @@ import { RescuableUpgradeable } from "./base/RescuableUpgradeable.sol";
 import { Versionable } from "./base/Versionable.sol";
 import { UUPSExtUpgradeable } from "./base/UUPSExtUpgradeable.sol";
 
+import { CashbackVaultStorageLayout } from "./CashbackVaultStorageLayout.sol";
+
 import { ICashbackVault } from "./interfaces/ICashbackVault.sol";
 import { ICashbackVaultPrimary } from "./interfaces/ICashbackVault.sol";
 import { ICashbackVaultConfiguration } from "./interfaces/ICashbackVault.sol";
-
-import { CashbackVaultStorageLayout } from "./CashbackVaultStorageLayout.sol";
 
 /**
  * @title CashbackVault contract
@@ -29,6 +30,10 @@ contract CashbackVault is
     ICashbackVault,
     Versionable
 {
+    // ------------------ Types ----------------------------------- //
+
+    using SafeERC20 for IERC20;
+
     // ------------------ Constants ------------------------------- //
 
     /// @dev The role for cashback operators who are allowed to increase and decrease cashback balances.
@@ -117,7 +122,7 @@ contract CashbackVault is
         accountState.lastGrantTimestamp = uint64(block.timestamp);
         $.totalCashback += amount;
 
-        IERC20($.token).transferFrom(_msgSender(), address(this), amount);
+        IERC20($.token).safeTransferFrom(_msgSender(), address(this), amount);
 
         emit CashbackGranted(account, _msgSender(), amount, accountState.balance);
     }
@@ -147,7 +152,7 @@ contract CashbackVault is
         accountState.balance -= amount;
         $.totalCashback -= amount;
 
-        IERC20($.token).transfer(_msgSender(), amount);
+        IERC20($.token).safeTransfer(_msgSender(), amount);
         emit CashbackRevoked(account, _msgSender(), amount, accountState.balance);
     }
 
@@ -243,7 +248,7 @@ contract CashbackVault is
         accountState.lastClaimTimestamp = uint64(block.timestamp);
         $.totalCashback -= amount;
 
-        IERC20($.token).transfer(account, amount);
+        IERC20($.token).safeTransfer(account, amount);
         emit CashbackClaimed(account, _msgSender(), amount, accountState.balance);
     }
 

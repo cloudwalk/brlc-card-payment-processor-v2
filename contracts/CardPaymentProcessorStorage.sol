@@ -1,17 +1,19 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.24;
 
 import { ICardPaymentProcessorTypes } from "./interfaces/ICardPaymentProcessor.sol";
-import { ICardPaymentCashbackTypes } from "./interfaces/ICardPaymentCashback.sol";
 
 /**
  * @title CardPaymentProcessor storage version 1
  * @author CloudWalk Inc. (See https://www.cloudwalk.io)
  */
-abstract contract CardPaymentProcessorStorageV1 is ICardPaymentProcessorTypes, ICardPaymentCashbackTypes {
+abstract contract CardPaymentProcessorStorageV1 is ICardPaymentProcessorTypes {
     /// @dev The address of the underlying token.
     address internal _token;
+
+    /// @dev The default cashback rate for new payments in per mille.
+    uint16 internal _defaultCashbackRate;
 
     /// @dev The account to transfer confirmed tokens to.
     address internal _cashOutAccount;
@@ -21,18 +23,6 @@ abstract contract CardPaymentProcessorStorageV1 is ICardPaymentProcessorTypes, I
 
     /// @dev The payment statistics.
     PaymentStatistics internal _paymentStatistics;
-
-    /// @dev The address of the cashback treasury.
-    address internal _cashbackTreasury;
-
-    /// @dev The enabled flag for the cashback operations for new payments. Does not affect the existing payments.
-    bool internal _cashbackEnabled;
-
-    /// @dev The default cashback rate for new payments in units of `CASHBACK_FACTOR`.
-    uint16 internal _cashbackRate;
-
-    /// @dev The mapping of an account cashback structure for a given account address.
-    mapping(address => AccountCashbackState) internal _accountCashbackStates;
 }
 
 /**
@@ -49,5 +39,5 @@ abstract contract CardPaymentProcessorStorage is CardPaymentProcessorStorageV1 {
      * @dev This empty reserved space is put in place to allow future versions to add new
      * variables without shifting down storage in the inheritance chain.
      */
-    uint256[43] private __gap;
+    uint256[45] private __gap;
 }
