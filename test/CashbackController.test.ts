@@ -944,43 +944,44 @@ describe("Contract 'CashbackController'", () => {
             });
           });
         });
+        describe("Should revert if", () => {
+          it("called by a non-hook trigger", async () => {
+            await expect(cashbackControllerFromStranger.afterPaymentMade(
+              paymentId("id1"),
+              EMPTY_PAYMENT_HOOK_DATA,
+              EMPTY_PAYMENT_HOOK_DATA,
+            )).to.be.revertedWithCustomError(cashbackControllerFromStranger, "AccessControlUnauthorizedAccount")
+              .withArgs(stranger.address, HOOK_TRIGGER_ROLE);
+          });
 
-        it("should revert if called by a non-hook trigger", async () => {
-          await expect(cashbackControllerFromStranger.afterPaymentMade(
-            paymentId("id1"),
-            EMPTY_PAYMENT_HOOK_DATA,
-            EMPTY_PAYMENT_HOOK_DATA,
-          )).to.be.revertedWithCustomError(cashbackControllerFromStranger, "AccessControlUnauthorizedAccount")
-            .withArgs(stranger.address, HOOK_TRIGGER_ROLE);
-        });
-
-        it("should revert if the cashback treasury is not configured", async () => {
-          const { cashbackController: notConfiguredCashbackController } = await deployAndConfigureContracts();
-          const paymentHookData: PaymentHookData = {
-            baseAmount: 100n * DIGITS_COEF,
-            subsidyLimit: 100n,
-            status: 1n,
-            payer: payer.address,
-            cashbackRate: 100n,
-            confirmedAmount: 0n,
-            sponsor: ethers.ZeroAddress,
-            extraAmount: 0n,
-            refundAmount: 0n,
-          };
-          await expect(notConfiguredCashbackController.connect(hookTrigger).afterPaymentMade(
-            paymentId("id1"),
-            EMPTY_PAYMENT_HOOK_DATA,
-            paymentHookData,
-          )).to.be.revertedWithCustomError(
-            notConfiguredCashbackController,
-            "CashbackController_TreasuryNotConfigured",
-          );
+          it("the cashback treasury is not configured", async () => {
+            const { cashbackController: notConfiguredCashbackController } = await deployAndConfigureContracts();
+            const paymentHookData: PaymentHookData = {
+              baseAmount: 100n * DIGITS_COEF,
+              subsidyLimit: 100n,
+              status: 1n,
+              payer: payer.address,
+              cashbackRate: 100n,
+              confirmedAmount: 0n,
+              sponsor: ethers.ZeroAddress,
+              extraAmount: 0n,
+              refundAmount: 0n,
+            };
+            await expect(notConfiguredCashbackController.connect(hookTrigger).afterPaymentMade(
+              paymentId("id1"),
+              EMPTY_PAYMENT_HOOK_DATA,
+              paymentHookData,
+            )).to.be.revertedWithCustomError(
+              notConfiguredCashbackController,
+              "CashbackController_TreasuryNotConfigured",
+            );
+          });
         });
       });
 
       describe("Method 'afterPaymentUpdated()'", () => {
         describe("Should execute as expected when called properly and if", () => {
-          describe("payment cashback rate is not zero and no sponsor", () => {
+          describe("payment cashback rate is not zero and no sponsor and", () => {
             const baseAmount = 100n * DIGITS_COEF;
             const cashbackRate = 100n;
             const cashbackAmount = cashbackRate * baseAmount / CASHBACK_FACTOR;
@@ -1223,8 +1224,8 @@ describe("Contract 'CashbackController'", () => {
             });
           });
 
-          describe("payment cashback rate is not zero and sponsor exists", () => {
-            describe("subsidy limit is less than base amount", () => {
+          describe("payment cashback rate is not zero and sponsor exists and", () => {
+            describe("subsidy limit is less than base amount and", () => {
               const baseAmount = 100n * DIGITS_COEF;
               const subsidyLimit = baseAmount / 2n;
               const cashbackRate = 100n;
@@ -1431,7 +1432,7 @@ describe("Contract 'CashbackController'", () => {
               });
             });
 
-            describe("subsidy limit is greater than base amount", () => {
+            describe("subsidy limit is greater than base amount and", () => {
               const baseAmount = 100n * DIGITS_COEF;
               const subsidyLimit = baseAmount + 50n * DIGITS_COEF;
               const cashbackRate = 100n;
