@@ -7,7 +7,7 @@ import * as Contracts from "../typechain-types";
 import { ICardPaymentProcessorHookTypes } from "../typechain-types/contracts/CashbackController";
 
 import { checkEquality, resultToObject, setUpFixture } from "../test-utils/common";
-import { getTxTimestamp, increaseBlockTimestamp } from "../test-utils/eth";
+import { checkTokenPath, getTxTimestamp, increaseBlockTimestamp } from "../test-utils/eth";
 
 describe("Contract 'CashbackController'", () => {
   const TOKEN_DECIMALS = 6n;
@@ -727,11 +727,15 @@ describe("Contract 'CashbackController'", () => {
               });
             });
 
-            it("should transfer tokens correctly", async () => {
+            it("should update token balances correctly", async () => {
               await expect(tx).to.changeTokenBalances(tokenMock,
                 [treasury.address, payer.address, cashbackControllerAddress],
                 [-cashbackAmount, cashbackAmount, 0n],
               );
+            });
+
+            it("should transfer tokens correctly", async () => {
+              await checkTokenPath(tx, tokenMock, [treasury, cashbackControllerAddress, payer], cashbackAmount);
             });
 
             it("should update the account cashback state", async () => {
@@ -789,7 +793,7 @@ describe("Contract 'CashbackController'", () => {
               });
             });
 
-            it("should not transfer tokens", async () => {
+            it("should not update token balances", async () => {
               await expect(tx).to.changeTokenBalances(tokenMock,
                 [treasury.address, payer.address, cashbackControllerAddress],
                 [0n, 0n, 0n],
@@ -885,7 +889,7 @@ describe("Contract 'CashbackController'", () => {
                 .withArgs(paymentId("id1"), payer.address, CashbackStatus.Success, 0n);
             });
 
-            it("should not transfer tokens", async () => {
+            it("should not update token balances", async () => {
               await expect(tx).to.changeTokenBalances(tokenMock,
                 [treasury.address, payer.address, cashbackControllerAddress],
                 [0n, 0n, 0n],
@@ -934,11 +938,15 @@ describe("Contract 'CashbackController'", () => {
                 .withArgs(paymentId("id1"), payer.address, CashbackStatus.Success, cashbackAmount);
             });
 
-            it("should transfer tokens correctly", async () => {
+            it("should update token balances correctly", async () => {
               await expect(tx).to.changeTokenBalances(tokenMock,
                 [treasury.address, payer.address, cashbackControllerAddress],
                 [-cashbackAmount, cashbackAmount, 0n],
               );
+            });
+
+            it("should transfer tokens correctly", async () => {
+              await checkTokenPath(tx, tokenMock, [treasury, cashbackControllerAddress, payer], cashbackAmount);
             });
 
             it("should update the account cashback state", async () => {
@@ -1056,11 +1064,15 @@ describe("Contract 'CashbackController'", () => {
                 });
               });
 
-              it("should transfer tokens correctly", async () => {
+              it("should update token balances correctly", async () => {
                 await expect(tx).to.changeTokenBalances(tokenMock,
                   [treasury.address, payer.address, cashbackControllerAddress],
                   [-increaseAmount, increaseAmount, 0n],
                 );
+              });
+
+              it("should transfer tokens correctly", async () => {
+                await checkTokenPath(tx, tokenMock, [treasury, cashbackControllerAddress, payer], increaseAmount);
               });
 
               it("should update the cashback amount in the account cashback state", async () => {
@@ -1114,11 +1126,15 @@ describe("Contract 'CashbackController'", () => {
                 });
               });
 
-              it("should transfer tokens correctly", async () => {
+              it("should update token balances correctly", async () => {
                 await expect(tx).to.changeTokenBalances(tokenMock,
                   [treasury.address, payer.address, cashbackControllerAddress],
                   [decreaseAmount, -decreaseAmount, 0n],
                 );
+              });
+
+              it("should transfer tokens correctly", async () => {
+                await checkTokenPath(tx, tokenMock, [payer, cashbackControllerAddress, treasury], decreaseAmount);
               });
 
               it("should update the cashback amount in the account cashback state", async () => {
@@ -1162,7 +1178,7 @@ describe("Contract 'CashbackController'", () => {
                 });
               });
 
-              it("should not transfer tokens", async () => {
+              it("should not update token balances", async () => {
                 await expect(tx).to.changeTokenBalances(tokenMock,
                   [treasury.address, payer.address, cashbackControllerAddress],
                   [0n, 0n, 0n],
@@ -1304,11 +1320,15 @@ describe("Contract 'CashbackController'", () => {
                   });
                 });
 
-                it("should transfer tokens correctly", async () => {
+                it("should update token balances correctly", async () => {
                   await expect(tx).to.changeTokenBalances(tokenMock,
                     [treasury.address, payer.address, cashbackControllerAddress],
                     [-increaseAmount, increaseAmount, 0n],
                   );
+                });
+
+                it("should transfer tokens correctly", async () => {
+                  await checkTokenPath(tx, tokenMock, [treasury, cashbackControllerAddress, payer], increaseAmount);
                 });
 
                 it("should update the cashback amount in the account cashback state", async () => {
@@ -1365,11 +1385,15 @@ describe("Contract 'CashbackController'", () => {
                   });
                 });
 
-                it("should transfer tokens correctly", async () => {
+                it("should update token balances correctly", async () => {
                   await expect(tx).to.changeTokenBalances(tokenMock,
                     [treasury.address, payer.address, cashbackControllerAddress],
                     [decreaseAmount, -decreaseAmount, 0n],
                   );
+                });
+
+                it("should transfer tokens correctly", async () => {
+                  await checkTokenPath(tx, tokenMock, [payer, cashbackControllerAddress, treasury], decreaseAmount);
                 });
 
                 it("should update the cashback amount in the account cashback state", async () => {
@@ -1427,11 +1451,15 @@ describe("Contract 'CashbackController'", () => {
                   });
                 });
 
-                it("should transfer tokens correctly", async () => {
+                it("should update token balances correctly", async () => {
                   await expect(tx).to.changeTokenBalances(tokenMock,
                     [treasury.address, payer.address, cashbackControllerAddress],
                     [decreaseAmount, -decreaseAmount, 0n],
                   );
+                });
+
+                it("should transfer tokens correctly", async () => {
+                  await checkTokenPath(tx, tokenMock, [payer, cashbackControllerAddress, treasury], decreaseAmount);
                 });
 
                 it("should update the cashback amount in the account cashback state", async () => {
@@ -1504,7 +1532,7 @@ describe("Contract 'CashbackController'", () => {
                   });
                 });
 
-                it("should not transfer tokens", async () => {
+                it("should not update token balances", async () => {
                   await expect(tx).to.changeTokenBalances(tokenMock,
                     [treasury.address, payer.address, cashbackControllerAddress],
                     [0n, 0n, 0n],
@@ -1560,11 +1588,15 @@ describe("Contract 'CashbackController'", () => {
                   });
                 });
 
-                it("should transfer tokens correctly", async () => {
+                it("should update token balances correctly", async () => {
                   await expect(tx).to.changeTokenBalances(tokenMock,
                     [treasury.address, payer.address, cashbackControllerAddress],
                     [-newCashbackAmount, newCashbackAmount, 0n],
                   );
+                });
+
+                it("should transfer tokens correctly", async () => {
+                  await checkTokenPath(tx, tokenMock, [treasury, cashbackControllerAddress, payer], newCashbackAmount);
                 });
 
                 it("should update the cashback amount in the account cashback state", async () => {
@@ -1648,11 +1680,15 @@ describe("Contract 'CashbackController'", () => {
               });
             });
 
-            it("should transfer tokens correctly", async () => {
+            it("should update token balances correctly", async () => {
               await expect(tx).to.changeTokenBalances(tokenMock,
                 [treasury.address, payer.address, cashbackControllerAddress],
                 [cashbackAmount, -cashbackAmount, 0n],
               );
+            });
+
+            it("should transfer tokens correctly", async () => {
+              await checkTokenPath(tx, tokenMock, [payer, cashbackControllerAddress, treasury], cashbackAmount);
             });
 
             it("should update the cashback amount in the account cashback state", async () => {
@@ -1730,7 +1766,7 @@ describe("Contract 'CashbackController'", () => {
               });
             });
 
-            it("should not transfer tokens", async () => {
+            it("should not update token balances", async () => {
               await expect(tx).to.changeTokenBalances(tokenMock,
                 [treasury.address, payer.address, cashbackControllerAddress],
                 [0n, 0n, 0n],
@@ -1996,11 +2032,15 @@ describe("Contract 'CashbackController'", () => {
           .withArgs(paymentId("id1"), payer.address, CashbackStatus.Success, firstCashbackAmount);
       });
 
-      it("should transfer tokens correctly", async () => {
+      it("should update token balances correctly", async () => {
         await expect(tx).to.changeTokenBalances(tokenMock,
           [treasury.address, payer.address, cashbackControllerAddress],
           [-firstCashbackAmount, firstCashbackAmount, 0n],
         );
+      });
+
+      it("should transfer tokens correctly", async () => {
+        await checkTokenPath(tx, tokenMock, [treasury, cashbackControllerAddress, payer], firstCashbackAmount);
       });
 
       describe("second payment that reaches the cap", () => {
@@ -2044,11 +2084,15 @@ describe("Contract 'CashbackController'", () => {
             );
         });
 
-        it("should transfer tokens correctly", async () => {
+        it("should update token balances correctly", async () => {
           await expect(tx).to.changeTokenBalances(tokenMock,
             [treasury.address, payer.address, cashbackControllerAddress],
             [-secondCashbackAmount, secondCashbackAmount, 0n],
           );
+        });
+
+        it("should transfer tokens correctly", async () => {
+          await checkTokenPath(tx, tokenMock, [treasury, cashbackControllerAddress, payer], secondCashbackAmount);
         });
 
         describe("third payment that capped the cashback amount", () => {
@@ -2086,7 +2130,7 @@ describe("Contract 'CashbackController'", () => {
               .withArgs(paymentId("id3"), payer.address, CashbackStatus.Capped, 0n);
           });
 
-          it("should transfer tokens correctly", async () => {
+          it("should not update token balances", async () => {
             await expect(tx).to.changeTokenBalances(tokenMock,
               [treasury.address, payer.address, cashbackControllerAddress],
               [0n, 0n, 0n],
@@ -2129,11 +2173,15 @@ describe("Contract 'CashbackController'", () => {
                 .withArgs(paymentId("id4"), payer.address, CashbackStatus.Success, cashbackAmount);
             });
 
-            it("should transfer tokens correctly", async () => {
+            it("should update token balances correctly", async () => {
               await expect(tx).to.changeTokenBalances(tokenMock,
                 [treasury.address, payer.address, cashbackControllerAddress],
                 [-cashbackAmount, cashbackAmount, 0n],
               );
+            });
+
+            it("should transfer tokens correctly", async () => {
+              await checkTokenPath(tx, tokenMock, [treasury, cashbackControllerAddress, payer], cashbackAmount);
             });
           });
         });

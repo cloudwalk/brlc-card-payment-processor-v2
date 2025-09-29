@@ -1,5 +1,14 @@
 import { ethers, upgrades, network } from "hardhat";
-import { BaseContract, BlockTag, Contract, ContractFactory, TransactionReceipt, TransactionResponse } from "ethers";
+import {
+  AddressLike,
+  BaseContract,
+  BigNumberish,
+  BlockTag,
+  Contract,
+  ContractFactory,
+  TransactionReceipt,
+  TransactionResponse,
+} from "ethers";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
 import { expect } from "chai";
@@ -79,4 +88,17 @@ export async function proveTx(txResponsePromise: Promise<TransactionResponse>): 
     throw new Error("The transaction receipt is empty");
   }
   return txReceipt as TransactionReceipt;
+}
+
+// Now it checks only existence of transfers in the chain and does not check the order
+export async function checkTokenPath(
+  tx: TransactionResponse | Promise<TransactionResponse>,
+  token: Contract | BaseContract,
+  chain: AddressLike[],
+  amount: BigNumberish,
+) {
+  for (let i = 0; i < chain.length - 1; i++) {
+    await expect(tx).to.emit(token, "Transfer")
+      .withArgs(chain[i], chain[i + 1], amount);
+  }
 }
