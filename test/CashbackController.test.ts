@@ -831,11 +831,16 @@ describe("Contract 'CashbackController'", () => {
               );
             });
 
-            it("should not emit the event", async () => {
+            it("should do nothing", async () => {
               await expect(tx).to.not.emit(cashbackController, "CashbackSent");
-            });
 
-            it("should not change the payment cashback state", async () => {
+              await expect(tx).to.changeTokenBalances(tokenMock,
+                [treasury.address, payer.address, cashbackControllerAddress],
+                [0n, 0n, 0n],
+              );
+
+              const accountCashbackState = resultToObject(await cashbackController
+                .getAccountCashback(payer.address));
               const operationState = resultToObject(await cashbackController
                 .getPaymentCashback(paymentId("id1")));
 
@@ -843,13 +848,11 @@ describe("Contract 'CashbackController'", () => {
                 balance: 0n,
                 recipient: ethers.ZeroAddress,
               });
-            });
-
-            it("should not transfer tokens", async () => {
-              await expect(tx).to.changeTokenBalances(tokenMock,
-                [treasury.address, payer.address, cashbackControllerAddress],
-                [0n, 0n, 0n],
-              );
+              checkEquality(accountCashbackState, {
+                totalAmount: 0n,
+                capPeriodStartAmount: 0n,
+                capPeriodStartTime: 0n,
+              });
             });
           });
 
