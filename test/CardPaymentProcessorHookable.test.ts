@@ -47,10 +47,7 @@ async function deployContracts() {
   const cardPaymentProcessor = await upgrades.deployProxy(cardPaymentProcessorFactory, [await tokenMock.getAddress()]);
   await cardPaymentProcessor.waitForDeployment();
 
-  const hookContract = await hookContractMockFactory.deploy();
-  await hookContract.waitForDeployment();
-
-  return { cardPaymentProcessor, tokenMock, hookContract };
+  return { cardPaymentProcessor, tokenMock };
 }
 
 describe("Contract 'CardPaymentProcessorHookable'", () => {
