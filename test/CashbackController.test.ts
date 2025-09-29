@@ -1884,11 +1884,15 @@ describe("Contract 'CashbackController'", () => {
           );
         });
 
-        it("should transfer tokens from treasury to cashback vault", async () => {
+        it("should update token balances correctly", async () => {
           await expect(tx).to.changeTokenBalances(tokenMock,
             [treasury.address, payer.address, cashbackControllerAddress, cashbackVault],
             [-cashbackAmount, 0n, 0n, cashbackAmount],
           );
+        });
+
+        it("should transfer tokens from treasury to cashback vault", async () => {
+          await checkTokenPath(tx, tokenMock, [treasury, cashbackControllerAddress, cashbackVault], cashbackAmount);
         });
 
         it("should increase the claimable amount in the vault for the payer", async () => {
@@ -1935,11 +1939,15 @@ describe("Contract 'CashbackController'", () => {
             );
           });
 
-          it("should transfer tokens from cashback vault to treasury", async () => {
+          it("should update token balances correctly", async () => {
             await expect(tx).to.changeTokenBalances(tokenMock,
               [treasury.address, payer.address, cashbackControllerAddress, cashbackVault],
               [cashbackAmount, 0n, 0n, -cashbackAmount],
             );
+          });
+
+          it("should transfer tokens from cashback vault to treasury", async () => {
+            await checkTokenPath(tx, tokenMock, [cashbackVault, cashbackControllerAddress, treasury], cashbackAmount);
           });
 
           it("should decrease the claimable amount in the vault for the payer", async () => {
@@ -1963,11 +1971,17 @@ describe("Contract 'CashbackController'", () => {
             );
           });
 
-          it("should transfer tokens from cashback vault and from payer to treasury", async () => {
+          it("should update token balances correctly", async () => {
             await expect(tx).to.changeTokenBalances(tokenMock,
               [treasury.address, payer.address, cashbackControllerAddress, cashbackVault],
               [cashbackAmount, -cashbackAmount / 2n, 0n, -cashbackAmount / 2n],
             );
+          });
+
+          it("should transfer tokens from cashback vault and from payer to treasury", async () => {
+            await checkTokenPath(tx, tokenMock, [cashbackVault, cashbackControllerAddress], cashbackAmount / 2n);
+            await checkTokenPath(tx, tokenMock, [payer, cashbackControllerAddress], cashbackAmount / 2n);
+            await checkTokenPath(tx, tokenMock, [cashbackControllerAddress, treasury], cashbackAmount);
           });
 
           it("should decrease the claimable amount in the vault for the payer", async () => {
