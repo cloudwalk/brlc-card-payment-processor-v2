@@ -1402,10 +1402,10 @@ class TestContext {
       }
       checkedPaymentIds.add(expectedPayment.paymentId);
       const actualPayment = await this.cardPaymentProcessorShell.contract.getPayment(expectedPayment.paymentId);
-      const actualPaymentCahback =
+      const actualPaymentCashback =
         await this.cardPaymentProcessorShell.cashbackControllerContract
           .getPaymentCashback(expectedPayment.paymentId);
-      this.#checkPaymentsEquality(actualPayment, actualPaymentCahback, expectedPayment, i);
+      this.#checkPaymentsEquality(actualPayment, actualPaymentCashback, expectedPayment, i);
       const expectedTotalCashback =
         this.cardPaymentProcessorShell.model.getCashbackTotalForAccount(expectedPayment.payer.address);
       const actualAccountCashback: AccountCashbackState =
@@ -1419,7 +1419,7 @@ class TestContext {
 
   #checkPaymentsEquality(
     actualOnChainPayment: Record<string, unknown>,
-    actualPaymentCahback: Record<string, unknown>,
+    actualPaymentCashback: Record<string, unknown>,
     expectedPayment: PaymentModel,
     paymentIndex: number,
   ) {
@@ -1467,7 +1467,7 @@ class TestContext {
       0,
       `payment[${paymentIndex}].reserve3 is wrong`,
     );
-    expect(actualPaymentCahback.balance).to.equal(
+    expect(actualPaymentCashback.balance).to.equal(
       expectedPayment.cashbackAmount,
       `CashbackController.paymentCashbacks[${paymentIndex}].cashbackAmount is wrong`,
     );
