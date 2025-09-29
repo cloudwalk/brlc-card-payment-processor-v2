@@ -186,6 +186,14 @@ describe("Contract 'CardPaymentProcessorHookable'", () => {
             .to.be.revertedWithCustomError(cardPaymentProcessor, ERROR_NAME_ACCESS_CONTROL_UNAUTHORIZED_ACCOUNT)
             .withArgs(user1.address, OWNER_ROLE);
         });
+
+        it("the proof is invalid", async () => {
+          await expect(cardPaymentProcessor.unregisterHook(hookContractAddress, ethers.toBeHex(
+            1337,
+            32,
+          )))
+            .to.be.reverted;
+        });
       });
     });
 
@@ -301,16 +309,6 @@ describe("Contract 'CardPaymentProcessorHookable'", () => {
         await expect(tx)
           .to.emit(cardPaymentProcessor, EVENT_NAME_HOOK_UNREGISTERED)
           .withArgs(cashbackControllerAddress, cashbackController.afterPaymentCanceled.fragment.selector);
-      });
-
-      describe("Should revert if", () => {
-        it("the proof is invalid", async () => {
-          await expect(cardPaymentProcessor.unregisterHook(cashbackControllerAddress, ethers.toBeHex(
-            1337,
-            32,
-          )))
-            .to.be.reverted;
-        });
       });
     });
   });
