@@ -11,7 +11,7 @@ import { UUPSExtUpgradeable } from "./base/UUPSExtUpgradeable.sol";
 import { PausableExtUpgradeable } from "./base/PausableExtUpgradeable.sol";
 import { Versionable } from "./base/Versionable.sol";
 
-import { CashbackControllerStorageLayout } from "./CashbackControlllerStorageLayout.sol";
+import { CashbackControllerStorageLayout } from "./CashbackControllerStorageLayout.sol";
 
 import { IAfterPaymentMadeHook } from "./hookable/interfaces/ICardPaymentProcessorHooks.sol";
 import { IAfterPaymentUpdatedHook } from "./hookable/interfaces/ICardPaymentProcessorHooks.sol";
