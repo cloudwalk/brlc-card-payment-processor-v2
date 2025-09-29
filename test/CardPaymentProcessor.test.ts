@@ -1469,7 +1469,7 @@ class TestContext {
     );
     expect(actualPaymentCashback.balance).to.equal(
       expectedPayment.cashbackAmount,
-      `CashbackController.paymentCashbacks[${paymentIndex}].cashbackAmount is wrong`,
+      `CashbackController.paymentCashbacks[${paymentIndex}].balance is wrong`,
     );
     expect(actualOnChainPayment.refundAmount).to.equal(
       expectedPayment.refundAmount,
@@ -2539,7 +2539,10 @@ describe("Contract 'CardPaymentProcessor' with CashbackController hook connected
         cashbackCondition === CashbackConditionType.CashbackEnabledButTreasuryHasInsufficientBalance
       ) {
         await proveTx(connect(tokenMock, cashbackTreasury)
-          .transfer(sponsor.address, await tokenMock.balanceOf(cashbackTreasury.address)));
+          .transfer(
+            sponsor.address,
+            await tokenMock.balanceOf(cashbackTreasury.address) - BigInt(CASHBACK_ROUNDING_COEF),
+          ));
       }
 
       const tx = (cardPaymentProcessorShell.contract.connect(executor) as Contract).updatePayment(

@@ -1,10 +1,10 @@
 import { ethers, upgrades } from "hardhat";
 import { expect } from "chai";
-import { Typed } from "ethers";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 
 import { TransactionResponse } from "ethers";
 import * as Contracts from "../typechain-types";
+import { ICardPaymentProcessorHookTypes } from "../typechain-types/contracts/CashbackController";
 
 import { checkEquality, resultToObject, setUpFixture } from "../test-utils/common";
 import { getTxTimestamp, increaseBlockTimestamp } from "../test-utils/eth";
@@ -57,7 +57,7 @@ describe("Contract 'CashbackController'", () => {
   let cashbackOperator: HardhatEthersSigner;
   let pauser: HardhatEthersSigner;
 
-  type PaymentHookData = Exclude<Parameters<typeof cashbackControllerFromOwner.afterPaymentMade>[1], Typed>;
+  type PaymentHookData = ICardPaymentProcessorHookTypes.PaymentHookDataStruct;
 
   const EMPTY_PAYMENT_HOOK_DATA: PaymentHookData = {
     baseAmount: 0n,
@@ -265,7 +265,7 @@ describe("Contract 'CashbackController'", () => {
       });
 
       it("provided account is a contract but not a CardPaymentProcessor contract", async () => {
-        await expect(deployedContract.grantRole(HOOK_TRIGGER_ROLE, tokenMock.getAddress()))
+        await expect(deployedContract.grantRole(HOOK_TRIGGER_ROLE, await tokenMock.getAddress()))
           .to.be.revertedWithCustomError(deployedContract, "CashbackController_HookTriggerRoleIncompatible");
       });
 
@@ -296,13 +296,13 @@ describe("Contract 'CashbackController'", () => {
 
     describe("Should revert if", () => {
       it("called with the address of an incompatible implementation", async () => {
-        const tx = cashbackControllerFromOwner.upgradeToAndCall(tokenMock.getAddress(), "0x");
+        const tx = cashbackControllerFromOwner.upgradeToAndCall(await tokenMock.getAddress(), "0x");
         await expect(tx)
           .to.be.revertedWithCustomError(cashbackController, "CashbackController_ImplementationAddressInvalid");
       });
 
       it("called by a non-owner", async () => {
-        const tx = cashbackControllerFromStranger.upgradeToAndCall(tokenMock.getAddress(), "0x");
+        const tx = cashbackControllerFromStranger.upgradeToAndCall(await tokenMock.getAddress(), "0x");
         await expect(tx)
           .to.be.revertedWithCustomError(cashbackController, "AccessControlUnauthorizedAccount")
           .withArgs(stranger.address, OWNER_ROLE);
@@ -310,7 +310,7 @@ describe("Contract 'CashbackController'", () => {
     });
   });
 
-  describe("Methods 'setCashbackTreasury()' and 'getCashbackTreasury()'", () => {
+  describe("Method 'setCashbackTreasury()'", () => {
     describe("Should execute as expected when called properly and", () => {
       let tx: TransactionResponse;
 
@@ -398,10 +398,10 @@ describe("Contract 'CashbackController'", () => {
     });
 
     it("should revert if the caller does not have the required role", async () => {
-      await expect(cashbackControllerFromStranger.supportsHookMethod(
+      await expect(cashbackControllerFromOwner.supportsHookMethod(
         cashbackController.afterPaymentMade.fragment.selector,
-      )).to.be.revertedWithCustomError(cashbackControllerFromStranger, "AccessControlUnauthorizedAccount")
-        .withArgs(stranger.address, HOOK_TRIGGER_ROLE);
+      )).to.be.revertedWithCustomError(cashbackController, "AccessControlUnauthorizedAccount")
+        .withArgs(deployer.address, HOOK_TRIGGER_ROLE);
     });
   });
 
@@ -654,9 +654,9 @@ describe("Contract 'CashbackController'", () => {
 
     describe("Should revert if", () => {
       it("the caller does not have the required role", async () => {
-        await expect(cashbackControllerFromStranger.correctCashbackAmount(paymentId("id1"), cashbackAmount))
-          .to.be.revertedWithCustomError(cashbackControllerFromStranger, "AccessControlUnauthorizedAccount")
-          .withArgs(stranger.address, CASHBACK_OPERATOR_ROLE);
+        await expect(cashbackControllerFromOwner.correctCashbackAmount(paymentId("id1"), cashbackAmount))
+          .to.be.revertedWithCustomError(cashbackController, "AccessControlUnauthorizedAccount")
+          .withArgs(deployer.address, CASHBACK_OPERATOR_ROLE);
       });
 
       it("the payment cashback does not exist", async () => {

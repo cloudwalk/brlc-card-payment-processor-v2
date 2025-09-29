@@ -150,6 +150,7 @@ describe("Contract 'CardPaymentProcessorHookable'", () => {
           });
         });
       });
+
       describe("Should revert if", () => {
         it("the caller does not have the required role", async () => {
           await expect(cardPaymentProcessor.connect(user1).registerHook(hookContractAddress))
