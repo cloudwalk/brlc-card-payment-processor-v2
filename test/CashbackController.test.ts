@@ -1697,14 +1697,15 @@ describe("Contract 'CashbackController'", () => {
               });
             });
           });
-
-          it("should revert if called by a non-hook trigger", async () => {
-            await expect(cashbackControllerFromStranger.afterPaymentUpdated(
-              paymentId("id1"),
-              EMPTY_PAYMENT_HOOK_DATA,
-              EMPTY_PAYMENT_HOOK_DATA,
-            )).to.be.revertedWithCustomError(cashbackControllerFromStranger, "AccessControlUnauthorizedAccount")
-              .withArgs(stranger.address, HOOK_TRIGGER_ROLE);
+          describe("Should revert if", () => {
+            it("called by a non-hook trigger", async () => {
+              await expect(cashbackControllerFromStranger.afterPaymentUpdated(
+                paymentId("id1"),
+                EMPTY_PAYMENT_HOOK_DATA,
+                EMPTY_PAYMENT_HOOK_DATA,
+              )).to.be.revertedWithCustomError(cashbackControllerFromStranger, "AccessControlUnauthorizedAccount")
+                .withArgs(stranger.address, HOOK_TRIGGER_ROLE);
+            });
           });
         });
 
@@ -1933,13 +1934,15 @@ describe("Contract 'CashbackController'", () => {
             });
           });
 
-          it("should revert if called by a non-hook trigger", async () => {
-            await expect(cashbackControllerFromStranger.afterPaymentCanceled(
-              paymentId("id1"),
-              EMPTY_PAYMENT_HOOK_DATA,
-              EMPTY_PAYMENT_HOOK_DATA,
-            )).to.be.revertedWithCustomError(cashbackControllerFromStranger, "AccessControlUnauthorizedAccount")
-              .withArgs(stranger.address, HOOK_TRIGGER_ROLE);
+          describe("Should revert if", () => {
+            it("called by a non-hook trigger", async () => {
+              await expect(cashbackControllerFromStranger.afterPaymentCanceled(
+                paymentId("id1"),
+                EMPTY_PAYMENT_HOOK_DATA,
+                EMPTY_PAYMENT_HOOK_DATA,
+              )).to.be.revertedWithCustomError(cashbackControllerFromStranger, "AccessControlUnauthorizedAccount")
+                .withArgs(stranger.address, HOOK_TRIGGER_ROLE);
+            });
           });
         });
       });
