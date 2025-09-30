@@ -141,8 +141,13 @@ contract CashbackController is
         uint256 desiredCashbackAmount = _calculateCashback(basePaymentAmount, payment.cashbackRate);
         PaymentCashback storage paymentCashback = $.paymentCashbacks[paymentId];
         paymentCashback.recipient = payment.payer;
+        PaymentCashbackStatus status = PaymentCashbackStatus.Success;
+        uint256 delta = desiredCashbackAmount;
 
-        (PaymentCashbackStatus status, uint256 delta) = _increaseCashback(paymentCashback, desiredCashbackAmount);
+        if (delta > 0) {
+            (status, delta) = _increaseCashback(paymentCashback, desiredCashbackAmount);
+        }
+
         emit CashbackSent(
             paymentId, // Tools: prevent Prettier one-liner
             payment.payer,

@@ -687,6 +687,56 @@ describe("Contract 'CashbackController'", () => {
     describe("CashbackVault is not set", () => {
       describe("Method 'afterPaymentMade()'", () => {
         describe("Should execute as expected when called properly and if", () => {
+          describe("cashback rate is zero", () => {
+            let tx: TransactionResponse;
+            const baseAmount = 100n * DIGITS_COEF;
+            const cashbackRate = 0n;
+
+            beforeEach(async () => {
+              const paymentHookData: PaymentHookData = {
+                baseAmount,
+                subsidyLimit: 0n,
+                status: 1n,
+                payer: payer.address,
+                cashbackRate,
+                confirmedAmount: 0n,
+                sponsor: ethers.ZeroAddress,
+                extraAmount: 0n,
+                refundAmount: 0n,
+              };
+              tx = await cashbackControllerFromHookTrigger.afterPaymentMade(
+                paymentId("id1"),
+                EMPTY_PAYMENT_HOOK_DATA,
+                paymentHookData,
+              );
+            });
+
+            it("should do nothing", async () => {
+              await expect(tx).to.not.emit(cashbackController, "CashbackSent");
+
+              await expect(tx).to.changeTokenBalances(tokenMock,
+                [treasury.address, payer.address, cashbackControllerAddress],
+                [0n, 0n, 0n],
+              );
+
+              await expect(tx).to.not.emit(tokenMock, "Transfer");
+              const accountCashbackState = resultToObject(await cashbackController
+                .getAccountCashback(payer.address));
+              const operationState = resultToObject(await cashbackController
+                .getPaymentCashback(paymentId("id1")));
+
+              checkEquality(operationState, {
+                balance: 0n,
+                recipient: ethers.ZeroAddress,
+              });
+              checkEquality(accountCashbackState, {
+                totalAmount: 0n,
+                capPeriodStartAmount: 0n,
+                capPeriodStartTime: 0n,
+              });
+            });
+          });
+
           describe("cashback rate is not zero", () => {
             let tx: TransactionResponse;
             const baseAmount = 100n * DIGITS_COEF;
@@ -727,6 +777,16 @@ describe("Contract 'CashbackController'", () => {
               });
             });
 
+            it("should update the account cashback state", async () => {
+              const accountCashbackState = resultToObject(await cashbackController
+                .getAccountCashback(payer.address));
+              checkEquality(accountCashbackState, {
+                totalAmount: cashbackAmount,
+                capPeriodStartAmount: 0n,
+                capPeriodStartTime: await getTxTimestamp(tx),
+              });
+            });
+
             it("should update token balances correctly", async () => {
               await expect(tx).to.changeTokenBalances(tokenMock,
                 [treasury.address, payer.address, cashbackControllerAddress],
@@ -736,16 +796,6 @@ describe("Contract 'CashbackController'", () => {
 
             it("should transfer tokens correctly", async () => {
               await checkTokenPath(tx, tokenMock, [treasury, cashbackControllerAddress, payer], cashbackAmount);
-            });
-
-            it("should update the account cashback state", async () => {
-              const accountCashbackState = resultToObject(await cashbackController
-                .getAccountCashback(payer.address));
-              checkEquality(accountCashbackState, {
-                totalAmount: cashbackAmount,
-                capPeriodStartAmount: 0n,
-                capPeriodStartTime: await getTxTimestamp(tx),
-              });
             });
           });
 
@@ -793,6 +843,16 @@ describe("Contract 'CashbackController'", () => {
               });
             });
 
+            it("should not update the account cashback state", async () => {
+              const accountCashbackState = resultToObject(await cashbackController
+                .getAccountCashback(payer.address));
+              checkEquality(accountCashbackState, {
+                totalAmount: 0n,
+                capPeriodStartAmount: 0n,
+                capPeriodStartTime: 0n,
+              });
+            });
+
             it("should not update token balances", async () => {
               await expect(tx).to.changeTokenBalances(tokenMock,
                 [treasury.address, payer.address, cashbackControllerAddress],
@@ -800,63 +860,8 @@ describe("Contract 'CashbackController'", () => {
               );
             });
 
-            it("should update the account cashback state", async () => {
-              const accountCashbackState = resultToObject(await cashbackController
-                .getAccountCashback(payer.address));
-              checkEquality(accountCashbackState, {
-                totalAmount: 0n,
-                capPeriodStartAmount: 0n,
-                capPeriodStartTime: 0n,
-              });
-            });
-          });
-
-          describe("cashback rate is zero", () => {
-            let tx: TransactionResponse;
-            const baseAmount = 100n * DIGITS_COEF;
-            const cashbackRate = 0n;
-
-            beforeEach(async () => {
-              const paymentHookData: PaymentHookData = {
-                baseAmount,
-                subsidyLimit: 0n,
-                status: 1n,
-                payer: payer.address,
-                cashbackRate,
-                confirmedAmount: 0n,
-                sponsor: ethers.ZeroAddress,
-                extraAmount: 0n,
-                refundAmount: 0n,
-              };
-              tx = await cashbackControllerFromHookTrigger.afterPaymentMade(
-                paymentId("id1"),
-                EMPTY_PAYMENT_HOOK_DATA,
-                paymentHookData,
-              );
-            });
-
-            it("should do nothing", async () => {
-              await expect(tx).to.not.emit(cashbackController, "CashbackSent");
-
-              await expect(tx).to.changeTokenBalances(tokenMock,
-                [treasury.address, payer.address, cashbackControllerAddress],
-                [0n, 0n, 0n],
-              );
-
-              const accountCashbackState = resultToObject(await cashbackController
-                .getAccountCashback(payer.address));
-              const operationState = resultToObject(await cashbackController
-                .getPaymentCashback(paymentId("id1")));
-
-              checkEquality(operationState, {
-                balance: 0n,
-                recipient: ethers.ZeroAddress,
-              });
-              checkEquality(accountCashbackState, {
-                totalAmount: 0n,
-                capPeriodStartAmount: 0n,
-                capPeriodStartTime: 0n,
-              });
+            it("should not transfer tokens", async () => {
+              await expect(tx).to.not.emit(tokenMock, "Transfer");
             });
           });
 
@@ -896,14 +901,28 @@ describe("Contract 'CashbackController'", () => {
               );
             });
 
-            it("should update the account cashback state", async () => {
+            it("should update the payment cashback state", async () => {
+              const operationState = resultToObject(await cashbackController
+                .getPaymentCashback(paymentId("id1")));
+
+              checkEquality(operationState, {
+                balance: 0n,
+                recipient: payer.address,
+              });
+            });
+
+            it("should not update the account cashback state", async () => {
               const accountCashbackState = resultToObject(await cashbackController
                 .getAccountCashback(payer.address));
               checkEquality(accountCashbackState, {
                 totalAmount: 0n,
                 capPeriodStartAmount: 0n,
-                capPeriodStartTime: await getTxTimestamp(tx),
+                capPeriodStartTime: 0n,
               });
+            });
+
+            it("should not transfer tokens", async () => {
+              await expect(tx).to.not.emit(tokenMock, "Transfer");
             });
           });
 
@@ -945,8 +964,14 @@ describe("Contract 'CashbackController'", () => {
               );
             });
 
-            it("should transfer tokens correctly", async () => {
-              await checkTokenPath(tx, tokenMock, [treasury, cashbackControllerAddress, payer], cashbackAmount);
+            it("should update the payment cashback state", async () => {
+              const operationState = resultToObject(await cashbackController
+                .getPaymentCashback(paymentId("id1")));
+
+              checkEquality(operationState, {
+                balance: cashbackAmount,
+                recipient: payer.address,
+              });
             });
 
             it("should update the account cashback state", async () => {
@@ -957,6 +982,10 @@ describe("Contract 'CashbackController'", () => {
                 capPeriodStartAmount: 0n,
                 capPeriodStartTime: await getTxTimestamp(tx),
               });
+            });
+
+            it("should transfer tokens correctly", async () => {
+              await checkTokenPath(tx, tokenMock, [treasury, cashbackControllerAddress, payer], cashbackAmount);
             });
           });
         });
@@ -997,6 +1026,61 @@ describe("Contract 'CashbackController'", () => {
 
       describe("Method 'afterPaymentUpdated()'", () => {
         describe("Should execute as expected when called properly and if", () => {
+          describe("payment cashback rate is zero", () => {
+            const baseAmount = 100n * DIGITS_COEF;
+            const cashbackRate = 0n;
+            let initialPayment: PaymentHookData;
+            let initialAccountCashbackState: Awaited<ReturnType<typeof cashbackController.getAccountCashback>>;
+            let initialOperationState: Awaited<ReturnType<typeof cashbackController.getPaymentCashback>>;
+
+            beforeEach(async () => {
+              initialPayment = {
+                baseAmount,
+                subsidyLimit: 0n,
+                status: 1n,
+                payer: payer.address,
+                cashbackRate,
+                confirmedAmount: 0n,
+                sponsor: ethers.ZeroAddress,
+                extraAmount: 0n,
+                refundAmount: 0n,
+              };
+              await cashbackControllerFromHookTrigger.afterPaymentMade(
+                paymentId("id1"),
+                EMPTY_PAYMENT_HOOK_DATA,
+                initialPayment,
+              );
+              initialAccountCashbackState = await cashbackController.getAccountCashback(payer.address);
+              initialOperationState = await cashbackController.getPaymentCashback(paymentId("id1"));
+            });
+
+            it("should do nothing", async () => {
+              const tx = await cashbackControllerFromHookTrigger.afterPaymentUpdated(
+                paymentId("id1"),
+                initialPayment,
+                {
+                  ...initialPayment,
+                  baseAmount: initialPayment.baseAmount as bigint + 50n * DIGITS_COEF,
+                },
+              );
+              await expect(tx).to.not.emit(cashbackController, "CashbackDecreased");
+              await expect(tx).to.not.emit(cashbackController, "CashbackIncreased");
+              await expect(tx).to.changeTokenBalances(tokenMock,
+                [treasury.address, payer.address, cashbackControllerAddress],
+                [0n, 0n, 0n],
+              );
+              await expect(tx).to.not.emit(tokenMock, "Transfer");
+              checkEquality(
+                resultToObject(await cashbackController.getAccountCashback(payer.address)),
+                resultToObject(initialAccountCashbackState),
+              );
+              checkEquality(
+                resultToObject(await cashbackController.getPaymentCashback(paymentId("id1"))),
+                resultToObject(initialOperationState),
+              );
+            });
+          });
+
           describe("payment cashback rate is not zero and no sponsor and", () => {
             const baseAmount = 100n * DIGITS_COEF;
             const cashbackRate = 100n;
@@ -1064,6 +1148,16 @@ describe("Contract 'CashbackController'", () => {
                 });
               });
 
+              it("should update the cashback amount in the account cashback state", async () => {
+                const accountCashbackState = resultToObject(await cashbackController
+                  .getAccountCashback(payer.address));
+                checkEquality(accountCashbackState, {
+                  totalAmount: newCashbackAmount,
+                  capPeriodStartAmount: 0n,
+                  capPeriodStartTime: initialAccountCashbackState.capPeriodStartTime,
+                });
+              });
+
               it("should update token balances correctly", async () => {
                 await expect(tx).to.changeTokenBalances(tokenMock,
                   [treasury.address, payer.address, cashbackControllerAddress],
@@ -1073,16 +1167,6 @@ describe("Contract 'CashbackController'", () => {
 
               it("should transfer tokens correctly", async () => {
                 await checkTokenPath(tx, tokenMock, [treasury, cashbackControllerAddress, payer], increaseAmount);
-              });
-
-              it("should update the cashback amount in the account cashback state", async () => {
-                const accountCashbackState = resultToObject(await cashbackController
-                  .getAccountCashback(payer.address));
-                checkEquality(accountCashbackState, {
-                  totalAmount: newCashbackAmount,
-                  capPeriodStartAmount: 0n,
-                  capPeriodStartTime: initialAccountCashbackState.capPeriodStartTime,
-                });
               });
             });
 
@@ -1126,6 +1210,16 @@ describe("Contract 'CashbackController'", () => {
                 });
               });
 
+              it("should update the cashback amount in the account cashback state", async () => {
+                const accountCashbackState = resultToObject(await cashbackController
+                  .getAccountCashback(payer.address));
+                checkEquality(accountCashbackState, {
+                  totalAmount: newCashbackAmount,
+                  capPeriodStartAmount: 0n,
+                  capPeriodStartTime: initialAccountCashbackState.capPeriodStartTime,
+                });
+              });
+
               it("should update token balances correctly", async () => {
                 await expect(tx).to.changeTokenBalances(tokenMock,
                   [treasury.address, payer.address, cashbackControllerAddress],
@@ -1135,16 +1229,6 @@ describe("Contract 'CashbackController'", () => {
 
               it("should transfer tokens correctly", async () => {
                 await checkTokenPath(tx, tokenMock, [payer, cashbackControllerAddress, treasury], decreaseAmount);
-              });
-
-              it("should update the cashback amount in the account cashback state", async () => {
-                const accountCashbackState = resultToObject(await cashbackController
-                  .getAccountCashback(payer.address));
-                checkEquality(accountCashbackState, {
-                  totalAmount: newCashbackAmount,
-                  capPeriodStartAmount: 0n,
-                  capPeriodStartTime: initialAccountCashbackState.capPeriodStartTime,
-                });
               });
             });
 
@@ -1163,91 +1247,30 @@ describe("Contract 'CashbackController'", () => {
                 );
               });
 
-              it("should not emit events", async () => {
+              it("should do nothing", async () => {
                 await expect(tx).to.not.emit(cashbackController, "CashbackDecreased");
                 await expect(tx).to.not.emit(cashbackController, "CashbackIncreased");
-              });
-
-              it("should update the payment cashback state", async () => {
                 const operationState = resultToObject(await cashbackController
                   .getPaymentCashback(paymentId("id1")));
 
-                checkEquality(operationState, {
-                  balance: cashbackAmount,
-                  recipient: payer.address,
-                });
-              });
-
-              it("should not update token balances", async () => {
-                await expect(tx).to.changeTokenBalances(tokenMock,
-                  [treasury.address, payer.address, cashbackControllerAddress],
-                  [0n, 0n, 0n],
-                );
-              });
-
-              it("should not update the cashback amount in the account cashback state", async () => {
                 const accountCashbackState = resultToObject(await cashbackController
                   .getAccountCashback(payer.address));
+
                 checkEquality(accountCashbackState, {
                   totalAmount: initialAccountCashbackState.totalAmount,
                   capPeriodStartAmount: initialAccountCashbackState.capPeriodStartAmount,
                   capPeriodStartTime: initialAccountCashbackState.capPeriodStartTime,
                 });
+                checkEquality(operationState, {
+                  balance: cashbackAmount,
+                  recipient: payer.address,
+                });
+                await expect(tx).to.changeTokenBalances(tokenMock,
+                  [treasury.address, payer.address, cashbackControllerAddress],
+                  [0n, 0n, 0n],
+                );
+                await expect(tx).to.not.emit(tokenMock, "Transfer");
               });
-            });
-          });
-
-          describe("payment cashback rate is zero", () => {
-            const baseAmount = 100n * DIGITS_COEF;
-            const cashbackRate = 0n;
-            let initialPayment: PaymentHookData;
-            let initialAccountCashbackState: Awaited<ReturnType<typeof cashbackController.getAccountCashback>>;
-            let initialOperationState: Awaited<ReturnType<typeof cashbackController.getPaymentCashback>>;
-
-            beforeEach(async () => {
-              initialPayment = {
-                baseAmount,
-                subsidyLimit: 0n,
-                status: 1n,
-                payer: payer.address,
-                cashbackRate,
-                confirmedAmount: 0n,
-                sponsor: ethers.ZeroAddress,
-                extraAmount: 0n,
-                refundAmount: 0n,
-              };
-              await cashbackControllerFromHookTrigger.afterPaymentMade(
-                paymentId("id1"),
-                EMPTY_PAYMENT_HOOK_DATA,
-                initialPayment,
-              );
-              initialAccountCashbackState = await cashbackController.getAccountCashback(payer.address);
-              initialOperationState = await cashbackController.getPaymentCashback(paymentId("id1"));
-            });
-
-            it("should do nothing", async () => {
-              const tx = await cashbackControllerFromHookTrigger.afterPaymentUpdated(
-                paymentId("id1"),
-                initialPayment,
-                {
-                  ...initialPayment,
-                  baseAmount: initialPayment.baseAmount as bigint + 50n * DIGITS_COEF,
-                },
-              );
-              await expect(tx).to.not.emit(cashbackController, "CashbackDecreased");
-              await expect(tx).to.not.emit(cashbackController, "CashbackIncreased");
-              await expect(tx).to.changeTokenBalances(tokenMock,
-                [treasury.address, payer.address, cashbackControllerAddress],
-                [0n, 0n, 0n],
-              );
-              checkEquality(
-                resultToObject(await cashbackController.getAccountCashback(payer.address)),
-                resultToObject(initialAccountCashbackState),
-              );
-              checkEquality(
-                resultToObject(await cashbackController.getPaymentCashback(paymentId("id1"))),
-                resultToObject(initialOperationState),
-              );
             });
           });
 
@@ -1320,6 +1343,16 @@ describe("Contract 'CashbackController'", () => {
                   });
                 });
 
+                it("should update the cashback amount in the account cashback state", async () => {
+                  const accountCashbackState = resultToObject(await cashbackController
+                    .getAccountCashback(payer.address));
+                  checkEquality(accountCashbackState, {
+                    totalAmount: newCashbackAmount,
+                    capPeriodStartAmount: 0n,
+                    capPeriodStartTime: initialAccountCashbackState.capPeriodStartTime,
+                  });
+                });
+
                 it("should update token balances correctly", async () => {
                   await expect(tx).to.changeTokenBalances(tokenMock,
                     [treasury.address, payer.address, cashbackControllerAddress],
@@ -1329,16 +1362,6 @@ describe("Contract 'CashbackController'", () => {
 
                 it("should transfer tokens correctly", async () => {
                   await checkTokenPath(tx, tokenMock, [treasury, cashbackControllerAddress, payer], increaseAmount);
-                });
-
-                it("should update the cashback amount in the account cashback state", async () => {
-                  const accountCashbackState = resultToObject(await cashbackController
-                    .getAccountCashback(payer.address));
-                  checkEquality(accountCashbackState, {
-                    totalAmount: newCashbackAmount,
-                    capPeriodStartAmount: 0n,
-                    capPeriodStartTime: initialAccountCashbackState.capPeriodStartTime,
-                  });
                 });
               });
 
@@ -1385,6 +1408,16 @@ describe("Contract 'CashbackController'", () => {
                   });
                 });
 
+                it("should update the cashback amount in the account cashback state", async () => {
+                  const accountCashbackState = resultToObject(await cashbackController
+                    .getAccountCashback(payer.address));
+                  checkEquality(accountCashbackState, {
+                    totalAmount: newCashbackAmount,
+                    capPeriodStartAmount: 0n,
+                    capPeriodStartTime: initialAccountCashbackState.capPeriodStartTime,
+                  });
+                });
+
                 it("should update token balances correctly", async () => {
                   await expect(tx).to.changeTokenBalances(tokenMock,
                     [treasury.address, payer.address, cashbackControllerAddress],
@@ -1394,16 +1427,6 @@ describe("Contract 'CashbackController'", () => {
 
                 it("should transfer tokens correctly", async () => {
                   await checkTokenPath(tx, tokenMock, [payer, cashbackControllerAddress, treasury], decreaseAmount);
-                });
-
-                it("should update the cashback amount in the account cashback state", async () => {
-                  const accountCashbackState = resultToObject(await cashbackController
-                    .getAccountCashback(payer.address));
-                  checkEquality(accountCashbackState, {
-                    totalAmount: newCashbackAmount,
-                    capPeriodStartAmount: 0n,
-                    capPeriodStartTime: initialAccountCashbackState.capPeriodStartTime,
-                  });
                 });
               });
 
@@ -1451,6 +1474,16 @@ describe("Contract 'CashbackController'", () => {
                   });
                 });
 
+                it("should update the cashback amount in the account cashback state", async () => {
+                  const accountCashbackState = resultToObject(await cashbackController
+                    .getAccountCashback(payer.address));
+                  checkEquality(accountCashbackState, {
+                    totalAmount: 0n,
+                    capPeriodStartAmount: 0n,
+                    capPeriodStartTime: initialAccountCashbackState.capPeriodStartTime,
+                  });
+                });
+
                 it("should update token balances correctly", async () => {
                   await expect(tx).to.changeTokenBalances(tokenMock,
                     [treasury.address, payer.address, cashbackControllerAddress],
@@ -1460,16 +1493,6 @@ describe("Contract 'CashbackController'", () => {
 
                 it("should transfer tokens correctly", async () => {
                   await checkTokenPath(tx, tokenMock, [payer, cashbackControllerAddress, treasury], decreaseAmount);
-                });
-
-                it("should update the cashback amount in the account cashback state", async () => {
-                  const accountCashbackState = resultToObject(await cashbackController
-                    .getAccountCashback(payer.address));
-                  checkEquality(accountCashbackState, {
-                    totalAmount: 0n,
-                    capPeriodStartAmount: 0n,
-                    capPeriodStartTime: initialAccountCashbackState.capPeriodStartTime,
-                  });
                 });
               });
             });
@@ -1532,13 +1555,6 @@ describe("Contract 'CashbackController'", () => {
                   });
                 });
 
-                it("should not update token balances", async () => {
-                  await expect(tx).to.changeTokenBalances(tokenMock,
-                    [treasury.address, payer.address, cashbackControllerAddress],
-                    [0n, 0n, 0n],
-                  );
-                });
-
                 it("should not update the cashback amount in the account cashback state", async () => {
                   const accountCashbackState = resultToObject(await cashbackController
                     .getAccountCashback(payer.address));
@@ -1547,6 +1563,17 @@ describe("Contract 'CashbackController'", () => {
                     capPeriodStartAmount: 0n,
                     capPeriodStartTime: initialAccountCashbackState.capPeriodStartTime,
                   });
+                });
+
+                it("should not update token balances", async () => {
+                  await expect(tx).to.changeTokenBalances(tokenMock,
+                    [treasury.address, payer.address, cashbackControllerAddress],
+                    [0n, 0n, 0n],
+                  );
+                });
+
+                it("should not transfer tokens", async () => {
+                  await expect(tx).to.not.emit(tokenMock, "Transfer");
                 });
               });
 
@@ -1588,6 +1615,16 @@ describe("Contract 'CashbackController'", () => {
                   });
                 });
 
+                it("should update the account cashback state", async () => {
+                  const accountCashbackState = resultToObject(await cashbackController
+                    .getAccountCashback(payer.address));
+                  checkEquality(accountCashbackState, {
+                    totalAmount: newCashbackAmount,
+                    capPeriodStartAmount: 0n,
+                    capPeriodStartTime: await getTxTimestamp(tx),
+                  });
+                });
+
                 it("should update token balances correctly", async () => {
                   await expect(tx).to.changeTokenBalances(tokenMock,
                     [treasury.address, payer.address, cashbackControllerAddress],
@@ -1597,16 +1634,6 @@ describe("Contract 'CashbackController'", () => {
 
                 it("should transfer tokens correctly", async () => {
                   await checkTokenPath(tx, tokenMock, [treasury, cashbackControllerAddress, payer], newCashbackAmount);
-                });
-
-                it("should update the cashback amount in the account cashback state", async () => {
-                  const accountCashbackState = resultToObject(await cashbackController
-                    .getAccountCashback(payer.address));
-                  checkEquality(accountCashbackState, {
-                    totalAmount: newCashbackAmount,
-                    capPeriodStartAmount: 0n,
-                    capPeriodStartTime: initialAccountCashbackState.capPeriodStartTime,
-                  });
                 });
               });
             });
@@ -1625,6 +1652,60 @@ describe("Contract 'CashbackController'", () => {
 
       describe("Method 'afterPaymentCanceled()'", () => {
         describe("Should execute as expected when called properly and if", () => {
+          describe("cashback rate is zero", () => {
+            const baseAmount = 100n * DIGITS_COEF;
+            const cashbackRate = 0n;
+            let initialPayment: PaymentHookData;
+            let initialAccountCashbackState: Awaited<ReturnType<typeof cashbackController.getAccountCashback>>;
+            let initialOperationState: Awaited<ReturnType<typeof cashbackController.getPaymentCashback>>;
+            let tx: TransactionResponse;
+
+            beforeEach(async () => {
+              initialPayment = {
+                baseAmount,
+                subsidyLimit: 0n,
+                status: 1n,
+                payer: payer.address,
+                cashbackRate,
+                confirmedAmount: 0n,
+                sponsor: ethers.ZeroAddress,
+                extraAmount: 0n,
+                refundAmount: 0n,
+              };
+              await cashbackControllerFromHookTrigger.afterPaymentMade(
+                paymentId("id1"),
+                EMPTY_PAYMENT_HOOK_DATA,
+                initialPayment,
+              );
+              initialAccountCashbackState = await cashbackController.getAccountCashback(payer.address);
+              initialOperationState = await cashbackController.getPaymentCashback(paymentId("id1"));
+              tx = await cashbackControllerFromHookTrigger.afterPaymentCanceled(
+                paymentId("id1"),
+                initialPayment,
+                EMPTY_PAYMENT_HOOK_DATA,
+              );
+            });
+
+            it("should do nothing", async () => {
+              await expect(tx).to.not.emit(cashbackController, "CashbackDecreased");
+              await expect(tx).to.not.emit(cashbackController, "CashbackIncreased");
+              await expect(tx).to.changeTokenBalances(tokenMock,
+                [treasury.address, payer.address, cashbackControllerAddress],
+                [0n, 0n, 0n],
+              );
+
+              await expect(tx).to.not.emit(tokenMock, "Transfer");
+              checkEquality(
+                resultToObject(await cashbackController.getAccountCashback(payer.address)),
+                resultToObject(initialAccountCashbackState),
+              );
+              checkEquality(
+                resultToObject(await cashbackController.getPaymentCashback(paymentId("id1"))),
+                resultToObject(initialOperationState),
+              );
+            });
+          });
+
           describe("cashback rate is not zero", () => {
             const baseAmount = 100n * DIGITS_COEF;
             const cashbackRate = 100n;
@@ -1680,6 +1761,16 @@ describe("Contract 'CashbackController'", () => {
               });
             });
 
+            it("should update the cashback amount in the account cashback state", async () => {
+              const accountCashbackState = resultToObject(await cashbackController
+                .getAccountCashback(payer.address));
+              checkEquality(accountCashbackState, {
+                totalAmount: 0n,
+                capPeriodStartAmount: 0n,
+                capPeriodStartTime: initialAccountCashbackState.capPeriodStartTime,
+              });
+            });
+
             it("should update token balances correctly", async () => {
               await expect(tx).to.changeTokenBalances(tokenMock,
                 [treasury.address, payer.address, cashbackControllerAddress],
@@ -1689,16 +1780,6 @@ describe("Contract 'CashbackController'", () => {
 
             it("should transfer tokens correctly", async () => {
               await checkTokenPath(tx, tokenMock, [payer, cashbackControllerAddress, treasury], cashbackAmount);
-            });
-
-            it("should update the cashback amount in the account cashback state", async () => {
-              const accountCashbackState = resultToObject(await cashbackController
-                .getAccountCashback(payer.address));
-              checkEquality(accountCashbackState, {
-                totalAmount: 0n,
-                capPeriodStartAmount: 0n,
-                capPeriodStartTime: initialAccountCashbackState.capPeriodStartTime,
-              });
             });
           });
 
@@ -1766,14 +1847,7 @@ describe("Contract 'CashbackController'", () => {
               });
             });
 
-            it("should not update token balances", async () => {
-              await expect(tx).to.changeTokenBalances(tokenMock,
-                [treasury.address, payer.address, cashbackControllerAddress],
-                [0n, 0n, 0n],
-              );
-            });
-
-            it("should not update the cashback amount in the account cashback state", async () => {
+            it("should not update the account cashback state", async () => {
               const accountCashbackState = resultToObject(await cashbackController
                 .getAccountCashback(payer.address));
               checkEquality(accountCashbackState, {
@@ -1782,57 +1856,16 @@ describe("Contract 'CashbackController'", () => {
                 totalAmount: initialAccountCashbackState.totalAmount,
               });
             });
-          });
 
-          describe("cashback rate is zero", () => {
-            const baseAmount = 100n * DIGITS_COEF;
-            const cashbackRate = 0n;
-            let initialPayment: PaymentHookData;
-            let initialAccountCashbackState: Awaited<ReturnType<typeof cashbackController.getAccountCashback>>;
-            let initialOperationState: Awaited<ReturnType<typeof cashbackController.getPaymentCashback>>;
-            let tx: TransactionResponse;
-
-            beforeEach(async () => {
-              initialPayment = {
-                baseAmount,
-                subsidyLimit: 0n,
-                status: 1n,
-                payer: payer.address,
-                cashbackRate,
-                confirmedAmount: 0n,
-                sponsor: ethers.ZeroAddress,
-                extraAmount: 0n,
-                refundAmount: 0n,
-              };
-              await cashbackControllerFromHookTrigger.afterPaymentMade(
-                paymentId("id1"),
-                EMPTY_PAYMENT_HOOK_DATA,
-                initialPayment,
-              );
-              initialAccountCashbackState = await cashbackController.getAccountCashback(payer.address);
-              initialOperationState = await cashbackController.getPaymentCashback(paymentId("id1"));
-              tx = await cashbackControllerFromHookTrigger.afterPaymentCanceled(
-                paymentId("id1"),
-                initialPayment,
-                EMPTY_PAYMENT_HOOK_DATA,
-              );
-            });
-
-            it("should do nothing", async () => {
-              await expect(tx).to.not.emit(cashbackController, "CashbackDecreased");
-              await expect(tx).to.not.emit(cashbackController, "CashbackIncreased");
+            it("should not update token balances", async () => {
               await expect(tx).to.changeTokenBalances(tokenMock,
                 [treasury.address, payer.address, cashbackControllerAddress],
                 [0n, 0n, 0n],
               );
-              checkEquality(
-                resultToObject(await cashbackController.getAccountCashback(payer.address)),
-                resultToObject(initialAccountCashbackState),
-              );
-              checkEquality(
-                resultToObject(await cashbackController.getPaymentCashback(paymentId("id1"))),
-                resultToObject(initialOperationState),
-              );
+            });
+
+            it("should not transfer tokens", async () => {
+              await expect(tx).to.not.emit(tokenMock, "Transfer");
             });
           });
         });
@@ -1902,6 +1935,653 @@ describe("Contract 'CashbackController'", () => {
         it("should emit the required event", async () => {
           await expect(tx).to.emit(cashbackVault, "CashbackGranted")
             .withArgs(payer.address, cashbackControllerAddress, cashbackAmount, cashbackAmount);
+        });
+      });
+
+      describe("Method 'afterPaymentUpdated()'", () => {
+        describe("Should execute as expected when called properly and if", () => {
+          describe("payment cashback rate is zero", () => {
+            const baseAmount = 100n * DIGITS_COEF;
+            const cashbackRate = 0n;
+            let initialPayment: PaymentHookData;
+            let initialAccountCashbackState: Awaited<ReturnType<typeof cashbackController.getAccountCashback>>;
+            let initialOperationState: Awaited<ReturnType<typeof cashbackController.getPaymentCashback>>;
+
+            beforeEach(async () => {
+              initialPayment = {
+                baseAmount,
+                subsidyLimit: 0n,
+                status: 1n,
+                payer: payer.address,
+                cashbackRate,
+                confirmedAmount: 0n,
+                sponsor: ethers.ZeroAddress,
+                extraAmount: 0n,
+                refundAmount: 0n,
+              };
+              await cashbackControllerFromHookTrigger.afterPaymentMade(
+                paymentId("id1"),
+                EMPTY_PAYMENT_HOOK_DATA,
+                initialPayment,
+              );
+              initialAccountCashbackState = await cashbackController.getAccountCashback(payer.address);
+              initialOperationState = await cashbackController.getPaymentCashback(paymentId("id1"));
+            });
+
+            it("should do nothing", async () => {
+              const tx = await cashbackControllerFromHookTrigger.afterPaymentUpdated(
+                paymentId("id1"),
+                initialPayment,
+                {
+                  ...initialPayment,
+                  baseAmount: initialPayment.baseAmount as bigint + 50n * DIGITS_COEF,
+                },
+              );
+              await expect(tx).to.not.emit(cashbackController, "CashbackDecreased");
+              await expect(tx).to.not.emit(cashbackController, "CashbackIncreased");
+              await expect(tx).to.changeTokenBalances(tokenMock,
+                [treasury.address, payer.address, cashbackControllerAddress],
+                [0n, 0n, 0n],
+              );
+              await expect(tx).to.not.emit(tokenMock, "Transfer");
+              checkEquality(
+                resultToObject(await cashbackController.getAccountCashback(payer.address)),
+                resultToObject(initialAccountCashbackState),
+              );
+              checkEquality(
+                resultToObject(await cashbackController.getPaymentCashback(paymentId("id1"))),
+                resultToObject(initialOperationState),
+              );
+            });
+          });
+
+          describe("payment cashback rate is not zero and no sponsor and", () => {
+            const baseAmount = 100n * DIGITS_COEF;
+            const cashbackRate = 100n;
+            const cashbackAmount = cashbackRate * baseAmount / CASHBACK_FACTOR;
+            let initialPayment: PaymentHookData;
+            let initialAccountCashbackState: Awaited<ReturnType<typeof cashbackController.getAccountCashback>>;
+
+            beforeEach(async () => {
+              initialPayment = {
+                baseAmount,
+                subsidyLimit: 0n,
+                status: 1n,
+                payer: payer.address,
+                cashbackRate,
+                confirmedAmount: 0n,
+                sponsor: ethers.ZeroAddress,
+                extraAmount: 0n,
+                refundAmount: 0n,
+              };
+              await cashbackControllerFromHookTrigger.afterPaymentMade(
+                paymentId("id1"),
+                EMPTY_PAYMENT_HOOK_DATA,
+                initialPayment,
+              );
+              initialAccountCashbackState = await cashbackController.getAccountCashback(payer.address);
+            });
+
+            describe("base amount is increased", () => {
+              const newBaseAmount = baseAmount + 50n * DIGITS_COEF;
+              const newCashbackAmount = cashbackRate * newBaseAmount / CASHBACK_FACTOR;
+              const increaseAmount = newCashbackAmount - cashbackAmount;
+
+              let tx: TransactionResponse;
+
+              beforeEach(async () => {
+                const updatedPayment: PaymentHookData = {
+                  ...initialPayment,
+                  baseAmount: newBaseAmount,
+                };
+                tx = await cashbackControllerFromHookTrigger.afterPaymentUpdated(
+                  paymentId("id1"),
+                  initialPayment,
+                  updatedPayment,
+                );
+              });
+
+              it("should emit the required event", async () => {
+                await expect(tx).to.emit(cashbackController, "CashbackIncreased")
+                  .withArgs(
+                    paymentId("id1"),
+                    payer.address,
+                    CashbackStatus.Success,
+                    increaseAmount,
+                    newCashbackAmount,
+                  );
+              });
+
+              it("should update the payment cashback state", async () => {
+                const operationState = resultToObject(await cashbackController
+                  .getPaymentCashback(paymentId("id1")));
+
+                checkEquality(operationState, {
+                  balance: newCashbackAmount,
+                  recipient: payer.address,
+                });
+              });
+
+              it("should update the cashback amount in the account cashback state", async () => {
+                const accountCashbackState = resultToObject(await cashbackController
+                  .getAccountCashback(payer.address));
+                checkEquality(accountCashbackState, {
+                  totalAmount: newCashbackAmount,
+                  capPeriodStartAmount: 0n,
+                  capPeriodStartTime: initialAccountCashbackState.capPeriodStartTime,
+                });
+              });
+
+              it("should update token balances correctly", async () => {
+                await expect(tx).to.changeTokenBalances(tokenMock,
+                  [treasury, cashbackVault, cashbackControllerAddress],
+                  [-increaseAmount, increaseAmount, 0n],
+                );
+              });
+
+              it("should transfer tokens correctly", async () => {
+                await checkTokenPath(
+                  tx,
+                  tokenMock,
+                  [treasury, cashbackControllerAddress, cashbackVault],
+                  increaseAmount,
+                );
+              });
+            });
+
+            describe("refund amount is increased", () => {
+              const newRefundAmount = 50n * DIGITS_COEF;
+              const newCashbackAmount = cashbackRate * (baseAmount - newRefundAmount) / CASHBACK_FACTOR;
+              const decreaseAmount = cashbackAmount - newCashbackAmount;
+
+              let tx: TransactionResponse;
+
+              beforeEach(async () => {
+                const updatedPayment: PaymentHookData = {
+                  ...initialPayment,
+                  refundAmount: newRefundAmount,
+                };
+                tx = await cashbackControllerFromHookTrigger.afterPaymentUpdated(
+                  paymentId("id1"),
+                  initialPayment,
+                  updatedPayment,
+                );
+              });
+
+              it("should emit the required event", async () => {
+                await expect(tx).to.emit(cashbackController, "CashbackDecreased")
+                  .withArgs(
+                    paymentId("id1"),
+                    payer.address,
+                    CashbackStatus.Success,
+                    decreaseAmount,
+                    newCashbackAmount,
+                  );
+              });
+
+              it("should update the payment cashback state", async () => {
+                const operationState = resultToObject(await cashbackController
+                  .getPaymentCashback(paymentId("id1")));
+
+                checkEquality(operationState, {
+                  balance: newCashbackAmount,
+                  recipient: payer.address,
+                });
+              });
+
+              it("should update the cashback amount in the account cashback state", async () => {
+                const accountCashbackState = resultToObject(await cashbackController
+                  .getAccountCashback(payer.address));
+                checkEquality(accountCashbackState, {
+                  totalAmount: newCashbackAmount,
+                  capPeriodStartAmount: 0n,
+                  capPeriodStartTime: initialAccountCashbackState.capPeriodStartTime,
+                });
+              });
+
+              it("should update token balances correctly", async () => {
+                await expect(tx).to.changeTokenBalances(tokenMock,
+                  [treasury.address, cashbackVault, cashbackControllerAddress],
+                  [decreaseAmount, -decreaseAmount, 0n],
+                );
+              });
+
+              it("should transfer tokens correctly", async () => {
+                await checkTokenPath(
+                  tx,
+                  tokenMock,
+                  [cashbackVault, cashbackControllerAddress, treasury],
+                  decreaseAmount,
+                );
+              });
+            });
+
+            describe("changes are not relevant to the cashback calculation", () => {
+              let tx: TransactionResponse;
+
+              beforeEach(async () => {
+                const updatedPayment: PaymentHookData = {
+                  ...initialPayment,
+                  confirmedAmount: initialPayment.confirmedAmount as bigint + 1n, // just some irrelevant change
+                };
+                tx = await cashbackControllerFromHookTrigger.afterPaymentUpdated(
+                  paymentId("id1"),
+                  initialPayment,
+                  updatedPayment,
+                );
+              });
+
+              it("should do nothing", async () => {
+                await expect(tx).to.not.emit(cashbackController, "CashbackDecreased");
+                await expect(tx).to.not.emit(cashbackController, "CashbackIncreased");
+                const operationState = resultToObject(await cashbackController
+                  .getPaymentCashback(paymentId("id1")));
+
+                const accountCashbackState = resultToObject(await cashbackController
+                  .getAccountCashback(payer.address));
+
+                checkEquality(accountCashbackState, {
+                  totalAmount: initialAccountCashbackState.totalAmount,
+                  capPeriodStartAmount: initialAccountCashbackState.capPeriodStartAmount,
+                  capPeriodStartTime: initialAccountCashbackState.capPeriodStartTime,
+                });
+                checkEquality(operationState, {
+                  balance: cashbackAmount,
+                  recipient: payer.address,
+                });
+                await expect(tx).to.changeTokenBalances(tokenMock,
+                  [treasury.address, cashbackVault, cashbackControllerAddress],
+                  [0n, 0n, 0n],
+                );
+                await expect(tx).to.not.emit(tokenMock, "Transfer");
+              });
+            });
+          });
+
+          describe("payment cashback rate is not zero and sponsor exists and", () => {
+            describe("the subsidy limit is less than the base amount and", () => {
+              const baseAmount = 100n * DIGITS_COEF;
+              const subsidyLimit = baseAmount / 2n;
+              const cashbackRate = 100n;
+              const cashbackAmount = cashbackRate * (baseAmount - subsidyLimit) / CASHBACK_FACTOR;
+              let initialPayment: PaymentHookData;
+              let initialAccountCashbackState: Awaited<ReturnType<typeof cashbackController.getAccountCashback>>;
+
+              beforeEach(async () => {
+                initialPayment = {
+                  baseAmount,
+                  subsidyLimit,
+                  status: 1n,
+                  payer: payer.address,
+                  cashbackRate,
+                  confirmedAmount: 0n,
+                  sponsor: sponsor.address,
+                  extraAmount: 0n,
+                  refundAmount: 0n,
+                };
+                await cashbackControllerFromHookTrigger.afterPaymentMade(
+                  paymentId("id1"),
+                  EMPTY_PAYMENT_HOOK_DATA,
+                  initialPayment,
+                );
+                initialAccountCashbackState = await cashbackController.getAccountCashback(payer.address);
+              });
+
+              describe("base amount is increased", () => {
+                const newBaseAmount = baseAmount + 50n * DIGITS_COEF;
+                const newCashbackAmount = cashbackRate * (newBaseAmount - subsidyLimit) / CASHBACK_FACTOR;
+                const increaseAmount = newCashbackAmount - cashbackAmount;
+
+                let tx: TransactionResponse;
+
+                beforeEach(async () => {
+                  const updatedPayment: PaymentHookData = {
+                    ...initialPayment,
+                    baseAmount: newBaseAmount,
+                  };
+                  tx = await cashbackControllerFromHookTrigger.afterPaymentUpdated(
+                    paymentId("id1"),
+                    initialPayment,
+                    updatedPayment,
+                  );
+                });
+
+                it("should emit the required event", async () => {
+                  await expect(tx).to.emit(cashbackController, "CashbackIncreased")
+                    .withArgs(
+                      paymentId("id1"),
+                      payer.address,
+                      CashbackStatus.Success,
+                      increaseAmount,
+                      newCashbackAmount,
+                    );
+                });
+
+                it("should update the payment cashback state", async () => {
+                  const operationState = resultToObject(await cashbackController
+                    .getPaymentCashback(paymentId("id1")));
+
+                  checkEquality(operationState, {
+                    balance: newCashbackAmount,
+                    recipient: payer.address,
+                  });
+                });
+
+                it("should update the cashback amount in the account cashback state", async () => {
+                  const accountCashbackState = resultToObject(await cashbackController
+                    .getAccountCashback(payer.address));
+                  checkEquality(accountCashbackState, {
+                    totalAmount: newCashbackAmount,
+                    capPeriodStartAmount: 0n,
+                    capPeriodStartTime: initialAccountCashbackState.capPeriodStartTime,
+                  });
+                });
+
+                it("should update token balances correctly", async () => {
+                  await expect(tx).to.changeTokenBalances(tokenMock,
+                    [treasury.address, cashbackVault, cashbackControllerAddress],
+                    [-increaseAmount, increaseAmount, 0n],
+                  );
+                });
+
+                it("should transfer tokens correctly", async () => {
+                  await checkTokenPath(
+                    tx,
+                    tokenMock,
+                    [treasury, cashbackControllerAddress, cashbackVault],
+                    increaseAmount,
+                  );
+                });
+              });
+
+              describe("refund amount is increased", () => {
+                const refundAmount = 10n * DIGITS_COEF;
+                // refund is splitted between payer and sponsor according to base amount proportions
+                const newCashbackAmount = cashbackRate *
+                  ((baseAmount - subsidyLimit) - refundAmount * subsidyLimit / baseAmount) /
+                  CASHBACK_FACTOR;
+                const decreaseAmount = cashbackAmount - newCashbackAmount;
+
+                let tx: TransactionResponse;
+
+                beforeEach(async () => {
+                  const updatedPayment: PaymentHookData = {
+                    ...initialPayment,
+                    refundAmount,
+                  };
+                  tx = await cashbackControllerFromHookTrigger.afterPaymentUpdated(
+                    paymentId("id1"),
+                    initialPayment,
+                    updatedPayment,
+                  );
+                });
+
+                it("should emit the required event", async () => {
+                  await expect(tx).to.emit(cashbackController, "CashbackDecreased")
+                    .withArgs(
+                      paymentId("id1"),
+                      payer.address,
+                      CashbackStatus.Success,
+                      decreaseAmount,
+                      newCashbackAmount,
+                    );
+                });
+
+                it("should update the payment cashback state", async () => {
+                  const operationState = resultToObject(await cashbackController
+                    .getPaymentCashback(paymentId("id1")));
+
+                  checkEquality(operationState, {
+                    balance: newCashbackAmount,
+                    recipient: payer.address,
+                  });
+                });
+
+                it("should update the cashback amount in the account cashback state", async () => {
+                  const accountCashbackState = resultToObject(await cashbackController
+                    .getAccountCashback(payer.address));
+                  checkEquality(accountCashbackState, {
+                    totalAmount: newCashbackAmount,
+                    capPeriodStartAmount: 0n,
+                    capPeriodStartTime: initialAccountCashbackState.capPeriodStartTime,
+                  });
+                });
+
+                it("should update token balances correctly", async () => {
+                  await expect(tx).to.changeTokenBalances(tokenMock,
+                    [treasury.address, cashbackVault, cashbackControllerAddress],
+                    [decreaseAmount, -decreaseAmount, 0n],
+                  );
+                });
+
+                it("should transfer tokens correctly", async () => {
+                  await checkTokenPath(
+                    tx,
+                    tokenMock,
+                    [cashbackVault, cashbackControllerAddress, treasury],
+                    decreaseAmount,
+                  );
+                });
+              });
+
+              describe("the refund amount increases but the sponsor's refund is capped by the subsidy limit", () => {
+                const additionalRefundThatWillGoToPayer = 10n * DIGITS_COEF;
+                const refundAmount =
+                  baseAmount + // amount of refund to make sponsor part equal to subsidy limit
+                  additionalRefundThatWillGoToPayer; // additional refund that will cap sponsor part and goes to payer
+                // but we will not charge cashback for the additional refund that goes to payer
+                const newCashbackAmount = 0n;
+                const decreaseAmount = cashbackAmount;
+
+                let tx: TransactionResponse;
+
+                beforeEach(async () => {
+                  const updatedPayment: PaymentHookData = {
+                    ...initialPayment,
+                    refundAmount,
+                  };
+                  tx = await cashbackControllerFromHookTrigger.afterPaymentUpdated(
+                    paymentId("id1"),
+                    initialPayment,
+                    updatedPayment,
+                  );
+                });
+
+                it("should emit the required event", async () => {
+                  await expect(tx).to.emit(cashbackController, "CashbackDecreased")
+                    .withArgs(
+                      paymentId("id1"),
+                      payer.address,
+                      CashbackStatus.Success,
+                      decreaseAmount,
+                      newCashbackAmount,
+                    );
+                });
+
+                it("should update the payment cashback state", async () => {
+                  const operationState = resultToObject(await cashbackController
+                    .getPaymentCashback(paymentId("id1")));
+
+                  checkEquality(operationState, {
+                    balance: 0n,
+                    recipient: payer.address,
+                  });
+                });
+
+                it("should update the cashback amount in the account cashback state", async () => {
+                  const accountCashbackState = resultToObject(await cashbackController
+                    .getAccountCashback(payer.address));
+                  checkEquality(accountCashbackState, {
+                    totalAmount: 0n,
+                    capPeriodStartAmount: 0n,
+                    capPeriodStartTime: initialAccountCashbackState.capPeriodStartTime,
+                  });
+                });
+
+                it("should update token balances correctly", async () => {
+                  await expect(tx).to.changeTokenBalances(tokenMock,
+                    [treasury.address, cashbackVault, cashbackControllerAddress],
+                    [decreaseAmount, -decreaseAmount, 0n],
+                  );
+                });
+
+                it("should transfer tokens correctly", async () => {
+                  await checkTokenPath(
+                    tx,
+                    tokenMock,
+                    [cashbackVault, cashbackControllerAddress, treasury],
+                    decreaseAmount,
+                  );
+                });
+              });
+            });
+
+            describe("subsidy limit is greater than base amount and", () => {
+              const baseAmount = 100n * DIGITS_COEF;
+              const subsidyLimit = baseAmount + 50n * DIGITS_COEF;
+              const cashbackRate = 100n;
+              let initialPayment: PaymentHookData;
+              let initialAccountCashbackState: Awaited<ReturnType<typeof cashbackController.getAccountCashback>>;
+
+              beforeEach(async () => {
+                initialPayment = {
+                  baseAmount,
+                  subsidyLimit,
+                  status: 1n,
+                  payer: payer.address,
+                  cashbackRate,
+                  confirmedAmount: 0n,
+                  sponsor: sponsor.address,
+                  extraAmount: 0n,
+                  refundAmount: 0n,
+                };
+                await cashbackControllerFromHookTrigger.afterPaymentMade(
+                  paymentId("id1"),
+                  EMPTY_PAYMENT_HOOK_DATA,
+                  initialPayment,
+                );
+                initialAccountCashbackState = await cashbackController.getAccountCashback(payer.address);
+              });
+
+              describe("the base amount is increased but remains below the subsidy limit", () => {
+                const newBaseAmount = baseAmount + 10n * DIGITS_COEF;
+
+                let tx: TransactionResponse;
+
+                beforeEach(async () => {
+                  const updatedPayment: PaymentHookData = {
+                    ...initialPayment,
+                    baseAmount: newBaseAmount,
+                  };
+                  tx = await cashbackControllerFromHookTrigger.afterPaymentUpdated(
+                    paymentId("id1"),
+                    initialPayment,
+                    updatedPayment,
+                  );
+                });
+
+                it("should not emit events", async () => {
+                  await expect(tx).to.not.emit(cashbackController, "CashbackIncreased");
+                });
+
+                it("should not change the payment cashback state", async () => {
+                  const operationState = resultToObject(await cashbackController
+                    .getPaymentCashback(paymentId("id1")));
+
+                  checkEquality(operationState, {
+                    balance: 0n,
+                    recipient: payer.address,
+                  });
+                });
+
+                it("should not update the cashback amount in the account cashback state", async () => {
+                  const accountCashbackState = resultToObject(await cashbackController
+                    .getAccountCashback(payer.address));
+                  checkEquality(accountCashbackState, {
+                    totalAmount: 0n,
+                    capPeriodStartAmount: 0n,
+                    capPeriodStartTime: initialAccountCashbackState.capPeriodStartTime,
+                  });
+                });
+
+                it("should not update token balances", async () => {
+                  await expect(tx).to.changeTokenBalances(tokenMock,
+                    [treasury.address, payer.address, cashbackControllerAddress],
+                    [0n, 0n, 0n],
+                  );
+                });
+
+                it("should not transfer tokens", async () => {
+                  await expect(tx).to.not.emit(tokenMock, "Transfer");
+                });
+              });
+
+              describe("the base amount is increased above the subsidy limit", () => {
+                const newBaseAmount = subsidyLimit + 50n * DIGITS_COEF;
+                const newCashbackAmount = cashbackRate * (newBaseAmount - subsidyLimit) / CASHBACK_FACTOR;
+
+                let tx: TransactionResponse;
+
+                beforeEach(async () => {
+                  const updatedPayment: PaymentHookData = {
+                    ...initialPayment,
+                    baseAmount: newBaseAmount,
+                  };
+                  tx = await cashbackControllerFromHookTrigger.afterPaymentUpdated(
+                    paymentId("id1"),
+                    initialPayment,
+                    updatedPayment,
+                  );
+                });
+
+                it("should emit the required event", async () => {
+                  await expect(tx).to.emit(cashbackController, "CashbackIncreased")
+                    .withArgs(paymentId("id1"),
+                      payer.address,
+                      CashbackStatus.Success,
+                      newCashbackAmount,
+                      newCashbackAmount,
+                    );
+                });
+
+                it("should update the payment cashback state", async () => {
+                  const operationState = resultToObject(await cashbackController
+                    .getPaymentCashback(paymentId("id1")));
+
+                  checkEquality(operationState, {
+                    balance: newCashbackAmount,
+                    recipient: payer.address,
+                  });
+                });
+
+                it("should update the account cashback state", async () => {
+                  const accountCashbackState = resultToObject(await cashbackController
+                    .getAccountCashback(payer.address));
+                  checkEquality(accountCashbackState, {
+                    totalAmount: newCashbackAmount,
+                    capPeriodStartAmount: 0n,
+                    capPeriodStartTime: await getTxTimestamp(tx),
+                  });
+                });
+
+                it("should update token balances correctly", async () => {
+                  await expect(tx).to.changeTokenBalances(tokenMock,
+                    [treasury.address, cashbackVault, cashbackControllerAddress],
+                    [-newCashbackAmount, newCashbackAmount, 0n],
+                  );
+                });
+
+                it("should transfer tokens correctly", async () => {
+                  await checkTokenPath(
+                    tx,
+                    tokenMock,
+                    [treasury, cashbackControllerAddress, cashbackVault],
+                    newCashbackAmount,
+                  );
+                });
+              });
+            });
+          });
         });
       });
 
