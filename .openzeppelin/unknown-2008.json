@@ -25,6 +25,11 @@
       "address": "0x6ADA7f6c9547a55A5F05b2C9b542864104818BF2",
       "txHash": "0xc7757b2165664e5963a74e7c43c276a2ab5c094536ab05773d2f5d28b36722ba",
       "kind": "uups"
+    },
+    {
+      "address": "0x52c6970028558670A21535855786e63e8315Aa19",
+      "txHash": "0x1e41f21982b8b6e16fa75498f7ae459165d63a96e7c021694732e669d72aca5f",
+      "kind": "uups"
     }
   ],
   "impls": {
@@ -3439,6 +3444,272 @@
               "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:73",
               "offset": 8,
               "slot": "0"
+            }
+          ]
+        }
+      }
+    },
+    "854f637083f0a9f850b7c197b08e2f62b61e472bbbe0e1245aee46c3ee7f2119": {
+      "address": "0xA3F6601B44A0Fc6Fa63186Cd06eDfabC7C6c349B",
+      "txHash": "0x794db39210b685a3e3637e41bfb6a84c5b183ecbbac628840454507ba40b0eb0",
+      "layout": {
+        "solcVersion": "0.8.24",
+        "storage": [],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(AccountCashback)1862_storage)": {
+            "label": "mapping(address => struct ICashbackControllerTypes.AccountCashback)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(PaymentCashback)1868_storage)": {
+            "label": "mapping(bytes32 => struct ICashbackControllerTypes.PaymentCashback)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)26_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(AccessControlStorage)36_storage": {
+            "label": "struct AccessControlUpgradeable.AccessControlStorage",
+            "members": [
+              {
+                "label": "_roles",
+                "type": "t_mapping(t_bytes32,t_struct(RoleData)26_storage)",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(AccountCashback)1862_storage": {
+            "label": "struct ICashbackControllerTypes.AccountCashback",
+            "members": [
+              {
+                "label": "totalAmount",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "capPeriodStartAmount",
+                "type": "t_uint64",
+                "offset": 8,
+                "slot": "0"
+              },
+              {
+                "label": "capPeriodStartTime",
+                "type": "t_uint32",
+                "offset": 16,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(CashbackControllerStorage)1345_storage": {
+            "label": "struct CashbackControllerStorageLayout.CashbackControllerStorage",
+            "members": [
+              {
+                "label": "token",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "cashbackTreasury",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "cashbackVault",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "accountCashbacks",
+                "type": "t_mapping(t_address,t_struct(AccountCashback)1862_storage)",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "paymentCashbacks",
+                "type": "t_mapping(t_bytes32,t_struct(PaymentCashback)1868_storage)",
+                "offset": 0,
+                "slot": "4"
+              }
+            ],
+            "numberOfBytes": "160"
+          },
+          "t_struct(InitializableStorage)147_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(PausableStorage)298_storage": {
+            "label": "struct PausableUpgradeable.PausableStorage",
+            "members": [
+              {
+                "label": "_paused",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(PaymentCashback)1868_storage": {
+            "label": "struct ICashbackControllerTypes.PaymentCashback",
+            "members": [
+              {
+                "label": "balance",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "recipient",
+                "type": "t_address",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(RoleData)26_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "hasRole",
+                "type": "t_mapping(t_address,t_bool)",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_uint32": {
+            "label": "uint32",
+            "numberOfBytes": "4"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.Pausable": [
+            {
+              "contract": "PausableUpgradeable",
+              "label": "_paused",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\utils\\PausableUpgradeable.sol:21",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.AccessControl": [
+            {
+              "contract": "AccessControlUpgradeable",
+              "label": "_roles",
+              "type": "t_mapping(t_bytes32,t_struct(RoleData)26_storage)",
+              "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:62",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ],
+          "erc7201:cloudwalk.storage.CashbackController": [
+            {
+              "contract": "CashbackControllerStorageLayout",
+              "label": "token",
+              "type": "t_address",
+              "src": "contracts\\CashbackControllerStorageLayout.sol:36",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "CashbackControllerStorageLayout",
+              "label": "cashbackTreasury",
+              "type": "t_address",
+              "src": "contracts\\CashbackControllerStorageLayout.sol:38",
+              "offset": 0,
+              "slot": "1"
+            },
+            {
+              "contract": "CashbackControllerStorageLayout",
+              "label": "cashbackVault",
+              "type": "t_address",
+              "src": "contracts\\CashbackControllerStorageLayout.sol:40",
+              "offset": 0,
+              "slot": "2"
+            },
+            {
+              "contract": "CashbackControllerStorageLayout",
+              "label": "accountCashbacks",
+              "type": "t_mapping(t_address,t_struct(AccountCashback)1862_storage)",
+              "src": "contracts\\CashbackControllerStorageLayout.sol:42",
+              "offset": 0,
+              "slot": "3"
+            },
+            {
+              "contract": "CashbackControllerStorageLayout",
+              "label": "paymentCashbacks",
+              "type": "t_mapping(t_bytes32,t_struct(PaymentCashback)1868_storage)",
+              "src": "contracts\\CashbackControllerStorageLayout.sol:44",
+              "offset": 0,
+              "slot": "4"
             }
           ]
         }
