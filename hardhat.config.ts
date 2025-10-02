@@ -22,8 +22,8 @@ function getMochaHooks() {
     async function noop() {
       return;
     }
-    expect.startScenario = noop;
-    expect.endScenario = noop;
+    expect.startChainshot = noop;
+    expect.stopChainshot = noop;
     return {};
   }
 }
