@@ -1,3 +1,5 @@
+# 2.4.0
+
 ## Main Changes
 
 - **Hooks for CardPaymentProcessor (CPP)**: Introduced a flexible hooks architecture via `CardPaymentProcessorHookable` to run external logic at key points in the payment lifecycle.
@@ -61,16 +63,16 @@ Claimable cashback:  CashbackTreasury <=> CashbackController <=> CashbackVault <
 ## Migration
 
 1. If no cashback is needed: upgrade CPP and stop here.
-2. If existing cashback payments exist on a CPP: deploy a new CPP and route payments to it.
-3. Deploy `CashbackController` (CC) with the same token as the CPP.
-4. Call `setCashbackTreasury()` on CC to configure the treasury.
-5. From the treasury account, approve CC to spend the token (max allowance recommended).
+2. If payments with cashback exist on a CPP: deploy a new CPP along with  `CashbackController` (CC) , (optional) `CashbackVault` (CV) and route payments to it according to the steps below.
+3. Deploy `CashbackController` (CC) with the same token as the CPP one.
+4. From the cashback treasury account, approve CC to spend the token (max allowance recommended).
+5. Call `setCashbackTreasury()` on CC to configure the treasury.
 6. Grant `HOOK_TRIGGER_ROLE` on CC to the CPP.
-7. Connect CC as a hook on CPP via `registerHook()`.
-8. (Claimable mode) On CV, grant `CASHBACK_OPERATOR_ROLE` to CC and `MANAGER_ROLE` to your manager.
+7. (Optional) Configure default cashback rate on CPP via `setDefaultCashbackRate(uint256)`.
+8. Connect CC as a hook on CPP via `registerHook()`. It automatically enables cashback sending over CPP.
 9. (Optional) Enable claimable mode by calling `setCashbackVault()` on CC.
-10. (Optional) Configure default cashback rate on CPP via `setDefaultCashbackRate(uint256)`.
-11. Execute payments with cashback on CPP.
+10. (Optional for claimable mode) On CV, grant `CASHBACK_OPERATOR_ROLE` to CC and `MANAGER_ROLE` to your manager.
+11. Execute payments with cashback on the new CPP.
 
 # 2.3
 
